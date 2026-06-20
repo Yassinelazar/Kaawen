@@ -1,0 +1,16 @@
+# Private content/source files — never publish these
+cosmic-blueprint-prototype.html
+sufi-readings-library-v1.json
+sufi-readings-catalog-v1.csv
+sufi-readings-library-v1-README.md
+cosmic-blueprint-v1.md
+cosmic-weather-layer-v1.md
+demo-runbook.md
+stress-test-report.md
+sufi-mapping-rubric-v1.md
+
+# OS / editor cruft
+.DS_Store
+node_modules/
+.vscode/
+*.swp
