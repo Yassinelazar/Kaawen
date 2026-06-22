@@ -3999,6 +3999,13 @@
         Uranus: '♅', Neptune: '♆', Pluto: '♇'
       };
 
+      // Subtle size hierarchy: personal planets read larger, outer/generational planets smaller
+      const GLYPH_SIZE = {
+        Sun: 8, Moon: 8,
+        Mercury: 7, Venus: 7, Mars: 7, Jupiter: 7, Saturn: 7,
+        Uranus: 6, Neptune: 6, Pluto: 6
+      };
+
       function pointAt(deg) {
         const rad = ((deg - 90) * Math.PI) / 180;
         return { x: CX + R * Math.cos(rad), y: CY + R * Math.sin(rad) };
@@ -4015,7 +4022,8 @@
       const dots = Object.entries(positions).map(([planet, lon]) => {
         const p = pointAt(lon);
         const glyph = GLYPHS[planet] || '•';
-        return `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" font-size="7" fill="var(--gold)" text-anchor="middle" dominant-baseline="central">${glyph}</text>`;
+        const size = GLYPH_SIZE[planet] || 7;
+        return `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" font-size="${size}" fill="var(--gold)" text-anchor="middle" dominant-baseline="central">${glyph}</text>`;
       }).join('');
 
       return `
