@@ -4026,9 +4026,19 @@
         return `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" font-size="${size}" fill="var(--gold)" text-anchor="middle" dominant-baseline="central">${glyph}</text>`;
       }).join('');
 
+      // Faint tick marks at each zodiac sign boundary (every 30°)
+      const ticks = Array.from({ length: 12 }, (_, i) => {
+        const deg = i * 30;
+        const rad = ((deg - 90) * Math.PI) / 180;
+        const x1 = CX + (R - 3) * Math.cos(rad), y1 = CY + (R - 3) * Math.sin(rad);
+        const x2 = CX + (R + 3) * Math.cos(rad), y2 = CY + (R + 3) * Math.sin(rad);
+        return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--rule)" stroke-width="1" opacity="0.6"/>`;
+      }).join('');
+
       return `
         <svg viewBox="0 0 ${SIZE} ${SIZE}" width="${SIZE}" height="${SIZE}" class="shape-svg" aria-hidden="true">
           <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--rule)" stroke-width="1"/>
+          ${ticks}
           <path d="${gapPath}" fill="none" stroke="var(--gold)" stroke-width="1.5" opacity="0.35" stroke-dasharray="2 3"/>
           ${dots}
         </svg>
