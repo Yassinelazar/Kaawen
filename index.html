@@ -3992,7 +3992,12 @@
       const SIZE = 120;
       const CX = SIZE / 2, CY = SIZE / 2;
       const R = 46;
-      const DOT_R = 2.6;
+
+      const GLYPHS = {
+        Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀',
+        Mars: '♂', Jupiter: '♃', Saturn: '♄',
+        Uranus: '♅', Neptune: '♆', Pluto: '♇'
+      };
 
       function pointAt(deg) {
         const rad = ((deg - 90) * Math.PI) / 180;
@@ -4006,10 +4011,11 @@
       const largeArc = gap.size > 180 ? 1 : 0;
       const gapPath  = `M ${gapStart.x.toFixed(1)} ${gapStart.y.toFixed(1)} A ${R} ${R} 0 ${largeArc} 1 ${gapEnd.x.toFixed(1)} ${gapEnd.y.toFixed(1)}`;
 
-      // Dots for each planet
+      // Glyphs for each planet
       const dots = Object.entries(positions).map(([planet, lon]) => {
         const p = pointAt(lon);
-        return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${DOT_R}" fill="var(--gold)" />`;
+        const glyph = GLYPHS[planet] || '•';
+        return `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" font-size="7" fill="var(--gold)" text-anchor="middle" dominant-baseline="central">${glyph}</text>`;
       }).join('');
 
       return `
