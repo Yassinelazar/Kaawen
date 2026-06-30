@@ -13,7 +13,6 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
   <meta property="og:type" content="website">
-
   <!-- ============================================================
        ANALYTICS — privacy-respecting, anonymous counts only.
        ============================================================
@@ -1522,6 +1521,100 @@
       font-family: var(--display);
     }
 
+    /* ==== Lunar Devotion — the day's one committed action.
+       Sits above Today's Sky as the new primary focus: a single instruction,
+       not a reading to consume. The sufi line is framing only, kept small
+       and muted at the foot of the block so it never reads as the instruction. */
+    .devotion {
+      margin-top: var(--space-section);
+      padding: 32px 24px;
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      text-align: center;
+      position: relative;
+      background:
+        radial-gradient(ellipse at top left, rgba(212, 166, 85, 0.08) 0%, transparent 60%),
+        rgba(15, 17, 35, 0.5);
+      animation: fadeUp 0.8s ease backwards;
+    }
+    .devotion .label { margin-bottom: 16px; }
+    .devotion-instruction {
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 19px;
+      color: var(--cream);
+      line-height: 1.45;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+    .devotion-meditation {
+      font-size: 13.5px;
+      color: var(--cream-soft);
+      line-height: 1.65;
+      max-width: 300px;
+      margin: 16px auto 0;
+    }
+    .devotion-aspect {
+      font-family: var(--ui);
+      font-size: 11.5px;
+      font-style: italic;
+      color: var(--parchment);
+      line-height: 1.6;
+      max-width: 300px;
+      margin: 16px auto 0;
+    }
+    .devotion-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 24px 0 4px;
+    }
+    .devotion-done {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: var(--ui);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--parchment);
+      padding: 10px 6px;
+      transition: color 0.3s ease;
+    }
+    .devotion-done:hover { color: var(--cream-soft); }
+    .devotion-done-mark {
+      font-size: 15px;
+      line-height: 1;
+      color: var(--gold-soft);
+      transition: color 0.3s ease;
+    }
+    .devotion-done.is-done .devotion-done-mark { color: var(--gold); }
+    .devotion-done.is-done .devotion-done-label { color: var(--cream-soft); }
+    .devotion-streak {
+      font-family: var(--ui);
+      font-size: 10px;
+      color: var(--parchment);
+      opacity: 0.55;
+      letter-spacing: 0.04em;
+    }
+    .devotion-sufi {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 11px;
+      color: var(--parchment);
+      opacity: 0.7;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rule-soft);
+      max-width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     /* ==== Today's Sky ==== */
     .sky {
       margin-top: var(--space-section);
@@ -2125,6 +2218,24 @@
 
         <!-- ============ CHAPTER 5: TODAY ============ -->
         <div class="chapter" id="ch-today">
+          <!-- LUNAR DEVOTION — inserted above Today's Sky/Transit as the new
+               primary focus. The reading stops being something to consume and
+               becomes one committed action the moon is asking of you today. -->
+          <div class="devotion" id="devotion-block">
+            <span class="label">Today's Devotion</span>
+            <p class="devotion-instruction" id="devotion-instruction"></p>
+            <p class="devotion-meditation" id="devotion-meditation" style="display:none;"></p>
+            <p class="devotion-aspect" id="devotion-aspect" style="display:none;"></p>
+            <div class="devotion-action">
+              <button class="devotion-done" id="devotion-done" type="button" aria-pressed="false">
+                <span class="devotion-done-mark" id="devotion-done-mark">○</span>
+                <span class="devotion-done-label" id="devotion-done-label">I sat with this.</span>
+              </button>
+              <span class="devotion-streak" id="devotion-streak" style="display:none;"></span>
+            </div>
+            <p class="devotion-sufi" id="devotion-sufi"></p>
+          </div>
+
           <!-- TODAY'S SKY -->
           <div class="sky">
             <div class="sky-header">
@@ -4800,6 +4911,12 @@
         track('go_deeper_tapped');
       });
 
+      // Lunar devotion — completion tap. Bound once here (not inside the
+      // render function) so re-renders from register toggles never double-bind.
+      document.getElementById('devotion-done').addEventListener('click', () => {
+        completeDevotion();
+      });
+
       // Chapter navigation
       buildChapterNav();
       setupGestureNav();
@@ -5057,6 +5174,7 @@
 
       renderBlueprint(sun, moon, rising, hasTime, planets, aspects, outers, natalRetrogrades);
       renderCosmicWeather();
+      renderLunarDevotion();
       renderDeepReading(moon.sign);
 
       goToChapter(0);
@@ -5372,6 +5490,149 @@
       document.getElementById('deeper-trigger').style.display = 'block';
     }
 
+    // ============================================================
+    // LUNAR DEVOTION — daily practice composed from phase + moon sign +
+    // (Full register) a personal transiting-Moon aspect. Distinct from the
+    // PHASE_RESONANCE/PRACTICES catalog system above: this is a separate,
+    // self-contained layer of in-file strings, not drawn from the Sufi
+    // catalog JSON, so it's easy to edit without touching that data.
+    // ============================================================
+
+    // Index matches moonPhase()'s phase.name order — 0=New ... 7=Waning Crescent
+    const PHASE_NAME_TO_INDEX = {
+      'new': 0, 'waxing-crescent': 1, 'first-quarter': 2, 'waxing-gibbous': 3,
+      'full': 4, 'waning-gibbous': 5, 'last-quarter': 6, 'waning-crescent': 7
+    };
+
+    const PHASE_PRACTICES = [
+      { // 0 New
+        axis: "intention",
+        devotion: "Name one intention. Speak it once, aloud, to yourself alone.",
+        meditation: "Before the day fills with noise, sit for one minute with the thing you want to begin.",
+        sufi: "niyyah — the intention that precedes the act"
+      },
+      { // 1 Waxing Crescent
+        axis: "manifestation",
+        devotion: "Take the first visible step toward what you named. One that someone could see.",
+        meditation: "Notice the small resistance to starting. Begin anyway.",
+        sufi: "the seed trusting the dark"
+      },
+      { // 2 First Quarter
+        axis: "manifestation",
+        devotion: "Move through one piece of resistance you feel today. The thing you keep deferring.",
+        meditation: "Where you feel friction, lean a degree closer rather than away.",
+        sufi: "mujāhada — the striving"
+      },
+      { // 3 Waxing Gibbous
+        axis: "refinement",
+        devotion: "Refine. Cut one thing that isn't serving the intention you set.",
+        meditation: "Hold what you're building and ask what is excess.",
+        sufi: "patience as a form of devotion"
+      },
+      { // 4 Full
+        axis: "manifestation",
+        devotion: "Witness what has come to fullness. Let one thing be fully seen, by you or another.",
+        meditation: "Sit with something complete. Resist improving it.",
+        sufi: "unveiling — what was hidden made clear"
+      },
+      { // 5 Waning Gibbous
+        axis: "gratitude",
+        devotion: "Give something back from what you've gathered. Time, thanks, or a small offering.",
+        meditation: "Name one thing you received that you did not earn.",
+        sufi: "shukr — gratitude that returns the gift"
+      },
+      { // 6 Last Quarter
+        axis: "release",
+        devotion: "Release one thing you've been carrying. A resentment, a habit, an unsent message.",
+        meditation: "Hold the weight of it once, deliberately, then set it down.",
+        sufi: "muḥāsaba — the self-accounting"
+      },
+      { // 7 Waning Crescent
+        axis: "release",
+        devotion: "Rest. Empty yourself before the next beginning. Do less, on purpose.",
+        meditation: "Let one space stay unfilled today.",
+        sufi: "fanā — the emptying"
+      }
+    ];
+
+    // 12 sign tone modifiers, index 0=Aries. Woven onto the end of the
+    // devotion sentence (its trailing period is stripped first) so it reads
+    // as one continuous instruction rather than a second, capitalized sentence.
+    const MOON_SIGN_TONE = [
+      "and let it be direct.",                        // Aries
+      "and let it be steady, unhurried.",             // Taurus
+      "and let it be spoken or written down.",        // Gemini
+      "and let it be tender toward yourself.",        // Cancer
+      "and let it be done wholeheartedly.",           // Leo
+      "and let it be precise, one clear thing.",      // Virgo
+      "and let it be done in relation to another.",   // Libra
+      "and let it go deeper than feels comfortable.", // Scorpio
+      "and let it open toward something larger.",     // Sagittarius
+      "and let it be disciplined, structural.",       // Capricorn
+      "and let it be unusual to you.",                // Aquarius
+      "and let it dissolve the edges a little."       // Pisces
+    ];
+
+    function weaveDevotionTone(devotion, tone) {
+      return `${devotion.replace(/\.\s*$/, '')} — ${tone}`;
+    }
+
+    // Transiting Moon vs each natal point. Mirrors detectAspects()'s use of
+    // angularSeparation(), but with a single fixed 6° orb per the spec and
+    // ranked by tightest orb (top 2 max) rather than every pair found.
+    const DEVOTION_ASPECT_DEFS = [
+      { name: 'conjunction', angle: 0 },
+      { name: 'sextile',     angle: 60 },
+      { name: 'square',      angle: 90 },
+      { name: 'trine',       angle: 120 },
+      { name: 'opposition',  angle: 180 }
+    ];
+    const DEVOTION_ASPECT_ORB = 6;
+
+    function findMoonDevotionAspects(moonLon, natal) {
+      if (!natal) return [];
+      const hits = [];
+      Object.keys(natal).forEach(planet => {
+        const sep = angularSeparation(moonLon, natal[planet]);
+        for (const def of DEVOTION_ASPECT_DEFS) {
+          const orb = Math.abs(sep - def.angle);
+          if (orb <= DEVOTION_ASPECT_ORB) {
+            hits.push({ planet, aspect: def.name, orb });
+            break; // one aspect per pair, same rule as detectAspects()
+          }
+        }
+      });
+      hits.sort((a, b) => a.orb - b.orb);
+      return hits.slice(0, 2);
+    }
+
+    // Completion + streak — localStorage only, no backend.
+    const DEVOTION_STORAGE_KEY = 'kaawn_devotion';
+
+    // Local calendar date (not UTC) so "today"/"yesterday" match the user's day.
+    function localDateString(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function readDevotionState() {
+      try {
+        const raw = localStorage.getItem(DEVOTION_STORAGE_KEY);
+        if (!raw) return { lastDoneDate: null, streak: 0 };
+        const parsed = JSON.parse(raw);
+        return {
+          lastDoneDate: parsed.lastDoneDate || null,
+          streak: typeof parsed.streak === 'number' ? parsed.streak : 0
+        };
+      } catch (e) { return { lastDoneDate: null, streak: 0 }; }
+    }
+
+    function writeDevotionState(state) {
+      try { localStorage.setItem(DEVOTION_STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+
     function renderCosmicWeather() {
       const now = new Date();
       const Y = now.getUTCFullYear(), M = now.getUTCMonth() + 1, D = now.getUTCDate();
@@ -5383,6 +5644,11 @@
       const s = longToSign(sLon);
       const moonNow = longToSign(mLon);
       const phase = moonPhase(sLon, mLon);
+
+      // Stash for renderLunarDevotion(), called right after this — same
+      // pattern as window.__natalPositions/__activeTransit/__activeStation.
+      window.__todayPhase = phase;
+      window.__todayMoonLon = mLon;
 
       document.getElementById('sun-position').textContent = `${s.sign} ${Math.floor(s.degree)}°`;
       document.getElementById('sun-season').textContent = SEASONS[s.sign].name;
@@ -5490,6 +5756,92 @@
       } else {
         practiceAttrEl.style.display = 'none';
       }
+    }
+
+    // Renders the lunar devotion block — called right after renderCosmicWeather()
+    // (which stashes window.__todayPhase/__todayMoonLon) and before
+    // renderDeepReading() in runBlueprint(). Re-runs cleanly on register toggle
+    // since runBlueprint() re-invokes the whole render chain.
+    function renderLunarDevotion() {
+      const phase = window.__todayPhase;
+      const moonLon = window.__todayMoonLon;
+      if (!phase || moonLon == null) return;
+
+      const practice = PHASE_PRACTICES[PHASE_NAME_TO_INDEX[phase.name]];
+      const signIdx = Math.floor(norm360(moonLon) / 30);
+      const tone = MOON_SIGN_TONE[signIdx];
+
+      document.getElementById('devotion-instruction').textContent =
+        weaveDevotionTone(practice.devotion, tone);
+      document.getElementById('devotion-sufi').textContent = practice.sufi;
+
+      const isFull = sufiCatalog.getRegister() === 'D';
+
+      const meditationEl = document.getElementById('devotion-meditation');
+      if (isFull) {
+        meditationEl.textContent = practice.meditation;
+        meditationEl.style.display = '';
+      } else {
+        meditationEl.style.display = 'none';
+      }
+
+      const aspectEl = document.getElementById('devotion-aspect');
+      const hits = isFull ? findMoonDevotionAspects(moonLon, window.__natalPositions) : [];
+      if (hits.length) {
+        aspectEl.innerHTML = hits.map(h =>
+          `The moon touches your ${h.planet} today — this practice reaches into ${TENSION_FUNCTION[h.planet]}.`
+        ).join('<br>');
+        aspectEl.style.display = '';
+      } else {
+        aspectEl.style.display = 'none';
+      }
+
+      renderDevotionCompletion();
+    }
+
+    // Reads localStorage fresh each call so it always reflects "today" —
+    // important since runBlueprint() (and therefore this) can re-run hours
+    // apart in the same session, crossing a date boundary.
+    function renderDevotionCompletion() {
+      const state = readDevotionState();
+      const today = localDateString(new Date());
+      const doneToday = state.lastDoneDate === today;
+
+      const btn = document.getElementById('devotion-done');
+      const mark = document.getElementById('devotion-done-mark');
+      const label = document.getElementById('devotion-done-label');
+      const streakEl = document.getElementById('devotion-streak');
+
+      btn.setAttribute('aria-pressed', String(doneToday));
+      btn.classList.toggle('is-done', doneToday);
+      mark.textContent = doneToday ? '●' : '○';
+      label.textContent = doneToday ? 'Sat with this today' : 'I sat with this.';
+
+      // Understated by design — no glyph/number at all below a 2-day streak.
+      if (state.streak > 1) {
+        streakEl.textContent = `◐ ${state.streak}`;
+        streakEl.style.display = '';
+      } else {
+        streakEl.textContent = '';
+        streakEl.style.display = 'none';
+      }
+    }
+
+    // Tap handler for the Done affordance. No-ops if already completed today
+    // so re-taps and re-renders never inflate the streak or refire analytics.
+    function completeDevotion() {
+      const state = readDevotionState();
+      const now = new Date();
+      const today = localDateString(now);
+      if (state.lastDoneDate === today) return;
+
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const newStreak = state.lastDoneDate === localDateString(yesterday) ? state.streak + 1 : 1;
+
+      writeDevotionState({ lastDoneDate: today, streak: newStreak });
+      track('devotion_complete');
+      renderDevotionCompletion();
     }
 
     function renderDeepReading(moonSign) {
