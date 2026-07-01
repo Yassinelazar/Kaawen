@@ -1615,6 +1615,141 @@
       margin-right: auto;
     }
 
+    /* ==== Natal Report — Edwall-depth standing chart interpretation ==== */
+    .report-section {
+      margin-top: var(--space-section);
+      padding-bottom: var(--space-block);
+      border-bottom: 1px solid var(--rule-soft);
+    }
+    .report-section:last-of-type { border-bottom: none; }
+    .report-section > .label { margin-bottom: 20px; }
+
+    .report-intro {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 13.5px;
+      color: var(--parchment);
+      text-align: center;
+      margin-bottom: 6px;
+      opacity: 0.8;
+    }
+
+    /* Rising portrait — the richest entry type: full character paragraph */
+    .report-rising-portrait {
+      font-size: 14.5px;
+      color: var(--cream-soft);
+      line-height: 1.72;
+      margin-bottom: 16px;
+    }
+    .report-rising-lesson {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 14px;
+      color: var(--cream-soft);
+      opacity: 0.85;
+      line-height: 1.65;
+      padding-top: 14px;
+      border-top: 1px solid var(--rule-soft);
+    }
+
+    /* Planet-in-sign / planet-in-house entries */
+    .report-entry {
+      margin-bottom: 28px;
+    }
+    .report-entry:last-child { margin-bottom: 0; }
+    .report-entry-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .report-entry-planet {
+      font-family: var(--ui);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .report-entry-position {
+      font-family: var(--ui);
+      font-size: 11px;
+      color: var(--parchment);
+      letter-spacing: 0.03em;
+    }
+    .report-entry-glyph {
+      font-size: 13px;
+      color: var(--gold-soft);
+      line-height: 1;
+    }
+    .report-entry-text {
+      font-size: 13.5px;
+      color: var(--cream-soft);
+      line-height: 1.7;
+    }
+    .report-entry-text.is-fallback {
+      font-style: italic;
+      opacity: 0.65;
+    }
+
+    /* Aspect entries */
+    .report-aspect {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--rule-soft);
+    }
+    .report-aspect:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .report-aspect-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .report-aspect-label {
+      font-family: var(--ui);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+    }
+    .report-aspect-kind {
+      font-family: var(--ui);
+      font-size: 10px;
+      color: var(--parchment);
+      letter-spacing: 0.08em;
+      opacity: 0.7;
+    }
+    .report-aspect-orb {
+      font-family: var(--ui);
+      font-size: 10px;
+      color: var(--parchment);
+      opacity: 0.55;
+      margin-left: auto;
+    }
+    .report-aspect-text {
+      font-size: 13.5px;
+      color: var(--cream-soft);
+      line-height: 1.7;
+    }
+    .report-aspect-text.is-fallback {
+      font-style: italic;
+      opacity: 0.65;
+    }
+
+    /* No-birth-time notice */
+    .report-no-time {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 13px;
+      color: var(--parchment);
+      opacity: 0.75;
+      text-align: center;
+      max-width: 300px;
+      margin: var(--space-section) auto;
+      line-height: 1.65;
+    }
+
     /* ==== Today's Sky ==== */
     .sky {
       margin-top: var(--space-section);
@@ -2318,6 +2453,44 @@
             <a id="restart">Begin again</a>
             <a id="feedback-link" href="mailto:hello@kaawn.app?subject=Kaawn%20feedback" class="feedback-link">Share a thought</a>
           </div>
+        </div>
+
+        <!-- ============ CHAPTER 6: NATAL REPORT ============
+             Edwall-depth standing interpretation of the birth chart.
+             NO transit data. NO "today". The birth chart is the only input.
+             Sections 1–2 (Ascendant, Houses) are gated on birth-time availability. -->
+        <div class="chapter" id="ch-report">
+          <p class="report-intro">Your birth chart, read in depth.</p>
+
+          <!-- Section 1: Ascendant — gated on birth time -->
+          <div class="report-section" id="report-ascendant">
+            <span class="label">The Ascendant</span>
+            <div id="report-rising-portrait" class="report-rising-portrait"></div>
+            <div id="report-rising-lesson" class="report-rising-lesson" style="display:none;"></div>
+          </div>
+
+          <!-- Section 2: Planetary Aspects — always shown -->
+          <div class="report-section">
+            <span class="label">Planetary Aspects</span>
+            <div id="report-aspects"></div>
+          </div>
+
+          <!-- Section 3: Sign Positions — always shown -->
+          <div class="report-section">
+            <span class="label">Sign Positions of Planets</span>
+            <div id="report-signs"></div>
+          </div>
+
+          <!-- Section 4: House Positions — gated on birth time -->
+          <div class="report-section" id="report-houses-section">
+            <span class="label">House Positions of Planets</span>
+            <div id="report-houses"></div>
+          </div>
+
+          <!-- Shown when birth time is absent (replaces ascendant + houses) -->
+          <p class="report-no-time" id="report-no-time-notice" style="display:none;">
+            House positions and the Ascendant require a birth time. The sign and aspect readings above still stand.
+          </p>
         </div>
 
       </div>
@@ -4667,9 +4840,11 @@
       { id: 'ch-shape',    title: 'The Shape' },
       { id: 'ch-anatomy',  title: 'The Anatomy' },
       { id: 'ch-currents', title: 'The Currents' },
-      { id: 'ch-today',    title: 'Today' }
+      { id: 'ch-today',    title: 'Today' },
+      { id: 'ch-report',   title: 'The Report' }
     ];
     let currentChapter = 0;
+    let natalReportOpenTracked = false; // fire once per session (see goToChapter)
 
     function goToChapter(idx) {
       idx = Math.max(0, Math.min(CHAPTERS.length - 1, idx));
@@ -4707,6 +4882,12 @@
       } else {
         nextBtn.style.visibility = 'visible';
         nextBtn.textContent = 'Next →';
+      }
+
+      // Analytics: fire once per session when the user first opens the natal report
+      if (CHAPTERS[idx].id === 'ch-report' && !natalReportOpenTracked) {
+        natalReportOpenTracked = true;
+        track('natal_report');
       }
 
       // Scroll to top of phone frame
@@ -5165,6 +5346,10 @@
       // Stash natal positions globally for transit calculation
       window.__natalPositions = positions;
 
+      // Stash all data the natal report needs. Includes birth-time flag so
+      // renderNatalReport() can gate house + ascendant sections on its own.
+      window.__natalReportData = { sun, moon, planets, outers, rising, hasTime, aspects };
+
       // Loading
       show('loading');
       const lt = document.getElementById('loading-text');
@@ -5176,6 +5361,7 @@
       renderCosmicWeather();
       renderLunarDevotion();
       renderDeepReading(moon.sign);
+      renderNatalReport();
 
       goToChapter(0);
       show('blueprint');
@@ -5907,6 +6093,280 @@
         attributionEl.style.display = '';
       } else {
         attributionEl.style.display = 'none';
+      }
+    }
+
+    // ============================================================
+    // NATAL REPORT — Edwall-depth standing chart interpretation
+    // ============================================================
+    // Catalog tables. Edit prose here; the render engine below reads them.
+    // null cells fall back to a short auto-generated line — ship before catalog is complete.
+    //
+    // Index convention:
+    //   planetIndex 0..9 = Sun, Moon, Mercury, Venus, Mars,
+    //                      Jupiter, Saturn, Uranus, Neptune, Pluto
+    //   signIndex   0..11 = Aries, Taurus, Gemini, Cancer, Leo, Virgo,
+    //                       Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces
+    //   houseIndex  0..11 = 1st..12th house (0-indexed; same as houseOfSign() - 1)
+    // ============================================================
+
+    // Planet-in-sign interpretations.
+    // LIGHT = drives 1-2 (recognition). FULL = drives 1-4 (+ shadow + named Sufi turn).
+    // Voice rule: standing, contemplative — never imperative ("do X").
+    const NATAL_PLANET_IN_SIGN = [
+      // 0 Sun ——————————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 1 Moon —————————————————————————————————————————————————————————
+      [
+        { // [0] Aries
+          light: "Your heart moves fast; feeling and action are a single motion in you. You meet emotion head-on — quick to warm, quick to flare, quick to forgive once the heat has passed. Stillness makes you restless; motion is your comfort.",
+          full:  "Your heart moves fast; feeling and action are a single motion in you. You know what you feel the instant you feel it. You meet emotion head-on and have little patience for slow-burning moods or for people who circle a feeling for hours — quick to warm, quick to flare, quick to forgive once the heat has passed. Stillness makes you restless; motion is your comfort. Yet the same fire that makes you honest makes you impatient: you can wound before you have weighed, mistake intensity for depth, and burn in a moment what you'd give much to rebuild. Your needs announce themselves loudly and can crowd out the quieter needs of those you love. The lifelong work of a heart like yours is ṣabr — patience, not with the world but with your own fire; not the swallowing of it, but the holding of it one breath longer than feels natural. This is ground you will return to again and again. It is not solved once. It is the shape of your particular path."
+        },
+        null, // [1] Taurus
+        null, // [2] Gemini
+        null, // [3] Cancer
+        null, // [4] Leo
+        null, // [5] Virgo
+        null, // [6] Libra
+        null, // [7] Scorpio
+        null, // [8] Sagittarius
+        null, // [9] Capricorn
+        null, // [10] Aquarius
+        null  // [11] Pisces
+      ],
+      // 2 Mercury ——————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 3 Venus ————————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 4 Mars —————————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 5 Jupiter ——————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 6 Saturn ———————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 7 Uranus ———————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 8 Neptune ——————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 9 Pluto ————————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null]
+    ];
+
+    // Planet-in-house interpretations (Whole Sign system).
+    // Tighter than sign entries: 3 moves — life-area → how it plays out → caution/invitation with Sufi turn.
+    const NATAL_PLANET_IN_HOUSE = [
+      // 0 Sun ——————————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 1 Moon —————————————————————————————————————————————————————————
+      [
+        null, // [0] 1st
+        null, // [1] 2nd
+        null, // [2] 3rd
+        null, // [3] 4th
+        null, // [4] 5th
+        null, // [5] 6th
+        null, // [6] 7th
+        {     // [7] 8th — SEEDED
+          text: "Your sense of safety is bound up with what is shared — intimacy, trust, the resources and depths you hold in common with another. You are drawn to what most people keep hidden: the roots of feeling, crisis, the thresholds of loss and renewal. This gives you real depth and a gift for accompanying others through their hardest passages, but it can also turn toward jealousy, or a need to hold too tightly what was never meant to be held. The invitation here is tawakkul — trust — learning that security was never something you could grip, only something you could rest in."
+        },
+        null, // [8] 9th
+        null, // [9] 10th
+        null, // [10] 11th
+        null  // [11] 12th
+      ],
+      // 2 Mercury ——————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 3 Venus ————————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 4 Mars —————————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 5 Jupiter ——————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 6 Saturn ———————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 7 Uranus ———————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 8 Neptune ——————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null],
+      // 9 Pluto ————————————————————————————————————————————————————————
+      [null,null,null,null,null,null,null,null,null,null,null,null]
+    ];
+
+    // Rising sign portraits + standing lessons.
+    // One rich character portrait + a contemplative "spiritual lesson" (standing; never imperative).
+    const NATAL_RISING = [
+      null, // [0]  Aries
+      null, // [1]  Taurus
+      null, // [2]  Gemini
+      null, // [3]  Cancer
+      null, // [4]  Leo
+      null, // [5]  Virgo
+      null, // [6]  Libra
+      null, // [7]  Scorpio
+      {     // [8]  Sagittarius — SEEDED
+        portrait: "The world meets you as open, seeking, and on the move. You carry an instinct toward the larger view — meaning, distance, the horizon rather than the doorstep — and others feel your warmth and your restlessness at once. You are frank, sometimes to a fault, and would rather speak the wide truth than tend the small tactful one. You gather many acquaintances and few deep bonds, forever half-turned toward the next country, the next idea, the greener field. The gift is faith and breadth; the shadow is the promise made larger than the thing delivered, and the arrival never quite arrived-at.",
+        lesson: "Your standing lesson is restraint — the disciplining of scattered fire into a single aimed flame — and the practice of ḥuḍūr, presence: staying long enough in one place to see what is already around you."
+      },
+      null, // [9]  Capricorn
+      null, // [10] Aquarius
+      null  // [11] Pisces
+    ];
+
+    // Aspect interpretations. Key = "[planet1]_[planet2]_[aspect]" (planets alphabetical, lowercase).
+    // e.g. "moon_uranus_opposition". Light = shorter; Full = longer with named Sufi work.
+    // No seeded entries yet — all will fall back to the auto-generated line.
+    const NATAL_ASPECTS = {
+      // Example key format for future authoring:
+      // "moon_uranus_opposition": {
+      //   light: "...",
+      //   full:  "..."
+      // }
+    };
+
+    // Stable planet ordering and index lookup for the render engine
+    const NR_PLANET_ORDER = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+    const NR_PLANET_INDEX = {'Sun':0,'Moon':1,'Mercury':2,'Venus':3,'Mars':4,'Jupiter':5,'Saturn':6,'Uranus':7,'Neptune':8,'Pluto':9};
+
+    // ============================================================
+    // RENDER — assembles the six data layers into the ch-report DOM.
+    // No transit data. No live-sky logic. Birth chart only.
+    // ============================================================
+    function renderNatalReport() {
+      const d = window.__natalReportData;
+      if (!d) return;
+
+      const { sun, moon, planets, outers, rising, hasTime, aspects } = d;
+      const isFull = sufiCatalog.getRegister() === 'D';
+
+      // Collect all planet data in NR_PLANET_ORDER
+      const nrPlanets = {
+        Sun:     sun,
+        Moon:    moon,
+        Mercury: planets.Mercury,
+        Venus:   planets.Venus,
+        Mars:    planets.Mars,
+        Jupiter: planets.Jupiter,
+        Saturn:  planets.Saturn,
+        Uranus:  outers.Uranus,
+        Neptune: outers.Neptune,
+        Pluto:   outers.Pluto
+      };
+
+      // ── SECTION 1: Ascendant (time-gated) ─────────────────────────
+      const ascSection = document.getElementById('report-ascendant');
+      const housesSection = document.getElementById('report-houses-section');
+      const noTimeNotice = document.getElementById('report-no-time-notice');
+
+      if (!hasTime || !rising) {
+        ascSection.style.display = 'none';
+        housesSection.style.display = 'none';
+        noTimeNotice.style.display = '';
+      } else {
+        ascSection.style.display = '';
+        housesSection.style.display = '';
+        noTimeNotice.style.display = 'none';
+
+        const risingIdx = SIGNS.indexOf(rising.sign);
+        const risingEntry = NATAL_RISING[risingIdx];
+        const portraitEl = document.getElementById('report-rising-portrait');
+        const lessonEl   = document.getElementById('report-rising-lesson');
+
+        if (risingEntry) {
+          portraitEl.textContent = risingEntry.portrait;
+          portraitEl.classList.remove('is-fallback');
+          if (isFull) {
+            lessonEl.textContent = risingEntry.lesson;
+            lessonEl.style.display = '';
+          } else {
+            lessonEl.style.display = 'none';
+          }
+        } else {
+          portraitEl.textContent = `${rising.sign} rising — this rising-sign portrait is being written.`;
+          portraitEl.classList.add('is-fallback');
+          lessonEl.style.display = 'none';
+        }
+      }
+
+      // ── SECTION 2: Planetary Aspects (always shown) ────────────────
+      // Sort by tightest orb (exactness ascending); use existing aspect strength data
+      const sortedAspects = [...aspects].sort((a, b) => a.exactness - b.exactness);
+      const aspectsEl = document.getElementById('report-aspects');
+      if (!sortedAspects.length) {
+        aspectsEl.innerHTML = '<p class="report-aspect-text is-fallback">No major aspects computed for this chart.</p>';
+      } else {
+        aspectsEl.innerHTML = sortedAspects.map(asp => {
+          // Canonical key: alphabetical planet pair + aspect (all lowercase, underscores)
+          const pair = [asp.a.toLowerCase(), asp.b.toLowerCase()].sort();
+          const key  = `${pair[0]}_${pair[1]}_${asp.aspect}`;
+          const entry = NATAL_ASPECTS[key] || null;
+
+          const kindMap = { flow: 'harmonious', friction: 'challenging', fusion: 'conjunction', mirror: 'opposition' };
+          const kindLabel = kindMap[asp.kind] || asp.kind;
+          const aspLabel  = asp.aspect.charAt(0).toUpperCase() + asp.aspect.slice(1);
+
+          let text, isFallback;
+          if (entry) {
+            text = isFull ? entry.full : entry.light;
+            isFallback = false;
+          } else {
+            text = `${asp.a} ${aspLabel} ${asp.b}: a ${kindLabel} angle in your chart. This interpretation is being written.`;
+            isFallback = true;
+          }
+
+          return `<div class="report-aspect">
+            <div class="report-aspect-header">
+              <span class="report-aspect-label">${asp.a} ${aspLabel} ${asp.b}</span>
+              <span class="report-aspect-kind">${kindLabel}</span>
+              <span class="report-aspect-orb">${asp.exactness.toFixed(1)}°</span>
+            </div>
+            <p class="report-aspect-text${isFallback ? ' is-fallback' : ''}">${text}</p>
+          </div>`;
+        }).join('');
+      }
+
+      // ── SECTION 3: Sign Positions (always shown) ───────────────────
+      const signsEl = document.getElementById('report-signs');
+      signsEl.innerHTML = NR_PLANET_ORDER.map(pName => {
+        const pData  = nrPlanets[pName];
+        const pIdx   = NR_PLANET_INDEX[pName];
+        const sIdx   = SIGNS.indexOf(pData.sign);
+        const entry  = NATAL_PLANET_IN_SIGN[pIdx][sIdx] || null;
+        const text   = entry
+          ? (isFull ? entry.full : entry.light)
+          : `Your ${pName} is in ${pData.sign}. This interpretation is being written.`;
+
+        return `<div class="report-entry">
+          <div class="report-entry-header">
+            <span class="report-entry-glyph">${PLANET_GLYPHS[pName] || ''}</span>
+            <span class="report-entry-planet">${pName}</span>
+            <span class="report-entry-position">in ${pData.sign}</span>
+          </div>
+          <p class="report-entry-text${entry ? '' : ' is-fallback'}">${text}</p>
+        </div>`;
+      }).join('');
+
+      // ── SECTION 4: House Positions (time-gated) ────────────────────
+      if (hasTime && rising) {
+        const housesEl = document.getElementById('report-houses');
+        housesEl.innerHTML = NR_PLANET_ORDER.map(pName => {
+          const pData    = nrPlanets[pName];
+          const pIdx     = NR_PLANET_INDEX[pName];
+          const houseNum = houseOfSign(pData.sign, rising.sign); // 1-12
+          const hIdx     = houseNum - 1; // 0-indexed for catalog lookup
+          const entry    = NATAL_PLANET_IN_HOUSE[pIdx][hIdx] || null;
+          const text     = entry
+            ? entry.text
+            : `Your ${pName} is in the ${ordinal(houseNum)} house (${HOUSES[houseNum].name}). This interpretation is being written.`;
+
+          return `<div class="report-entry">
+            <div class="report-entry-header">
+              <span class="report-entry-glyph">${PLANET_GLYPHS[pName] || ''}</span>
+              <span class="report-entry-planet">${pName}</span>
+              <span class="report-entry-position">in the ${ordinal(houseNum)} house · ${HOUSES[houseNum].name}</span>
+            </div>
+            <p class="report-entry-text${entry ? '' : ' is-fallback'}">${text}</p>
+          </div>`;
+        }).join('');
       }
     }
 
