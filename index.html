@@ -1615,6 +1615,154 @@
       margin-right: auto;
     }
 
+    /* ==== Transit selector — the personal 5 moving lights today (Full register) ====
+       Sits below the lunar devotion. Reading only: tapping a chip opens the
+       per-planet detail overlay. No action/completion gesture lives here. */
+    .transit-selector {
+      margin-top: var(--space-section);
+      text-align: center;
+      animation: fadeUp 0.8s ease backwards;
+    }
+    .transit-selector .label { margin-bottom: 8px; }
+    .transit-selector-sub {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 12.5px;
+      color: var(--parchment);
+      max-width: 300px;
+      margin: 0 auto 20px;
+      line-height: 1.5;
+    }
+    .transit-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    .transit-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      min-width: 64px;
+      padding: 12px 10px;
+      background: rgba(15, 17, 35, 0.5);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.3s ease, background 0.3s ease;
+      font-family: var(--ui);
+    }
+    .transit-chip:hover {
+      border-color: var(--gold-soft);
+      background: rgba(212, 166, 85, 0.06);
+    }
+    .transit-chip-glyph {
+      font-size: 18px;
+      line-height: 1;
+      color: var(--gold);
+    }
+    .transit-chip-name {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cream-soft);
+    }
+    .transit-chip-sign {
+      font-size: 9.5px;
+      letter-spacing: 0.04em;
+      color: var(--parchment);
+      opacity: 0.8;
+    }
+    .transit-chip-rx {
+      color: var(--gold-soft);
+      margin-left: 2px;
+    }
+
+    /* ==== Per-planet transit detail overlay (state-driven view swap) ==== */
+    .tp-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--ink);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+      z-index: 1100;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tp-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .tp-panel {
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 32px 28px max(48px, env(safe-area-inset-bottom)) 28px;
+      min-height: 100%;
+    }
+    .tp-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--ui);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--parchment);
+      padding: 8px 4px;
+      margin-bottom: 28px;
+      transition: color 0.25s ease;
+    }
+    .tp-back:hover { color: var(--gold); }
+    .tp-glyph {
+      text-align: center;
+      font-size: 34px;
+      line-height: 1;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    .tp-name {
+      text-align: center;
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 24px;
+      color: var(--cream);
+      margin-bottom: 8px;
+    }
+    .tp-position {
+      text-align: center;
+      font-family: var(--ui);
+      font-size: 10.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--parchment);
+      margin-bottom: 32px;
+    }
+    .tp-position .tp-rx {
+      color: var(--gold-soft);
+    }
+    .tp-reading {
+      max-width: 380px;
+      margin: 0 auto;
+    }
+    .tp-move {
+      font-size: 14.5px;
+      color: var(--cream-soft);
+      line-height: 1.72;
+      margin-bottom: 18px;
+    }
+    .tp-move:last-child { margin-bottom: 0; }
+    .tp-move.tp-move-meeting {
+      margin-top: 24px;
+      padding-top: 22px;
+      border-top: 1px solid var(--rule-soft);
+      color: var(--cream);
+    }
+
     /* ==== Natal Report — Edwall-depth standing chart interpretation ==== */
     .report-section {
       margin-top: var(--space-section);
@@ -2371,6 +2519,18 @@
             <p class="devotion-sufi" id="devotion-sufi"></p>
           </div>
 
+          <!-- THE PERSONAL SKY TODAY — Scrum 2 live transit layer.
+               Selector for the personal 5 (Sun, Moon, Mercury, Venus, Mars).
+               Tapping a chip opens the per-planet four-move reading overlay.
+               Full register only; hidden in Light. READING ONLY — no action,
+               no completion gesture. The lunar devotion above is the only
+               commitment on this page. -->
+          <div class="transit-selector" id="transit-selector" style="display:none;">
+            <span class="label">The Personal Sky Today</span>
+            <p class="transit-selector-sub">Five moving lights, read against your chart. Tap one to see where today lands it.</p>
+            <div class="transit-chips" id="transit-chips"></div>
+          </div>
+
           <!-- TODAY'S SKY -->
           <div class="sky">
             <div class="sky-header">
@@ -2534,6 +2694,19 @@
         <div class="settings-footer">
           <span class="settings-footnote">Your choice is remembered on this device.</span>
         </div>
+      </div>
+    </div>
+
+    <!-- =================== PER-PLANET TRANSIT DETAIL =================== -->
+    <!-- State-driven view swap (single-file, no new page). Opened from a
+         transit chip; the back affordance returns to Today. READING ONLY. -->
+    <div id="transit-planet-overlay" class="tp-overlay" aria-hidden="true">
+      <div class="tp-panel" role="dialog" aria-labelledby="tp-name">
+        <button class="tp-back" id="tp-back" type="button">← Today</button>
+        <div class="tp-glyph" id="tp-glyph"></div>
+        <div class="tp-name" id="tp-name"></div>
+        <div class="tp-position" id="tp-position"></div>
+        <div class="tp-reading" id="tp-reading"></div>
       </div>
     </div>
   </div>
@@ -5098,6 +5271,15 @@
         completeDevotion();
       });
 
+      // Per-planet transit detail — back affordance + Esc close. The chip
+      // click handlers are bound per-render inside renderTransitSelector()
+      // (chips are recreated each render, so no double-binding there).
+      document.getElementById('tp-back').addEventListener('click', closeTransitPlanet);
+      document.addEventListener('keydown', (e) => {
+        const overlay = document.getElementById('transit-planet-overlay');
+        if (e.key === 'Escape' && overlay.classList.contains('open')) closeTransitPlanet();
+      });
+
       // Chapter navigation
       buildChapterNav();
       setupGestureNav();
@@ -5360,6 +5542,7 @@
       renderBlueprint(sun, moon, rising, hasTime, planets, aspects, outers, natalRetrogrades);
       renderCosmicWeather();
       renderLunarDevotion();
+      renderTransitSelector();
       renderDeepReading(moon.sign);
       renderNatalReport();
 
@@ -6630,6 +6813,247 @@
           </div>`;
         }).join('');
       }
+    }
+
+    // ============================================================
+    // TODAY — LIVE PER-PLANET TRANSIT READING (Scrum 2)
+    // ============================================================
+    // Reads today's sky against the natal chart for the personal 5 and
+    // renders a four-move daily reading. This is the ONLY place transit/
+    // today logic for the per-planet view lives. No standing natal report
+    // here (that is Scrum 1); this layer is time-dependent and references
+    // natal placements only as the LENS (A) for today's EVENT (B).
+    //
+    // A/B precedence: A (natal) sets the MEANING; B (transit) sets the
+    // EMPHASIS. The planet's nature is always described from its natal
+    // placement; the daily shift only says where that meaning is exercised
+    // today. B never overrides what the planet means.
+    //
+    // Resolution ladder: birth time known → house resolution (natal house
+    // = A, transit house = B). Birth time unknown → sign resolution. Same
+    // four moves, less specific, never wrong.
+    //
+    // All prose lives in the tables below for easy editing. null cells fall
+    // back to a graceful generic line — never "undefined".
+
+    // The personal 5. Index matches the natal catalog (Sun=0 … Mars=4).
+    const TRANSIT_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'];
+
+    // Moves 1–2 general natal frame, reusable across users. { frame }.
+    const PLANET_DOMAIN = [
+      { frame: "Your Sun is the core of who you are — the essential self, the light you were born to give, the simple fact of you beneath every role you play." },
+      { frame: "Your Moon is the keeper of your inner life — the seat of feeling, the place you return to for safety, the private weather that moves under everything you do." },
+      { frame: "Your Mercury is the maker of meaning in you — how you think, how you take the world in and hand it back as words, how you connect one thing to another." },
+      { frame: "Your Venus is how you love and what you reach toward — your sense of beauty, of worth, of the sweetness that draws you toward what you value." },
+      { frame: "Your Mars is your will and your fire — how you act, assert, and want, how you move toward what you have decided is yours." }
+    ];
+
+    // A at HOUSE resolution: DOMAIN_BY_HOUSE[planetIndex][houseIndex] = "..."
+    // houseIndex 0..11 = 1st..12th. Seeded: Moon (1) in 8th house (7).
+    const DOMAIN_BY_HOUSE = [
+      [null,null,null,null,null,null,null,null,null,null,null,null], // Sun
+      [ // Moon
+        null, null, null, null, null, null, null,
+        "For you, safety has never lived in the open. It runs through intimacy, through trust held in common with another, through the depths most people keep covered. You feel most yourself in the close and the confided, and you have a gift for meeting others in exactly the places they cannot face alone.", // [7] 8th house
+        null, null, null, null
+      ],
+      [null,null,null,null,null,null,null,null,null,null,null,null], // Mercury
+      [null,null,null,null,null,null,null,null,null,null,null,null], // Venus
+      [null,null,null,null,null,null,null,null,null,null,null,null]  // Mars
+    ];
+
+    // A at SIGN resolution (birth-time-unknown fallback):
+    // DOMAIN_BY_SIGN[planetIndex][signIndex] = "...". signIndex 0..11 = Aries..Pisces.
+    const DOMAIN_BY_SIGN = [
+      [null,null,null,null,null,null,null,null,null,null,null,null], // Sun
+      [null,null,null,null,null,null,null,null,null,null,null,null], // Moon
+      [null,null,null,null,null,null,null,null,null,null,null,null], // Mercury
+      [null,null,null,null,null,null,null,null,null,null,null,null], // Venus
+      [null,null,null,null,null,null,null,null,null,null,null,null]  // Mars
+    ];
+
+    // B at HOUSE resolution: ARENA_BY_HOUSE[transitHouseIndex] = "..."
+    // Planet-agnostic (the arena is the same room whichever light enters it).
+    // Seeded: 10th house (9) for the Moon worked example.
+    const ARENA_BY_HOUSE = [
+      null, null, null, null, null, null, null, null, null,
+      "Today it is drawn upward into the house of your work and your standing — into what you are building and how you are seen. The sky is asking this part of you to speak in a public room.", // [9] 10th house
+      null, null
+    ];
+
+    // B at SIGN resolution: ARENA_BY_SIGN[transitSignIndex] = "..."
+    const ARENA_BY_SIGN = [null,null,null,null,null,null,null,null,null,null,null,null];
+
+    // Single generic modifier, folded into move 3 when the planet is retrograde
+    // (Mercury/Venus/Mars only; Sun/Moon never retrograde).
+    const RETROGRADE_MODIFIER = "and today it moves retrograde — this arena is under review rather than advance, a returning-to rather than a pressing-forward.";
+
+    // MEETING (move 4, A×B). Authored table keyed by "aIndex_bIndex" (works for
+    // both house and sign resolution since both run 0..11). Seeded: 8th→10th
+    // (natal house 7 → transit house 9). Un-keyed pairs use composeMeeting().
+    const MEETING_BY_PAIR = {
+      "7_9": "This is not your native ground, and you may feel the friction of it: the pull to protect what is usually protected, meeting a day that wants it visible. There is grace available here too — the same depth that makes you a keeper of what is hidden can give your work a weight that lighter hands cannot. What the day asks is only that you notice the meeting, and let the private strength stand in the open a while without armoring it."
+    };
+
+    // Graceful generic meeting — contemplative, ends on insight, never imperative.
+    function composeMeeting(aIdx, bIdx) {
+      const authored = MEETING_BY_PAIR[`${aIdx}_${bIdx}`];
+      if (authored) return authored;
+      if (aIdx === bIdx) {
+        return "Today the sky returns this part of you to its own ground. What you are and where you are asked to be are, for once, the same — a rare ease, and worth noticing before it moves on.";
+      }
+      return "Between the ground this part of you calls home and the room today has placed it in, there is a meeting — sometimes a friction, sometimes a grace. What the day asks is only that you notice it, and let what you are meet where you are without forcing either to change.";
+    }
+
+    // Compute today's transit data for the personal 5. Stashes on window so
+    // the detail view can read it without recomputing. Uses the SAME UTC-now
+    // julian day basis as renderCosmicWeather().
+    function computeTodayTransits() {
+      const now = new Date();
+      const jd = julianDay(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(),
+                           now.getUTCHours(), now.getUTCMinutes());
+      const d = window.__natalReportData;
+      const rising = d && d.rising;
+      const hasTime = !!(d && d.hasTime && rising);
+
+      const out = {};
+      TRANSIT_PLANETS.forEach(name => {
+        const lon = planetLongitudeFor(name, jd);       // reuse existing engine
+        const signIdx = Math.floor(norm360(lon) / 30);
+        const sign = SIGNS[signIdx];
+        const retrograde = isRetrograde(name, jd);       // Sun/Moon → false internally
+        let houseNum = null, houseIdx = null;
+        if (hasTime) {
+          houseNum = houseOfSign(sign, rising.sign);     // whole-sign overlay onto natal cusps
+          houseIdx = houseNum - 1;
+        }
+        out[name] = { longitude: lon, sign, signIdx, retrograde, houseNum, houseIdx };
+      });
+      window.__todayTransits = out;
+      return out;
+    }
+
+    // Render the selector chips. Full register only; hidden in Light. Re-runs
+    // cleanly on register toggle since runBlueprint re-invokes the render chain.
+    function renderTransitSelector() {
+      const section = document.getElementById('transit-selector');
+      const chipsEl = document.getElementById('transit-chips');
+      if (!section || !chipsEl) return;
+
+      // Full register only, and only once a chart exists.
+      if (sufiCatalog.getRegister() !== 'D' || !window.__natalReportData) {
+        section.style.display = 'none';
+        return;
+      }
+
+      const transits = computeTodayTransits();
+      section.style.display = '';
+      chipsEl.innerHTML = '';
+
+      TRANSIT_PLANETS.forEach(name => {
+        const t = transits[name];
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'transit-chip';
+        chip.setAttribute('aria-label', `${name} in ${t.sign}${t.retrograde ? ', retrograde' : ''} — open reading`);
+        chip.innerHTML =
+          `<span class="transit-chip-glyph">${PLANET_GLYPHS[name] || ''}</span>` +
+          `<span class="transit-chip-name">${name}</span>` +
+          `<span class="transit-chip-sign">${t.sign}${t.retrograde ? '<span class="transit-chip-rx">℞</span>' : ''}</span>`;
+        chip.addEventListener('click', () => openTransitPlanet(name));
+        chipsEl.appendChild(chip);
+      });
+    }
+
+    // Assemble the four-move reading for one planet. Returns { glyph, name,
+    // positionLabel, moves: [m1, m2, m3, m4] }. Never returns undefined text.
+    function buildTransitReading(name) {
+      const pIdx = TRANSIT_PLANETS.indexOf(name);
+      const d = window.__natalReportData;
+      const transits = window.__todayTransits;
+      if (pIdx < 0 || !d || !transits) return null;
+
+      const t = transits[name];
+      const rising = d.rising;
+      const hasTime = !!(d.hasTime && rising);
+
+      // Natal (A) placement of this planet
+      const natalMap = { Sun: d.sun, Moon: d.moon, Mercury: d.planets.Mercury,
+                         Venus: d.planets.Venus, Mars: d.planets.Mars };
+      const natal = natalMap[name];
+      const natalSignIdx = SIGNS.indexOf(natal.sign);
+
+      // Resolution ladder: house if birth time known, else sign
+      let aIdx, bIdx, aDomain, bArena, positionLabel;
+      if (hasTime) {
+        const natalHouseNum = houseOfSign(natal.sign, rising.sign);
+        aIdx = natalHouseNum - 1;
+        bIdx = t.houseIdx;
+        aDomain = DOMAIN_BY_HOUSE[pIdx][aIdx];
+        bArena  = ARENA_BY_HOUSE[bIdx];
+        positionLabel = `Natal ${ordinal(natalHouseNum)} house · today in your ${ordinal(t.houseNum)}`;
+      } else {
+        aIdx = natalSignIdx;
+        bIdx = t.signIdx;
+        aDomain = DOMAIN_BY_SIGN[pIdx][aIdx];
+        bArena  = ARENA_BY_SIGN[bIdx];
+        positionLabel = `Natal ${natal.sign} · today in ${t.sign}`;
+      }
+
+      // Move 1: general domain frame (always present)
+      const move1 = PLANET_DOMAIN[pIdx].frame;
+
+      // Move 2: A-specific domain (natal). Graceful fallback if un-authored.
+      const move2 = aDomain || (hasTime
+        ? `In your chart this lives in the ${ordinal(aIdx + 1)} house — ${HOUSES[aIdx + 1].text}. It is where this part of you does its quiet, permanent work.`
+        : `In your chart this sits in ${natal.sign}, and it colours everything this part of you reaches for.`);
+
+      // Move 3: B arena (transit) + retrograde modifier if applicable
+      let move3 = bArena || (hasTime
+        ? `Today the sky moves it through your ${ordinal(t.houseNum)} house — ${HOUSES[t.houseNum].text}. That is the room it is asked to work in now.`
+        : `Today the sky carries it into ${t.sign}, and the flavour of that sign is where it is asked to show itself now.`);
+      if (t.retrograde) move3 += ` — ${RETROGRADE_MODIFIER}`;
+
+      // Move 4: the meeting (A×B), ends on contemplative insight
+      const move4 = composeMeeting(aIdx, bIdx);
+
+      return {
+        glyph: PLANET_GLYPHS[name] || '',
+        name,
+        positionLabel: positionLabel + (t.retrograde ? ' · <span class="tp-rx">℞ retrograde</span>' : ''),
+        moves: [move1, move2, move3, move4]
+      };
+    }
+
+    // Open the per-planet detail overlay. Fires one analytics event per open.
+    let __transitReturnScrollY = 0;
+    function openTransitPlanet(name) {
+      const reading = buildTransitReading(name);
+      if (!reading) return;
+
+      document.getElementById('tp-glyph').textContent = reading.glyph;
+      document.getElementById('tp-name').textContent = reading.name;
+      document.getElementById('tp-position').innerHTML = reading.positionLabel;
+
+      const [m1, m2, m3, m4] = reading.moves;
+      document.getElementById('tp-reading').innerHTML =
+        `<p class="tp-move">${m1} ${m2}</p>` +
+        `<p class="tp-move">${m3}</p>` +
+        `<p class="tp-move tp-move-meeting">${m4}</p>`;
+
+      const overlay = document.getElementById('transit-planet-overlay');
+      __transitReturnScrollY = window.scrollY || 0;
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      overlay.scrollTop = 0;
+
+      track('transit_planet'); // one event per open (path "/transit-planet")
+    }
+
+    function closeTransitPlanet() {
+      const overlay = document.getElementById('transit-planet-overlay');
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
     }
 
     // Boot
