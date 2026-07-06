@@ -24,7 +24,7 @@
 
        TO ACTIVATE GoatCounter (the provider chosen for launch):
          1. Sign up free at https://w ww.goatcounter.com/ — pick a code,
-            e.g. "kaawn" → your dashboard is https://kaawn.goatcounter.com
+            e.g. "kaween" → your dashboard is https://kaween.goatcounter.com
          2. Replace YOURCODE below with that code (just the subdomain part).
          3. Deploy. Pageviews + the custom events below start flowing.
        GoatCounter counts hits wherever the script is installed regardless
@@ -56,9 +56,29 @@
       }
       return false;
     }
+    // Funnel intake — anonymous events into our own Supabase table
+    // (usage-events-setup.sql in the repo root). One random session id
+    // per page load, held in memory only: no cookie, no storage, no
+    // cross-visit linkage, and never the auth user. Honors Do Not
+    // Track / Global Privacy Control. Same rule as above: NEVER pass
+    // chart/birth data through here.
+    const KAAWN_SID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
+    function sendToFunnel(eventName) {
+      try {
+        if (!KAAWN_SID || location.protocol === 'file:') return;
+        if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
+        if (typeof KAAWN_SYNC === 'undefined' || !KAAWN_SYNC.url || !KAAWN_SYNC.anonKey) return;
+        fetch(KAAWN_SYNC.url + '/rest/v1/usage_events', {
+          method: 'POST', keepalive: true,
+          headers: { 'Content-Type': 'application/json', 'apikey': KAAWN_SYNC.anonKey },
+          body: JSON.stringify({ sid: KAAWN_SID, event: eventName })
+        }).catch(function () {});
+      } catch (e) { /* analytics must never break the app */ }
+    }
     window.track = function(eventName) {
       try {
         window.__kaawnEvents.push({ event: eventName, t: Date.now() });
+        sendToFunnel(eventName);
         if (sendToProvider(eventName)) return;
         // Provider script not loaded yet (async) — retry once shortly so
         // early taps (e.g. "Begin" tapped immediately) aren't lost. If still
@@ -66,6 +86,10 @@
         setTimeout(function () { sendToProvider(eventName); }, 1500);
       } catch (e) { /* analytics must never break the app */ }
     };
+    // Session-start marker for the funnel. GoatCounter already counts the
+    // pageview itself; this is deferred so KAAWN_SYNC (declared later in
+    // the body) exists by the time it fires.
+    document.addEventListener('DOMContentLoaded', function () { sendToFunnel('visit'); });
   </script>
 
   <!-- Twitter Card metadata. summary_large_image displays the OG image
@@ -6129,6 +6153,7 @@
         onBtn.disabled = true; say('Turning on…');
         try {
           await kaawnSync.turnOn();
+          track('sync_enabled');
           say('Sync is on. Your practice is now encrypted and backed up.');
         } catch (e) { say('Could not reach the sync server. Your practice is safe on this device.'); }
         onBtn.disabled = false;
