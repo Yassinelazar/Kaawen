@@ -245,6 +245,105 @@
       letter-spacing: 0.02em;
     }
 
+    /* Top navigation — numbered nodes, one per chapter */
+    .chapter-topnav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 14px 0 0;
+    }
+    .chapter-node {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--rule);
+      background: transparent;
+      color: var(--cream-soft);
+      font-family: var(--ui);
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .chapter-node:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    .chapter-node.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--ink);
+      font-weight: 600;
+    }
+    /* Thin connecting line between nodes */
+    .chapter-node-link {
+      width: 12px;
+      height: 1px;
+      background: var(--rule);
+      flex-shrink: 0;
+    }
+    /* Today node carries a moon glyph, not a number — the live page */
+    .chapter-node.node-today {
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    /* Full Report add-on — CTA at the end of the natal summary */
+    .report-cta {
+      margin-top: 48px;
+      padding: 26px 22px 28px;
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      text-align: center;
+    }
+    .report-cta-text {
+      color: var(--cream-soft);
+      font-size: 13px;
+      line-height: 1.7;
+      margin: 10px 0 18px;
+    }
+    .btn-report {
+      background: var(--gold);
+      border: 1px solid var(--gold);
+      color: var(--ink);
+      font-family: var(--ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 12px 22px;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-report:hover { background: var(--cream); border-color: var(--cream); }
+    .report-back {
+      background: transparent;
+      border: 1px solid var(--rule);
+      color: var(--gold);
+      font-family: var(--ui);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 10px 16px;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 24px;
+    }
+    .report-back:hover {
+      border-color: var(--gold);
+      background: rgba(212, 166, 85, 0.08);
+    }
+    .report-back-bottom { margin: 36px 0 8px; }
+
     .chapter-stack {
       position: relative;
       /* Allow vertical scroll, signal we'll handle horizontal gestures */
@@ -373,6 +472,81 @@
       transform: rotate(30deg);
     }
     .settings-gear svg { width: 100%; height: 100%; display: block; }
+
+    /* ==== Practice sync (settings) ==== */
+    .sync-status {
+      font-family: var(--ui);
+      font-size: 12px;
+      color: var(--cream-soft);
+      margin: 10px 0 12px;
+    }
+    .sync-status.is-on { color: var(--gold); }
+    .btn-sync {
+      background: var(--gold);
+      border: 1px solid var(--gold);
+      color: var(--ink);
+      font-family: var(--ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 10px 18px;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-sync:hover:not(:disabled) { background: var(--cream); border-color: var(--cream); }
+    .btn-sync:disabled { opacity: 0.5; cursor: wait; }
+    .btn-sync-ghost {
+      background: transparent;
+      color: var(--gold);
+      border-color: var(--rule);
+      font-weight: 500;
+    }
+    .btn-sync-ghost:hover:not(:disabled) {
+      background: rgba(212, 166, 85, 0.08);
+      border-color: var(--gold);
+    }
+    .sync-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .sync-input {
+      flex: 1;
+      min-width: 0;
+      background: rgba(242, 232, 208, 0.04);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      color: var(--cream);
+      font-family: var(--ui);
+      font-size: 12px;
+      padding: 9px 12px;
+      outline: none;
+    }
+    .sync-input:focus { border-color: var(--gold-soft); }
+    .sync-code {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: rgba(212, 166, 85, 0.06);
+      border: 1px dashed var(--rule);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--gold);
+      word-break: break-all;
+      -webkit-user-select: all;
+              user-select: all;
+      cursor: copy;
+    }
+    .sync-note {
+      margin-top: 10px;
+      font-family: var(--ui);
+      font-size: 11px;
+      color: var(--cream-soft);
+      font-style: italic;
+    }
 
     /* Settings overlay — fades in, holds the panel centered.
        Uses safe-area-inset for proper rendering around the iPhone notch
@@ -977,6 +1151,116 @@
       border-radius: 4px;
       animation: fadeUp 0.8s ease backwards;
       animation-delay: 0.5s;
+    }
+
+    /* ==== Lunar Mansion (manāzil al-qamar) ==== */
+    .mansion {
+      margin-top: var(--space-section);
+      padding: 28px 24px;
+      background: rgba(212, 166, 85, 0.04);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      text-align: center;
+      animation: fadeUp 0.8s ease backwards;
+      animation-delay: 0.55s;
+    }
+    .mansion .label { margin-bottom: 16px; display: block; }
+    .mansion-ring { width: 120px; height: 120px; margin: 0 auto 14px; display: block; }
+    .mansion-name {
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 22px;
+      color: var(--cream);
+      margin-bottom: 2px;
+    }
+    .mansion-arabic {
+      font-size: 17px;
+      color: var(--gold);
+      opacity: 0.85;
+      margin-left: 8px;
+      font-style: normal;
+    }
+    .mansion-station {
+      font-family: var(--ui);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cream-soft);
+      margin-bottom: 14px;
+    }
+    .mansion-corr {
+      font-family: var(--ui);
+      font-size: 11.5px;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      line-height: 1.8;
+      padding: 10px 0;
+      border-top: 1px solid var(--rule-soft);
+      border-bottom: 1px solid var(--rule-soft);
+      margin-bottom: 14px;
+    }
+    .mansion-corr .mansion-degree { color: var(--cream-soft); }
+    .mansion-text {
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: var(--cream);
+      text-align: left;
+    }
+    .mansion-note {
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--cream-soft);
+      font-style: italic;
+    }
+    /* Tonight's mansion — inside Today's Sky */
+    .mansion-today {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--rule-soft);
+    }
+    .mansion-today-name {
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 16px;
+      color: var(--gold);
+      margin: 6px 0 8px;
+    }
+    .mansion-today-text {
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: var(--cream);
+    }
+    /* Seven heavens — report section */
+    .heaven-entry { margin-bottom: 22px; }
+    .heaven-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .heaven-planet {
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 16px;
+      color: var(--cream);
+    }
+    .heaven-meta {
+      font-family: var(--ui);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .heaven-text {
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--cream);
+      margin-bottom: 4px;
+    }
+    .heaven-placement {
+      font-size: 12px;
+      font-style: italic;
+      color: var(--cream-soft);
     }
     .climate .label { margin-bottom: 14px; }
     .climate-name {
@@ -2415,8 +2699,9 @@
       </button>
 
       <div class="chapter-header">
-        <span class="label">The Blueprint</span>
+        <span class="label" id="chapter-part">The Blueprint</span>
         <div class="chapter-title" id="chapter-title">The Voices</div>
+        <nav class="chapter-topnav" id="chapter-topnav" aria-label="Chapters"></nav>
       </div>
 
       <div class="chapter-stack">
@@ -2459,6 +2744,19 @@
             <p class="voice-text" id="rising-text"></p>
           </div>
 
+          <!-- The Moon's Mansion — manāzil al-qamar. Correspondences after
+               Ibn ʿArabī (Futūḥāt ch. 2, via Burckhardt); star-lore after
+               al-Bīrūnī; the talismanic tradition is al-Būnī's. -->
+          <div class="mansion" id="moon-mansion">
+            <span class="label">The Moon's Mansion</span>
+            <svg class="mansion-ring" id="mansion-ring" viewBox="0 0 100 100" aria-hidden="true"></svg>
+            <div class="mansion-name"><span id="mansion-name"></span><span class="mansion-arabic" id="mansion-arabic"></span></div>
+            <div class="mansion-station" id="mansion-station"></div>
+            <div class="mansion-corr" id="mansion-corr"></div>
+            <p class="mansion-text" id="mansion-text"></p>
+            <p class="mansion-note" id="mansion-note" style="display:none;">Read at noon — without a birth time the Moon may sit one mansion to either side.</p>
+          </div>
+
           <div class="climate" id="climate">
             <span class="label">The Climate</span>
             <div class="climate-name" id="climate-name"></div>
@@ -2484,7 +2782,20 @@
           </div>
         </div>
 
-        <!-- ============ CHAPTER 2: SHAPE ============ -->
+        <!-- ============ CHAPTER 2: ANATOMY ============
+             The full cast (Mercury–Saturn) is introduced BEFORE The Shape,
+             so aspects/fusions/tensions reference planets the reader knows. -->
+        <div class="chapter" id="ch-anatomy">
+          <div class="functions">
+            <div class="functions-header">
+              <p class="functions-subtitle">Five quieter voices, beneath the three.</p>
+              <div class="functions-rule"></div>
+            </div>
+            <div id="functions-list"></div>
+          </div>
+        </div>
+
+        <!-- ============ CHAPTER 3: SHAPE ============ -->
         <div class="chapter" id="ch-shape">
           <div class="shape" id="shape">
             <div class="shape-visual" id="shape-visual"></div>
@@ -2515,17 +2826,6 @@
           </div>
         </div>
 
-        <!-- ============ CHAPTER 3: ANATOMY ============ -->
-        <div class="chapter" id="ch-anatomy">
-          <div class="functions">
-            <div class="functions-header">
-              <p class="functions-subtitle">Five quieter voices, beneath the three.</p>
-              <div class="functions-rule"></div>
-            </div>
-            <div id="functions-list"></div>
-          </div>
-        </div>
-
         <!-- ============ CHAPTER 4: CURRENTS ============ -->
         <div class="chapter" id="ch-currents">
           <div class="rx-pattern" id="rx-pattern" style="display:none;">
@@ -2543,6 +2843,15 @@
               <div class="functions-rule"></div>
             </div>
             <div id="currents-list"></div>
+          </div>
+
+          <!-- Full Report add-on — closes the natal summary.
+               PREMIUM: gate openReport() behind an entitlement check when
+               the paid tier ships; this CTA is the upsell surface. -->
+          <div class="report-cta">
+            <span class="label">Go Further</span>
+            <p class="report-cta-text">Everything above, now in full — every placement and every aspect of your birth chart, read in depth.</p>
+            <button class="btn-report" id="report-open" type="button">Read the Full Report</button>
           </div>
         </div>
 
@@ -2604,6 +2913,13 @@
               </div>
             </div>
 
+            <!-- Tonight's mansion — where the Moon stands among the 28 -->
+            <div class="mansion-today" id="mansion-today">
+              <span class="label">Tonight's Mansion</span>
+              <div class="mansion-today-name" id="mansion-today-name"></div>
+              <p class="mansion-today-text" id="mansion-today-text"></p>
+            </div>
+
             <!-- Retrograde indicator (only shown when planets are Rx today) -->
             <div class="retrograde-strip" id="retrograde-strip" style="display:none;">
               <span class="retrograde-label">In retrograde</span>
@@ -2662,18 +2978,27 @@
           </div>
         </div>
 
-        <!-- ============ CHAPTER 6: NATAL REPORT ============
+        <!-- ============ FULL REPORT (add-on view, not a chapter) ============
              Edwall-depth standing interpretation of the birth chart.
              NO transit data. NO "today". The birth chart is the only input.
+             Opened via openReport() from the CTA at the end of The Currents.
              Sections 1–2 (Ascendant, Houses) are gated on birth-time availability. -->
         <div class="chapter" id="ch-report">
-          <p class="report-intro">Your birth chart, read in depth.</p>
+          <button class="report-back" id="report-back-top" type="button">← Back to your chart</button>
+          <p class="report-intro">Everything in your blueprint, now in full.</p>
 
           <!-- Section 1: Ascendant — gated on birth time -->
           <div class="report-section" id="report-ascendant">
             <span class="label">The Ascendant</span>
             <div id="report-rising-portrait" class="report-rising-portrait"></div>
             <div id="report-rising-lesson" class="report-rising-lesson" style="display:none;"></div>
+          </div>
+
+          <!-- Section 1b: The Seven Heavens — the Miʿrāj spheres, always shown -->
+          <div class="report-section">
+            <span class="label">The Seven Heavens</span>
+            <p class="report-intro" style="margin-bottom:18px;">In the ascent narrative, each of the seven classical spheres is the house of a prophet, sealed with a Divine Name. Read against your chart, each heaven speaks through the sign it occupied at your birth.</p>
+            <div id="report-heavens"></div>
           </div>
 
           <!-- Section 2: Planetary Aspects — always shown -->
@@ -2698,6 +3023,8 @@
           <p class="report-no-time" id="report-no-time-notice" style="display:none;">
             House positions and the Ascendant require a birth time. The sign and aspect readings above still stand.
           </p>
+
+          <button class="report-back report-back-bottom" id="report-back-bottom" type="button">← Back to your chart</button>
         </div>
 
       </div>
@@ -2736,6 +3063,35 @@
               <div class="settings-option-desc">Deeper register where the catalog has it. Source-attributed.</div>
             </div>
           </label>
+        </div>
+
+        <!-- Practice sync — stays hidden unless KAAWN_SYNC is configured.
+             Zero-knowledge: the blob is encrypted client-side; the server
+             cannot read the practice history it stores. -->
+        <div class="settings-section" id="sync-section" style="display:none;">
+          <div class="settings-section-label">Practice sync</div>
+          <div class="settings-section-help">Keep your daily practice across visits and devices. Encrypted on your device before it leaves — the server stores only ciphertext it cannot read.</div>
+
+          <div class="sync-status" id="sync-status">Off — your practice lives only in this browser.</div>
+          <button class="btn-sync" id="sync-on" type="button">Turn on sync</button>
+
+          <div id="sync-tools" style="display:none;">
+            <div class="sync-row">
+              <input type="email" id="sync-email" class="sync-input" placeholder="Email, for recovery (optional)" autocomplete="email">
+              <button class="btn-sync btn-sync-ghost" id="sync-link-email" type="button">Link</button>
+            </div>
+            <div class="sync-row">
+              <button class="btn-sync btn-sync-ghost" id="sync-show-code" type="button">Show sync code</button>
+              <button class="btn-sync btn-sync-ghost" id="sync-enter-code" type="button">Enter code</button>
+            </div>
+            <div class="sync-code" id="sync-code" style="display:none;"></div>
+            <div class="sync-row" id="sync-code-entry" style="display:none;">
+              <input type="text" id="sync-code-input" class="sync-input" placeholder="Paste the code from your other device">
+              <button class="btn-sync btn-sync-ghost" id="sync-code-apply" type="button">Use</button>
+            </div>
+          </div>
+
+          <div class="sync-note" id="sync-note" style="display:none;"></div>
         </div>
 
         <div class="settings-footer">
@@ -2893,31 +3249,131 @@
            + D + B - 1524.5;
     }
 
-    function sunLongitude(jd) {
-      const T = (jd - 2451545.0) / 36525;
+    // UTC offset (hours) of an IANA zone at a given UTC instant.
+    // The browser ships the full tz database, so this is DST-aware and
+    // historically correct (half-hour zones, rule changes, all of it).
+    function zoneOffsetHours(iana, utcMs) {
+      const dtf = new Intl.DateTimeFormat('en-US', {
+        timeZone: iana, hour12: false,
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric'
+      });
+      const p = {};
+      dtf.formatToParts(new Date(utcMs)).forEach(x => {
+        if (x.type !== 'literal') p[x.type] = parseInt(x.value, 10);
+      });
+      if (p.hour === 24) p.hour = 0; // some engines render midnight as 24
+      const wallMs = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second || 0);
+      return (wallMs - utcMs) / 3600000;
+    }
+
+    // Local wall-clock birth moment → UT clock fields for julianDay().
+    // Two-pass lookup so instants near a DST transition resolve correctly.
+    // Falls back to the city's fixed offset if Intl lacks the zone.
+    function localToUT(iana, Y, M, D, h, m, fallbackTz) {
+      try {
+        const guess = Date.UTC(Y, M - 1, D, h, m);
+        let off = zoneOffsetHours(iana, guess);
+        off = zoneOffsetHours(iana, guess - off * 3600000);
+        return { Y, M, D, h: h - off, m };
+      } catch (e) {
+        return { Y, M, D, h: h - fallbackTz, m };
+      }
+    }
+
+    // ΔT (TT − UT) estimate in days — Espenak/Meeus piecewise fit, 1900–2050.
+    // Callers pass UT-based JDs; the series below expect Terrestrial Time.
+    function deltaTDays(jd) {
+      const y = 2000 + (jd - 2451545.0) / 365.25;
+      const t = y - 2000;
+      let dt;
+      if (y < 1961)      dt = 29.0 + 0.4 * (y - 1950);
+      else if (y < 1986) { const u = y - 1975; dt = 45.45 + 1.067*u - u*u/260 - u*u*u/718; }
+      else if (y < 2005) dt = 63.86 + 0.3345*t - 0.060374*t*t + 0.0017275*t*t*t
+                            + 0.000651814*Math.pow(t,4) + 0.00002373599*Math.pow(t,5);
+      else               dt = 62.92 + 0.32217*t + 0.005589*t*t;
+      return dt / 86400;
+    }
+
+    // Nutation in longitude (degrees) — four principal IAU terms
+    function nutationLon(T) {
+      const O  = deg2rad(norm360(125.04452 - 1934.136261 * T));
+      const Ls = deg2rad(norm360(280.4665 + 36000.7698 * T));
+      const Lm = deg2rad(norm360(218.3165 + 481267.8813 * T));
+      const dpsi = -17.20 * Math.sin(O) - 1.32 * Math.sin(2*Ls)
+                 -  0.23 * Math.sin(2*Lm) + 0.21 * Math.sin(2*O);
+      return dpsi / 3600;
+    }
+
+    // Sun state: geometric longitude, radius vector (AU), and century T.
+    // Geometric lon + R feed the geocentric transform for the planets;
+    // sunLongitude() below applies aberration for the apparent position.
+    function sunState(jd) {
+      const T = (jd + deltaTDays(jd) - 2451545.0) / 36525;
       const L0 = norm360(280.46646 + 36000.76983 * T + 0.0003032 * T*T);
       const M  = norm360(357.52911 + 35999.05029 * T - 0.0001537 * T*T);
       const C  = (1.914602 - 0.004817*T - 0.000014*T*T) * Math.sin(deg2rad(M))
                + (0.019993 - 0.000101*T) * Math.sin(deg2rad(2*M))
                + 0.000289 * Math.sin(deg2rad(3*M));
-      return norm360(L0 + C);
+      const geom = norm360(L0 + C);
+      const e = 0.016708634 - 0.000042037*T - 0.0000001267*T*T;
+      const v = M + C;
+      const R = 1.000001018 * (1 - e*e) / (1 + e * Math.cos(deg2rad(v)));
+      return { geom, R, T };
     }
 
+    function sunLongitude(jd) {
+      const { geom, T } = sunState(jd);
+      const O = 125.04 - 1934.136 * T;
+      // Apparent longitude: aberration + nutation
+      return norm360(geom - 0.00569 - 0.00478 * Math.sin(deg2rad(O)) + nutationLon(T));
+    }
+
+    // Lunar longitude — Meeus ch. 47 principal series (60 terms + planetary
+    // additives + nutation). Validated against JPL DE421 over 1940–2035:
+    // max error 0.005°, mean 0.0007° (21,446-point dense grid).
+    // Each row: [D, M, M', F, coeff ×1e-6 deg]. Terms in M scale by E (or E²).
+    const LUNAR_LON = [
+      [0,0,1,0,6288774],[2,0,-1,0,1274027],[2,0,0,0,658314],[0,0,2,0,213618],
+      [0,1,0,0,-185116],[0,0,0,2,-114332],[2,0,-2,0,58793],[2,-1,-1,0,57066],
+      [2,0,1,0,53322],[2,-1,0,0,45758],[0,1,-1,0,-40923],[1,0,0,0,-34720],
+      [0,1,1,0,-30383],[2,0,0,-2,15327],[0,0,1,2,-12528],[0,0,1,-2,10980],
+      [4,0,-1,0,10675],[0,0,3,0,10034],[4,0,-2,0,8548],[2,1,-1,0,-7888],
+      [2,1,0,0,-6766],[1,0,-1,0,-5163],[1,1,0,0,4987],[2,-1,1,0,4036],
+      [2,0,2,0,3994],[4,0,0,0,3861],[2,0,-3,0,3665],[0,1,-2,0,-2689],
+      [2,0,-1,2,-2602],[2,-1,-2,0,2390],[1,0,1,0,-2348],[2,-2,0,0,2236],
+      [0,1,2,0,-2120],[0,2,0,0,-2069],[2,-2,-1,0,2048],[2,0,1,-2,-1773],
+      [2,0,0,2,-1595],[4,-1,-1,0,1215],[0,0,2,2,-1110],[3,0,-1,0,-892],
+      [2,1,1,0,-810],[4,-1,-2,0,759],[0,2,-1,0,-713],[2,2,-1,0,-700],
+      [2,1,-2,0,691],[2,-1,0,-2,596],[4,0,1,0,549],[0,0,4,0,537],
+      [4,-1,0,0,520],[1,0,-2,0,-487],[2,1,0,-2,-399],[0,0,2,-2,-381],
+      [1,1,1,0,351],[3,0,-2,0,-340],[4,0,-3,0,330],[2,-1,2,0,327],
+      [0,2,1,0,-323],[1,1,-1,0,299],[2,0,3,0,105],[2,0,-1,-2,10]
+    ];
+
     function moonLongitude(jd) {
-      const T  = (jd - 2451545.0) / 36525;
-      const L  = norm360(218.3164591 + 481267.88134236 * T);
-      const D  = norm360(297.8502042 + 445267.1115168 * T);
-      const M  = norm360(357.5291092 + 35999.0502909 * T);
-      const Mp = norm360(134.9634114 + 477198.8676313 * T);
-      const F  = norm360(93.2720993 + 483202.0175273 * T);
-      const lon = L
-        + 6.2886 * Math.sin(deg2rad(Mp))
-        + 1.2740 * Math.sin(deg2rad(2*D - Mp))
-        + 0.6583 * Math.sin(deg2rad(2*D))
-        + 0.2136 * Math.sin(deg2rad(2*Mp))
-        - 0.1856 * Math.sin(deg2rad(M))
-        - 0.1143 * Math.sin(deg2rad(2*F));
-      return norm360(lon);
+      const T = (jd + deltaTDays(jd) - 2451545.0) / 36525;
+      const T2 = T*T, T3 = T2*T, T4 = T3*T;
+      const Lp = norm360(218.3164477 + 481267.88123421*T - 0.0015786*T2 + T3/538841 - T4/65194000);
+      const D  = norm360(297.8501921 + 445267.1114034*T - 0.0018819*T2 + T3/545868 - T4/113065000);
+      const M  = norm360(357.5291092 + 35999.0502909*T - 0.0001536*T2 + T3/24490000);
+      const Mp = norm360(134.9633964 + 477198.8675055*T + 0.0087414*T2 + T3/69699 - T4/14712000);
+      const F  = norm360(93.2720950 + 483202.0175233*T - 0.0036539*T2 - T3/3526000 + T4/863310000);
+      const E  = 1 - 0.002516*T - 0.0000074*T2;
+      let s = 0;
+      for (let i = 0; i < LUNAR_LON.length; i++) {
+        const t = LUNAR_LON[i];
+        const arg = deg2rad(t[0]*D + t[1]*M + t[2]*Mp + t[3]*F);
+        let k = t[4];
+        if (t[1] === 1 || t[1] === -1) k *= E;
+        else if (t[1] === 2 || t[1] === -2) k *= E*E;
+        s += k * Math.sin(arg);
+      }
+      // Additive terms: Venus (A1), Jupiter (A2), and flattening (L'−F)
+      const A1 = norm360(119.75 + 131.849*T);
+      const A2 = norm360(53.09 + 479264.290*T);
+      s += 3958*Math.sin(deg2rad(A1)) + 1962*Math.sin(deg2rad(Lp - F)) + 318*Math.sin(deg2rad(A2));
+      return norm360(Lp + s/1e6 + nutationLon(T));
     }
 
     function risingSign(jd, lat, lng) {
@@ -2927,7 +3383,7 @@
                + 0.000387933 * T*T - T*T*T / 38710000;
       GMST = norm360(GMST);
       const LST = norm360(GMST + lng);
-      const obl = 23.4392911;
+      const obl = 23.4392911 - 0.0130042 * T; // mean obliquity of date
       const ramcR = deg2rad(LST), oblR = deg2rad(obl), latR = deg2rad(lat);
       let asc = rad2deg(Math.atan2(
         Math.cos(ramcR),
@@ -2942,6 +3398,132 @@
     function longToSign(longitude) {
       return { sign: SIGNS[Math.floor(longitude / 30)], degree: longitude % 30, longitude };
     }
+
+    // ============================================================
+    // LUNAR MANSIONS — manāzil al-qamar, the 28 stations of the Moon
+    // Each mansion spans 12°51′26″ of ecliptic longitude from 0° Aries.
+    // Correspondences (letter · Divine Name · degree of existence) follow
+    // Ibn ʿArabī's Futūḥāt al-Makkiyya ch. 2 as tabulated by Titus
+    // Burckhardt, "Mystical Astrology According to Ibn ʿArabī". The cycle
+    // opens with hamza and closes with wāw — together they spell Huwa, "He".
+    // Star-lore meanings follow al-Bīrūnī's Kitāb al-Tafhīm; the talismanic
+    // reading of the mansions is the tradition of al-Būnī's Shams al-Maʿārif.
+    // ============================================================
+    const MANSION_SPAN = 360 / 28; // 12.857142…°
+
+    function lunarMansion(lon) {
+      return Math.floor(norm360(lon) / MANSION_SPAN) % 28;
+    }
+
+    const MANSIONS = [
+      { name: "Al-Sharaṭān", arabic: "الشرطان", meaning: "The Two Signs", letter: "Hamza · ء", divine: "Al-Badīʿ", divineMeaning: "The Absolute Originator", degree: "the First Intellect — the Pen",
+        natal: "Your Moon stands in the first mansion, where the cycle begins — the station of the Pen, which wrote before anything existed to be written about. There is something in your inner life that is always at a beginning: the heart resets, returns to zero, starts clean. The work is to honor the freshness without discarding what the last cycle actually taught.",
+        today: "The Moon crosses the station of origins. Begin the thing. The Pen writes first and understands later." },
+      { name: "Al-Buṭayn", arabic: "البطين", meaning: "The Little Belly", letter: "Hāʾ · ه", divine: "Al-Bāʿith", divineMeaning: "The Awakener", degree: "the Universal Soul — the Guarded Tablet",
+        natal: "Your Moon rests in the mansion of the hidden belly — the station of the Tablet, which receives everything the Pen writes and forgets none of it. Your inner life digests slowly and keeps faithfully; what enters you stays and works on you long after the moment has passed. The work is to trust the slow assimilation and not mistake it for stagnation.",
+        today: "The Moon moves through the station of the Tablet. Receive rather than act. What is written today is kept." },
+      { name: "Al-Thurayyā", arabic: "الثريا", meaning: "The Pleiades — the Many Little Ones", letter: "ʿAyn · ع", divine: "Al-Bāṭin", divineMeaning: "The Hidden", degree: "Universal Nature",
+        natal: "Your Moon gathers in the Pleiades, the cluster of small lights — the station of the Hidden, where nature works unseen beneath every visible thing. Your feelings arrive not singly but in constellations, many small certainties that together make a knowing you cannot always explain. The work is to trust the cluster without needing to name each star.",
+        today: "The Moon passes through the many little lights. Attend to small signs; today the truth arrives in fragments." },
+      { name: "Al-Dabarān", arabic: "الدبران", meaning: "The Follower", letter: "Ḥāʾ · ح", divine: "Al-Ākhir", divineMeaning: "The Last", degree: "the Dust — prime matter (al-habāʾ)",
+        natal: "Your Moon burns in the red eye of the Bull, the star that follows the Pleiades across the whole sky and never catches them — the station of the Last, of the dust from which forms are made. There is a longing in your inner life that is constitutional, a following of something just ahead. The work is to let the pursuit refine you rather than consume you: the Last is also a Divine Name.",
+        today: "The Moon rides the Follower. Notice what you are pursuing and whether it is worthy of the chase." },
+      { name: "Al-Haqʿa", arabic: "الهقعة", meaning: "The White Spot", letter: "Ghayn · غ", divine: "Al-Ẓāhir", divineMeaning: "The Manifest", degree: "the Universal Body",
+        natal: "Your Moon marks the white brand on the head of Orion — the station of the Manifest, where the inward finally takes a body. Your feelings want form: to be spoken, written, made visible, acted out. Inner weather that stays inner makes you restless. The work is to give the heart its body without believing the body is all there is.",
+        today: "The Moon crosses the station of manifestation. Say the thing out loud. Give one feeling a form today." },
+      { name: "Al-Hanʿa", arabic: "الهنعة", meaning: "The Brand", letter: "Khāʾ · خ", divine: "Al-Ḥakīm", divineMeaning: "The Wise", degree: "the Form",
+        natal: "Your Moon carries the mark of the brand — the station of the Wise, who gives each thing its exact shape and no other. You feel most safe when life has form: rhythm, order, a shape you can trust. Formlessness frightens something old in you. The work is to remember that the Wise draws the form from within the thing, not onto it.",
+        today: "The Moon moves through the station of form. Order one corner of your life — the shape you make today holds." },
+      { name: "Al-Dhirāʿ", arabic: "الذراع", meaning: "The Forearm", letter: "Qāf · ق", divine: "Al-Muḥīṭ", divineMeaning: "The All-Encompassing", degree: "the Throne (al-ʿarsh)",
+        natal: "Your Moon rests in the outstretched forearm of the lion — the station of the Throne, which encompasses all things the way the arm encompasses what it embraces. Your inner life is wide; you hold more people, more contradictions, more weather than most hearts can. The work is to remember that even the widest embrace needs a center, or it becomes mere dispersion.",
+        today: "The Moon crosses the encompassing arm. Widen the circle today — include what you had been leaving out." },
+      { name: "Al-Nathra", arabic: "النثرة", meaning: "The Gap", letter: "Kāf · ك", divine: "Al-Shakūr", divineMeaning: "The Grateful", degree: "the Footstool (al-kursī)",
+        natal: "Your Moon sits in the gap — the faint nebula between the two donkey-stars, a place the old astronomers named for what is barely there. This is the station of the Grateful, who multiplies the smallest offering. You feel deepest in the almost-invisible: the pause, the small kindness, the thing nobody else noticed. The work is to keep valuing what the world calls negligible; that is where your provision hides.",
+        today: "The Moon passes through the gap. Thank something small today, specifically and by name." },
+      { name: "Al-Ṭarf", arabic: "الطرف", meaning: "The Glance", letter: "Jīm · ج", divine: "Al-Ghanī", divineMeaning: "The Rich Beyond Need", degree: "the starless heaven",
+        natal: "Your Moon lives in the eyes of the lion — the glance, the station of the Rich-beyond-need, whose heaven holds no stars because it needs none. You perceive in flashes: one look and you know, before evidence, before argument. The work is to distinguish the glance that sees from the glance that merely wants, for the first comes from wealth and the second from hunger.",
+        today: "The Moon crosses the station of the glance. Trust the first look today, but verify the second." },
+      { name: "Al-Jabha", arabic: "الجبهة", meaning: "The Forehead", letter: "Shīn · ش", divine: "Al-Muqtadir", divineMeaning: "The All-Powerful", degree: "the sphere of the fixed stars",
+        natal: "Your Moon shines from the lion's forehead — the station of settled power, the sphere where the fixed stars keep their eternal stations. There is a dignity in your inner life that others sense and defer to; you feel shame more sharply than fear. The work is to carry the forehead high without needing it to be seen — the fixed stars do not check their reflection.",
+        today: "The Moon crosses the lion's brow. Stand where you actually stand today; no apology, no display." },
+      { name: "Al-Zubra", arabic: "الزبرة", meaning: "The Mane", letter: "Yāʾ · ي", divine: "Al-Rabb", divineMeaning: "The Lord", degree: "the heaven of Saturn — the house of Ibrāhīm",
+        natal: "Your Moon rests in the lion's mane — the station of lordship, the seventh heaven where Ibrāhīm leans against the House that angels circle. Your feelings organize around responsibility; you are the one who ends up holding what others set down. The work is ṣabr with the weight itself — the mane is heavy because the head it crowns is a lion's.",
+        today: "The Moon moves through the mane. Carry today's weight without narrating it. That is the whole practice." },
+      { name: "Al-Ṣarfa", arabic: "الصرفة", meaning: "The Turning", letter: "Ḍād · ض", divine: "Al-ʿAlīm", divineMeaning: "The All-Knowing", degree: "the heaven of Jupiter — the house of Mūsā",
+        natal: "Your Moon stands at the turning — the star that turns the heat away, the station of the All-Knowing in the heaven of Mūsā, who spoke with the Real and carried the Law down the mountain. Your inner life turns on thresholds: seasons of feeling that end decisively, one door closing with a clean click. The work is to trust the turnings — what leaves at this station was finished, even when it did not feel finished.",
+        today: "The Moon crosses the turning. Something is completing today. Let it complete; do not reopen it." },
+      { name: "Al-ʿAwwāʾ", arabic: "العواء", meaning: "The Howler", letter: "Lām · ل", divine: "Al-Qāhir", divineMeaning: "The Subduer", degree: "the heaven of Mars — the house of Hārūn",
+        natal: "Your Moon cries in the station of the howler — the bend of dogs barking after the lion, the station of the Subduer in the heaven of Hārūn, the gentle brother given the hard task. Your feelings are loud inside even when your face is quiet; there is a voice in you that wants to be raised. The work is to give the cry its true occasion — the Subduer overcomes by right, not by volume.",
+        today: "The Moon passes the howler. If you must raise your voice today, raise it once, for something real." },
+      { name: "Al-Simāk", arabic: "السماك", meaning: "The Unarmed", letter: "Nūn · ن", divine: "Al-Nūr", divineMeaning: "The Light", degree: "the heaven of the Sun — the house of Idrīs",
+        natal: "Your Moon stands on Spica, the unarmed star — the station of the Light itself, the fourth heaven where Idrīs was raised to a high place, the axis of all the spheres. You disarm; that is your power. Undefended feeling, offered plainly, opens doors that force cannot. The work is to keep choosing the unarmed way after it has cost you — light carries no shield and has never needed one.",
+        today: "The Moon crosses the unarmed star. Go undefended into one conversation today. Watch what opens." },
+      { name: "Al-Ghafr", arabic: "الغفر", meaning: "The Covering", letter: "Rāʾ · ر", divine: "Al-Muṣawwir", divineMeaning: "The Fashioner of Forms", degree: "the heaven of Venus — the house of Yūsuf",
+        natal: "Your Moon rests beneath the covering — the station whose name shares a root with forgiveness (ghufrān), in the heaven of Yūsuf, whose beauty was given half to him and half to the rest of creation. What is best in you is veiled, and the veiling is mercy, not denial. The work is to let yourself be fashioned in private without demanding the world witness every stage.",
+        today: "The Moon moves under the covering. Keep today's tenderness veiled. What is protected can heal." },
+      { name: "Al-Zubānā", arabic: "الزبانى", meaning: "The Claws", letter: "Ṭāʾ · ط", divine: "Al-Muḥṣī", divineMeaning: "The Reckoner", degree: "the heaven of Mercury — the house of ʿĪsā",
+        natal: "Your Moon hangs in the scorpion's claws — which the old astronomers also read as the pans of the Balance — the station of the Reckoner in the heaven of ʿĪsā, who weighed the letter against the spirit. Your inner life keeps accounts: who gave, who took, what is owed. The work is muḥāsaba turned inward rather than outward — reckon your own ledger first, and let mercy round the numbers.",
+        today: "The Moon crosses the claws of the Balance. Settle one account today — a debt, an apology, a thank-you." },
+      { name: "Al-Iklīl", arabic: "الإكليل", meaning: "The Crown", letter: "Dāl · د", divine: "Al-Mubīn", divineMeaning: "The Evident", degree: "the heaven of the Moon — the house of Ādam",
+        natal: "Your Moon wears the crown of the scorpion's head — the station of the Evident, in the first heaven where Ādam sits with the multitudes of his children flowing past him. What you feel shows; you were not built for concealment. The crown sits on the head, visible to everyone but its wearer. The work is to accept being legible — the Evident is a Divine Name, and your transparency is its trace.",
+        today: "The Moon passes beneath the crown. You are more visible today than you think. Let that be permission, not exposure." },
+      { name: "Al-Qalb", arabic: "القلب", meaning: "The Heart", letter: "Tāʾ · ت", divine: "Al-Qābiḍ", divineMeaning: "The Withholder", degree: "the sphere of ether — the kingdom of fire",
+        natal: "Your Moon burns in Antares, the scorpion's heart — the station of the Withholder, sovereign of the sphere of fire. The Sufis say the heart (qalb) is named for its turning (taqallub), and yours turns with force: contraction and expansion, qabḍ and basṭ, are not moods in you but weather systems. The work is to stop treating the contraction as failure — the Withholder is as much a Name of God as the Giver.",
+        today: "The Moon crosses the heart-star. If the chest tightens today, do not flee it. Qabḍ is also a visitation." },
+      { name: "Al-Shawla", arabic: "الشولة", meaning: "The Raised Sting", letter: "Zāy · ز", divine: "Al-Ḥayy", divineMeaning: "The Living", degree: "the kingdom of air",
+        natal: "Your Moon rides the scorpion's raised sting — the station of the Living, sovereign of the air. Your feelings carry a point, a quickness that can pierce before you intend it; the same sharpness, turned true, is wit, discernment, the word that cuts a knot no one else could untie. The work is to aim the sting only at what binds, never at what breathes.",
+        today: "The Moon crosses the sting. Your words have points today. Cut a knot with one; wound no one." },
+      { name: "Al-Naʿāʾim", arabic: "النعائم", meaning: "The Ostriches", letter: "Sīn · س", divine: "Al-Muḥyī", divineMeaning: "The Life-Giver", degree: "the kingdom of water",
+        natal: "Your Moon walks with the ostriches going down to drink — the station of the Life-Giver, sovereign of water. Your inner life needs its watering places: the friends, practices, and quiet hours you return to and are returned to yourself. Thirst, in you, always announces itself as restlessness first. The work is to go to the water when you first feel the dust, not after the desert has done its work.",
+        today: "The Moon walks with the drinking birds. Go to what replenishes you today — early, before you need it." },
+      { name: "Al-Balda", arabic: "البلدة", meaning: "The Empty Quarter", letter: "Ṣād · ص", divine: "Al-Mumīt", divineMeaning: "The Bringer of Death", degree: "the kingdom of earth",
+        natal: "Your Moon rests in the empty district of the sky, where no bright star burns — the station of the Bringer of Death, sovereign of earth. You know the fertile emptiness: the fallow season, the cleared room, the silence after something ends. Others fear your comfort with the void; it is actually your deepest gift. The work is to keep vigil in the emptiness without rushing to furnish it.",
+        today: "The Moon crosses the empty quarter. Leave the cleared space cleared today. Something is composting there." },
+      { name: "Saʿd al-Dhābiḥ", arabic: "سعد الذابح", meaning: "The Fortune of the Sacrificer", letter: "Ẓāʾ · ظ", divine: "Al-ʿAzīz", divineMeaning: "The Mighty", degree: "the kingdom of minerals",
+        natal: "Your Moon stands with the sacrificer — the first of the four fortunes, the station of the Mighty, sovereign of the mineral deep. Your luck arrives through what you are willing to give up; every real gain in your life has had a relinquishment folded inside it. The work is to sacrifice from strength and choice, never from self-erasure — the Mighty gives up nothing it has not already mastered.",
+        today: "The Moon crosses the fortune of the sacrificer. Give one thing up today, cleanly. Watch what returns." },
+      { name: "Saʿd Bulaʿ", arabic: "سعد بلع", meaning: "The Fortune of the Swallower", letter: "Thāʾ · ث", divine: "Al-Razzāq", divineMeaning: "The Provider", degree: "the kingdom of plants",
+        natal: "Your Moon rests with the swallower — the second fortune, the station of the Provider, sovereign of the growing green. You take life in whole: experiences, griefs, joys, swallowed entire and metabolized slowly, the way a seed takes in the dark before it takes in the light. The work is to trust your own digestion — what you cannot yet explain is not unprocessed, it is germinating.",
+        today: "The Moon crosses the swallower's fortune. Take today in without commentary. Understanding will sprout later." },
+      { name: "Saʿd al-Suʿūd", arabic: "سعد السعود", meaning: "The Luckiest of the Lucky", letter: "Dhāl · ذ", divine: "Al-Mudhill", divineMeaning: "The Humbler", degree: "the kingdom of animals",
+        natal: "Your Moon shines in the luckiest of the fortunes — and its Divine Name, by the tradition's deliberate mercy, is the Humbler. The paradox is your birthright: your best fortune has always arrived through what first brought you low. The work is to bow willingly when life bows you, knowing this station's secret — the door of the greatest luck opens at the height of a lowered head.",
+        today: "The Moon crosses the great fortune. If today humbles you, pay attention — this station hides gold in the bowing." },
+      { name: "Saʿd al-Akhbiya", arabic: "سعد الأخبية", meaning: "The Fortune of the Tents", letter: "Fāʾ · ف", divine: "Al-Qawī", divineMeaning: "The Strong", degree: "the kingdom of the angels",
+        natal: "Your Moon rests in the fortune of the hidden tents — the station of the Strong, sovereign of the angelic hosts. Your strength is interior and sheltered; you do your real work behind a flap of canvas the world never lifts. What others call your reserve is actually your sanctuary. The work is to keep the tent pitched without letting it become a hiding place from your own life.",
+        today: "The Moon crosses the tents. Work hidden today. The strongest deeds leave no signature." },
+      { name: "Al-Fargh al-Muqaddam", arabic: "الفرغ المقدم", meaning: "The First Spout", letter: "Bāʾ · ب", divine: "Al-Laṭīf", divineMeaning: "The Subtle", degree: "the kingdom of the jinn",
+        natal: "Your Moon pours from the first spout of the water-bearer's bucket — the station of the Subtle, whose kindness moves invisibly through events, and whose letter Bāʾ begins the Book. You give before you are asked, in ways so quiet the receiver often cannot trace the gift. The work is to let your subtlety remain subtle — the Laṭīf is not diminished by being unthanked.",
+        today: "The Moon tips the first spout. Do one untraceable kindness today. Tell no one, especially not yourself." },
+      { name: "Al-Fargh al-Muʾakhkhar", arabic: "الفرغ المؤخر", meaning: "The Second Spout", letter: "Mīm · م", divine: "Al-Jāmiʿ", divineMeaning: "The Gatherer", degree: "humankind — the all-comprehensive creature",
+        natal: "Your Moon pours from the second spout — the station of the Gatherer, whose degree of existence is the human being itself, the creature in whom all the scattered realities meet. You are a confluence: parts of everyone you have loved live in how you feel. Nothing in you is single. The work is jamʿ — gathering the multitude you carry into one direction, one face, one turning.",
+        today: "The Moon tips the second spout. Gather what is scattered today — the papers, the people, the pieces of yourself." },
+      { name: "Baṭn al-Ḥūt", arabic: "بطن الحوت", meaning: "The Belly of the Fish", letter: "Wāw · و", divine: "Rafīʿ al-Darajāt", divineMeaning: "The Raiser of Degrees", degree: "the hierarchy of the stations — the ladder of ascent",
+        natal: "Your Moon rests in the belly of the fish, where Yūnus prayed in the three darknesses — the last mansion, the station of the Raiser of Degrees, whose letter Wāw closes the cycle that hamza opened: together they spell Huwa, He. You know the belly seasons, the swallowed times that turn out to be transport. The work is Yūnus's work: to pray inside the fish, and to trust that the darkness is moving toward a shore.",
+        today: "The Moon completes its circle in the fish's belly. If today feels like being swallowed, remember: the fish was carrying him home." }
+    ];
+
+    // ============================================================
+    // THE SEVEN HEAVENS — the planetary spheres of the Miʿrāj
+    // In the ascent narrative, the Prophet greets a prophet in each
+    // heaven; Ibn ʿArabī reads each sphere as the house of that
+    // prophet's spiritual type, sealed with one of the Divine Names.
+    // ============================================================
+    const SEVEN_HEAVENS = {
+      Moon:    { heaven: "the first heaven",   prophet: "Ādam",            divine: "Al-Mubīn — The Evident",
+        text: "The sphere of the Moon is the house of Ādam, the first form into which the Breath was breathed. Everything human begins here: receptivity, forgetting, turning back, being forgiven. The Moon receives the light of every sphere above it and hands it down to the earth — as Ādam received the Names and handed them to his children." },
+      Mercury: { heaven: "the second heaven",  prophet: "ʿĪsā",            divine: "Al-Muḥṣī — The Reckoner",
+        text: "The sphere of Mercury is the house of ʿĪsā, the Word cast into Maryam — speech that heals and quickens. Here language is not decoration but power: the word that raises what was dead in a person. Mercury's craft, rightly used, is ʿĪsā's craft — saying the thing that restores." },
+      Venus:   { heaven: "the third heaven",   prophet: "Yūsuf",           divine: "Al-Muṣawwir — The Fashioner of Forms",
+        text: "The sphere of Venus is the house of Yūsuf, who was given half of all beauty and the science of interpreting forms — for dreams are images, and he read them truly. Beauty here is not surface but signature: every lovely form a sentence in the speech of the Fashioner. To love beauty rightly is to read it, as Yūsuf read the dreams." },
+      Sun:     { heaven: "the fourth heaven",  prophet: "Idrīs",           divine: "Al-Nūr — The Light",
+        text: "The sphere of the Sun is the house of Idrīs, who was raised to a high place — the axis of the seven, three above, three below, the heart of the heavens. Here stands the pole of the whole ascent: the station of pure elevation, where the light is not reflected but resident. What the Sun is to the spheres, the heart is to the human being." },
+      Mars:    { heaven: "the fifth heaven",   prophet: "Hārūn",           divine: "Al-Qāhir — The Subduer",
+        text: "The sphere of Mars is the house of Hārūn, the gentle-tongued brother sent to stand beside Mūsā before Pharaoh. The tradition's placement is deliberate: the heaven of force is given to the mildest of prophets. Real strength, it teaches, is force held by kindness — the sword worn by the one slowest to draw it." },
+      Jupiter: { heaven: "the sixth heaven",   prophet: "Mūsā",            divine: "Al-ʿAlīm — The All-Knowing",
+        text: "The sphere of Jupiter is the house of Mūsā, who spoke with the Real directly and carried the Law down a burning mountain. Expansion, abundance, teaching, law — Jupiter's gifts are Mūsā's burdens. Wisdom here is not accumulation but audacity: to ask for the vision, to be broken by it, and to come down the mountain still carrying the tablets." },
+      Saturn:  { heaven: "the seventh heaven", prophet: "Ibrāhīm",         divine: "Al-Rabb — The Lord",
+        text: "The sphere of Saturn is the house of Ibrāhīm, found leaning against the Inhabited House that seventy thousand angels circle each day and never revisit. The last and slowest sphere belongs to the friend of God — the one who was tested by fire, by leaving, by the knife, and remained. Saturn's weight, in the end, is Ibrāhīm's secret: what endures every test becomes the intimate friend." }
+    };
 
     // ============================================================
     // ASPECTS — angular relationships between planets
@@ -2987,9 +3569,10 @@
     }
 
     // ============================================================
-    // PLANETARY POSITIONS (Mercury through Saturn)
-    // Schlyter's algorithm — mean elements at epoch 1999 Dec 31, 00:00 UT
-    // Sign-level accurate (typically <1° error on inner planets, <0.5° on outer)
+    // PLANETARY POSITIONS (Mercury through Neptune)
+    // Schlyter mean elements + perturbation terms, true Earth radius
+    // vector, ΔT. Validated against JPL DE421 over 1940–2035:
+    // max error ≤0.04° on every body (Pluto ≤0.11°).
     // ============================================================
     const ORBITAL = {
       Mercury: { N: [48.3313, 3.24587e-5], i: [7.0047, 5.00e-8],
@@ -3015,8 +3598,14 @@
                  e: [0.008606, 2.15e-9], M: [260.2471, 0.005995147] }
     };
 
+    // Mean anomaly of a planet at day offset d (Schlyter epoch)
+    function meanAnom(name, d) {
+      const el = ORBITAL[name];
+      return norm360(el.M[0] + el.M[1] * d);
+    }
+
     function planetLongitude(name, jd) {
-      const d = jd - 2451543.5;       // days from 1999 Dec 31, 00:00 UT
+      const d = jd + deltaTDays(jd) - 2451543.5; // days from 1999 Dec 31, 00:00 TT
       const el = ORBITAL[name];
 
       const N = norm360(el.N[0] + el.N[1] * d);
@@ -3045,13 +3634,45 @@
 
       // Heliocentric ecliptic coords
       const Nr = deg2rad(N), wr = deg2rad(w), ir = deg2rad(i);
-      const xh = r * (Math.cos(Nr) * Math.cos(v + wr) - Math.sin(Nr) * Math.sin(v + wr) * Math.cos(ir));
-      const yh = r * (Math.sin(Nr) * Math.cos(v + wr) + Math.cos(Nr) * Math.sin(v + wr) * Math.cos(ir));
+      let xh = r * (Math.cos(Nr) * Math.cos(v + wr) - Math.sin(Nr) * Math.sin(v + wr) * Math.cos(ir));
+      let yh = r * (Math.sin(Nr) * Math.cos(v + wr) + Math.cos(Nr) * Math.sin(v + wr) * Math.cos(ir));
 
-      // Earth-Sun position (Earth-Sun distance approximated as 1 AU; sufficient for sign accuracy)
-      const sunLon = sunLongitude(jd);
-      const xs = Math.cos(deg2rad(sunLon));
-      const ys = Math.sin(deg2rad(sunLon));
+      // Schlyter perturbation corrections — the Jupiter–Saturn "great
+      // inequality" and Uranus resonance terms. Without these, Saturn
+      // drifts up to 0.8° and Jupiter 0.4°.
+      if (name === 'Jupiter' || name === 'Saturn' || name === 'Uranus') {
+        const Mj = meanAnom('Jupiter', d), Ms = meanAnom('Saturn', d), Mu = meanAnom('Uranus', d);
+        let p = 0;
+        if (name === 'Jupiter') {
+          p = -0.332 * Math.sin(deg2rad(2*Mj - 5*Ms - 67.6))
+            - 0.056 * Math.sin(deg2rad(2*Mj - 2*Ms + 21))
+            + 0.042 * Math.sin(deg2rad(3*Mj - 5*Ms + 21))
+            - 0.036 * Math.sin(deg2rad(Mj - 2*Ms))
+            + 0.022 * Math.cos(deg2rad(Mj - Ms))
+            + 0.023 * Math.sin(deg2rad(2*Mj - 3*Ms + 52))
+            - 0.016 * Math.sin(deg2rad(Mj - 5*Ms - 69));
+        } else if (name === 'Saturn') {
+          p =  0.812 * Math.sin(deg2rad(2*Mj - 5*Ms - 67.6))
+            - 0.229 * Math.cos(deg2rad(2*Mj - 4*Ms - 2))
+            + 0.119 * Math.sin(deg2rad(Mj - 2*Ms - 3))
+            + 0.046 * Math.sin(deg2rad(2*Mj - 6*Ms - 69))
+            + 0.014 * Math.sin(deg2rad(Mj - 3*Ms + 32));
+        } else {
+          p =  0.040 * Math.sin(deg2rad(Ms - 2*Mu + 6))
+            + 0.035 * Math.sin(deg2rad(Ms - 3*Mu + 33))
+            - 0.015 * Math.sin(deg2rad(Mj - Mu + 20));
+        }
+        const lonecl = deg2rad(norm360(rad2deg(Math.atan2(yh, xh)) + p));
+        xh = r * Math.cos(lonecl);
+        yh = r * Math.sin(lonecl);
+      }
+
+      // Earth position from the Sun's GEOMETRIC longitude and true radius
+      // vector (0.983–1.017 AU through the year — the 1 AU shortcut cost
+      // Venus and Mars up to 1.4° of geocentric longitude).
+      const st = sunState(jd);
+      const xs = st.R * Math.cos(deg2rad(st.geom));
+      const ys = st.R * Math.sin(deg2rad(st.geom));
 
       // Geocentric ecliptic longitude
       return norm360(rad2deg(Math.atan2(yh + ys, xh + xs)));
@@ -3060,7 +3681,7 @@
     // Pluto — special empirical formula (Keplerian elements unreliable for Pluto)
     // Accurate to ~0.05° for years 1900-2100. Schlyter, "How to compute planetary positions."
     function plutoLongitude(jd) {
-      const d = jd - 2451543.5;
+      const d = jd + deltaTDays(jd) - 2451543.5;
       const S = deg2rad(50.03  + 0.033459652 * d);
       const P = deg2rad(238.95 + 0.003968789 * d);
       const lonHelio = 238.9508 + 0.00400703 * d
@@ -3071,14 +3692,18 @@
         +  0.128 * Math.sin(5*P)   -  0.034 * Math.cos(5*P)
         -  0.038 * Math.sin(6*P)   +  0.031 * Math.cos(6*P)
         +  0.020 * Math.sin(S - P) -  0.010 * Math.cos(S - P);
-      // Earth-Pluto correction is tiny (~1.5° max at 39 AU). Apply same heliocentric→geocentric transform.
-      const r = 39.48; // AU, mean
+      // True heliocentric distance (29.7–49.3 AU) — the fixed 39.48 AU
+      // shortcut cost up to 0.5° of geocentric longitude near perihelion.
+      const r = 40.72
+        + 6.68 * Math.sin(P)   + 6.90 * Math.cos(P)
+        - 1.18 * Math.sin(2*P) - 0.03 * Math.cos(2*P)
+        + 0.15 * Math.sin(3*P) - 0.14 * Math.cos(3*P);
       const lonR = deg2rad(norm360(lonHelio));
       const xh = r * Math.cos(lonR);
       const yh = r * Math.sin(lonR);
-      const sLon = sunLongitude(jd);
-      const xs = Math.cos(deg2rad(sLon));
-      const ys = Math.sin(deg2rad(sLon));
+      const st = sunState(jd);
+      const xs = st.R * Math.cos(deg2rad(st.geom));
+      const ys = st.R * Math.sin(deg2rad(st.geom));
       return norm360(rad2deg(Math.atan2(yh + ys, xh + xs)));
     }
 
@@ -3214,229 +3839,229 @@
     // ============================================================
     const CITIES = [
       // Americas — North
-      { name: 'Honolulu, USA',           region: 'Americas — North', lat: 21.3069,  lng: -157.8583, tz: -10 },
-      { name: 'San Diego, USA',          region: 'Americas — North', lat: 32.7157,  lng: -117.1611, tz: -8 },
-      { name: 'Los Angeles, USA',        region: 'Americas — North', lat: 34.0522,  lng: -118.2437, tz: -8 },
-      { name: 'Las Vegas, USA',          region: 'Americas — North', lat: 36.1699,  lng: -115.1398, tz: -8 },
-      { name: 'San Francisco, USA',      region: 'Americas — North', lat: 37.7749,  lng: -122.4194, tz: -8 },
-      { name: 'Seattle, USA',            region: 'Americas — North', lat: 47.6062,  lng: -122.3321, tz: -8 },
-      { name: 'Vancouver, Canada',       region: 'Americas — North', lat: 49.2827,  lng: -123.1207, tz: -8 },
-      { name: 'Denver, USA',             region: 'Americas — North', lat: 39.7392,  lng: -104.9903, tz: -7 },
-      { name: 'Phoenix, USA',            region: 'Americas — North', lat: 33.4484,  lng: -112.0740, tz: -7 },
-      { name: 'Salt Lake City, USA',     region: 'Americas — North', lat: 40.7608,  lng: -111.8910, tz: -7 },
-      { name: 'Calgary, Canada',         region: 'Americas — North', lat: 51.0447,  lng: -114.0719, tz: -7 },
-      { name: 'Chicago, USA',            region: 'Americas — North', lat: 41.8781,  lng: -87.6298,  tz: -6 },
-      { name: 'Houston, USA',            region: 'Americas — North', lat: 29.7604,  lng: -95.3698,  tz: -6 },
-      { name: 'Dallas, USA',             region: 'Americas — North', lat: 32.7767,  lng: -96.7970,  tz: -6 },
-      { name: 'Minneapolis, USA',        region: 'Americas — North', lat: 44.9778,  lng: -93.2650,  tz: -6 },
-      { name: 'Atlanta, USA',            region: 'Americas — North', lat: 33.7490,  lng: -84.3880,  tz: -5 },
-      { name: 'Miami, USA',              region: 'Americas — North', lat: 25.7617,  lng: -80.1918,  tz: -5 },
-      { name: 'New York, USA',           region: 'Americas — North', lat: 40.7128,  lng: -74.0060,  tz: -5 },
-      { name: 'Philadelphia, USA',       region: 'Americas — North', lat: 39.9526,  lng: -75.1652,  tz: -5 },
-      { name: 'Washington, USA',         region: 'Americas — North', lat: 38.9072,  lng: -77.0369,  tz: -5 },
-      { name: 'Boston, USA',             region: 'Americas — North', lat: 42.3601,  lng: -71.0589,  tz: -5 },
-      { name: 'Detroit, USA',            region: 'Americas — North', lat: 42.3314,  lng: -83.0458,  tz: -5 },
-      { name: 'Toronto, Canada',         region: 'Americas — North', lat: 43.6532,  lng: -79.3832,  tz: -5 },
-      { name: 'Ottawa, Canada',          region: 'Americas — North', lat: 45.4215,  lng: -75.6972,  tz: -5 },
-      { name: 'Montreal, Canada',        region: 'Americas — North', lat: 45.5017,  lng: -73.5673,  tz: -5 },
+      { name: 'Honolulu, USA',           region: 'Americas — North', lat: 21.3069,  lng: -157.8583, tz: -10, iana: 'Pacific/Honolulu' },
+      { name: 'San Diego, USA',          region: 'Americas — North', lat: 32.7157,  lng: -117.1611, tz: -8, iana: 'America/Los_Angeles' },
+      { name: 'Los Angeles, USA',        region: 'Americas — North', lat: 34.0522,  lng: -118.2437, tz: -8, iana: 'America/Los_Angeles' },
+      { name: 'Las Vegas, USA',          region: 'Americas — North', lat: 36.1699,  lng: -115.1398, tz: -8, iana: 'America/Los_Angeles' },
+      { name: 'San Francisco, USA',      region: 'Americas — North', lat: 37.7749,  lng: -122.4194, tz: -8, iana: 'America/Los_Angeles' },
+      { name: 'Seattle, USA',            region: 'Americas — North', lat: 47.6062,  lng: -122.3321, tz: -8, iana: 'America/Los_Angeles' },
+      { name: 'Vancouver, Canada',       region: 'Americas — North', lat: 49.2827,  lng: -123.1207, tz: -8, iana: 'America/Vancouver' },
+      { name: 'Denver, USA',             region: 'Americas — North', lat: 39.7392,  lng: -104.9903, tz: -7, iana: 'America/Denver' },
+      { name: 'Phoenix, USA',            region: 'Americas — North', lat: 33.4484,  lng: -112.0740, tz: -7, iana: 'America/Phoenix' },
+      { name: 'Salt Lake City, USA',     region: 'Americas — North', lat: 40.7608,  lng: -111.8910, tz: -7, iana: 'America/Denver' },
+      { name: 'Calgary, Canada',         region: 'Americas — North', lat: 51.0447,  lng: -114.0719, tz: -7, iana: 'America/Edmonton' },
+      { name: 'Chicago, USA',            region: 'Americas — North', lat: 41.8781,  lng: -87.6298,  tz: -6, iana: 'America/Chicago' },
+      { name: 'Houston, USA',            region: 'Americas — North', lat: 29.7604,  lng: -95.3698,  tz: -6, iana: 'America/Chicago' },
+      { name: 'Dallas, USA',             region: 'Americas — North', lat: 32.7767,  lng: -96.7970,  tz: -6, iana: 'America/Chicago' },
+      { name: 'Minneapolis, USA',        region: 'Americas — North', lat: 44.9778,  lng: -93.2650,  tz: -6, iana: 'America/Chicago' },
+      { name: 'Atlanta, USA',            region: 'Americas — North', lat: 33.7490,  lng: -84.3880,  tz: -5, iana: 'America/New_York' },
+      { name: 'Miami, USA',              region: 'Americas — North', lat: 25.7617,  lng: -80.1918,  tz: -5, iana: 'America/New_York' },
+      { name: 'New York, USA',           region: 'Americas — North', lat: 40.7128,  lng: -74.0060,  tz: -5, iana: 'America/New_York' },
+      { name: 'Philadelphia, USA',       region: 'Americas — North', lat: 39.9526,  lng: -75.1652,  tz: -5, iana: 'America/New_York' },
+      { name: 'Washington, USA',         region: 'Americas — North', lat: 38.9072,  lng: -77.0369,  tz: -5, iana: 'America/New_York' },
+      { name: 'Boston, USA',             region: 'Americas — North', lat: 42.3601,  lng: -71.0589,  tz: -5, iana: 'America/New_York' },
+      { name: 'Detroit, USA',            region: 'Americas — North', lat: 42.3314,  lng: -83.0458,  tz: -5, iana: 'America/Detroit' },
+      { name: 'Toronto, Canada',         region: 'Americas — North', lat: 43.6532,  lng: -79.3832,  tz: -5, iana: 'America/Toronto' },
+      { name: 'Ottawa, Canada',          region: 'Americas — North', lat: 45.4215,  lng: -75.6972,  tz: -5, iana: 'America/Toronto' },
+      { name: 'Montreal, Canada',        region: 'Americas — North', lat: 45.5017,  lng: -73.5673,  tz: -5, iana: 'America/Toronto' },
 
       // Americas — Central / Caribbean
-      { name: 'Guadalajara, Mexico',     region: 'Americas — Central', lat: 20.6597, lng: -103.3496, tz: -6 },
-      { name: 'Mexico City, Mexico',     region: 'Americas — Central', lat: 19.4326, lng: -99.1332,  tz: -6 },
-      { name: 'Guatemala City, Guatemala', region: 'Americas — Central', lat: 14.6349, lng: -90.5069, tz: -6 },
-      { name: 'San José, Costa Rica',    region: 'Americas — Central', lat: 9.9281,   lng: -84.0907,  tz: -6 },
-      { name: 'San Salvador, El Salvador', region: 'Americas — Central', lat: 13.6929, lng: -89.2182, tz: -6 },
-      { name: 'Tegucigalpa, Honduras',   region: 'Americas — Central', lat: 14.0723,  lng: -87.1921,  tz: -6 },
-      { name: 'Panama City, Panama',     region: 'Americas — Central', lat: 8.9824,   lng: -79.5199,  tz: -5 },
-      { name: 'Havana, Cuba',            region: 'Americas — Central', lat: 23.1136,  lng: -82.3666,  tz: -5 },
-      { name: 'Kingston, Jamaica',       region: 'Americas — Central', lat: 17.9714,  lng: -76.7920,  tz: -5 },
-      { name: 'Port-au-Prince, Haiti',   region: 'Americas — Central', lat: 18.5944,  lng: -72.3074,  tz: -5 },
-      { name: 'Nassau, Bahamas',         region: 'Americas — Central', lat: 25.0343,  lng: -77.3963,  tz: -5 },
-      { name: 'San Juan, Puerto Rico',   region: 'Americas — Central', lat: 18.4655,  lng: -66.1057,  tz: -4 },
-      { name: 'Santo Domingo, Dominican Republic', region: 'Americas — Central', lat: 18.4861, lng: -69.9312, tz: -4 },
+      { name: 'Guadalajara, Mexico',     region: 'Americas — Central', lat: 20.6597, lng: -103.3496, tz: -6, iana: 'America/Mexico_City' },
+      { name: 'Mexico City, Mexico',     region: 'Americas — Central', lat: 19.4326, lng: -99.1332,  tz: -6, iana: 'America/Mexico_City' },
+      { name: 'Guatemala City, Guatemala', region: 'Americas — Central', lat: 14.6349, lng: -90.5069, tz: -6, iana: 'America/Guatemala' },
+      { name: 'San José, Costa Rica',    region: 'Americas — Central', lat: 9.9281,   lng: -84.0907,  tz: -6, iana: 'America/Costa_Rica' },
+      { name: 'San Salvador, El Salvador', region: 'Americas — Central', lat: 13.6929, lng: -89.2182, tz: -6, iana: 'America/El_Salvador' },
+      { name: 'Tegucigalpa, Honduras',   region: 'Americas — Central', lat: 14.0723,  lng: -87.1921,  tz: -6, iana: 'America/Tegucigalpa' },
+      { name: 'Panama City, Panama',     region: 'Americas — Central', lat: 8.9824,   lng: -79.5199,  tz: -5, iana: 'America/Panama' },
+      { name: 'Havana, Cuba',            region: 'Americas — Central', lat: 23.1136,  lng: -82.3666,  tz: -5, iana: 'America/Havana' },
+      { name: 'Kingston, Jamaica',       region: 'Americas — Central', lat: 17.9714,  lng: -76.7920,  tz: -5, iana: 'America/Jamaica' },
+      { name: 'Port-au-Prince, Haiti',   region: 'Americas — Central', lat: 18.5944,  lng: -72.3074,  tz: -5, iana: 'America/Port-au-Prince' },
+      { name: 'Nassau, Bahamas',         region: 'Americas — Central', lat: 25.0343,  lng: -77.3963,  tz: -5, iana: 'America/Nassau' },
+      { name: 'San Juan, Puerto Rico',   region: 'Americas — Central', lat: 18.4655,  lng: -66.1057,  tz: -4, iana: 'America/Puerto_Rico' },
+      { name: 'Santo Domingo, Dominican Republic', region: 'Americas — Central', lat: 18.4861, lng: -69.9312, tz: -4, iana: 'America/Santo_Domingo' },
 
       // Americas — South
-      { name: 'Bogotá, Colombia',        region: 'Americas — South', lat: 4.7110,    lng: -74.0721,  tz: -5 },
-      { name: 'Medellín, Colombia',      region: 'Americas — South', lat: 6.2442,    lng: -75.5812,  tz: -5 },
-      { name: 'Quito, Ecuador',          region: 'Americas — South', lat: -0.1807,   lng: -78.4678,  tz: -5 },
-      { name: 'Guayaquil, Ecuador',      region: 'Americas — South', lat: -2.1894,   lng: -79.8891,  tz: -5 },
-      { name: 'Lima, Peru',              region: 'Americas — South', lat: -12.0464,  lng: -77.0428,  tz: -5 },
-      { name: 'Caracas, Venezuela',      region: 'Americas — South', lat: 10.4806,   lng: -66.9036,  tz: -4 },
-      { name: 'Georgetown, Guyana',      region: 'Americas — South', lat: 6.8013,    lng: -58.1551,  tz: -4 },
-      { name: 'La Paz, Bolivia',         region: 'Americas — South', lat: -16.4897,  lng: -68.1193,  tz: -4 },
-      { name: 'Asunción, Paraguay',      region: 'Americas — South', lat: -25.2637,  lng: -57.5759,  tz: -4 },
-      { name: 'Santiago, Chile',         region: 'Americas — South', lat: -33.4489,  lng: -70.6693,  tz: -4 },
-      { name: 'São Paulo, Brazil',       region: 'Americas — South', lat: -23.5505,  lng: -46.6333,  tz: -3 },
-      { name: 'Rio de Janeiro, Brazil',  region: 'Americas — South', lat: -22.9068,  lng: -43.1729,  tz: -3 },
-      { name: 'Brasília, Brazil',        region: 'Americas — South', lat: -15.8267,  lng: -47.9218,  tz: -3 },
-      { name: 'Recife, Brazil',          region: 'Americas — South', lat: -8.0476,   lng: -34.8770,  tz: -3 },
-      { name: 'Buenos Aires, Argentina', region: 'Americas — South', lat: -34.6037,  lng: -58.3816,  tz: -3 },
-      { name: 'Montevideo, Uruguay',     region: 'Americas — South', lat: -34.9011,  lng: -56.1645,  tz: -3 },
+      { name: 'Bogotá, Colombia',        region: 'Americas — South', lat: 4.7110,    lng: -74.0721,  tz: -5, iana: 'America/Bogota' },
+      { name: 'Medellín, Colombia',      region: 'Americas — South', lat: 6.2442,    lng: -75.5812,  tz: -5, iana: 'America/Bogota' },
+      { name: 'Quito, Ecuador',          region: 'Americas — South', lat: -0.1807,   lng: -78.4678,  tz: -5, iana: 'America/Guayaquil' },
+      { name: 'Guayaquil, Ecuador',      region: 'Americas — South', lat: -2.1894,   lng: -79.8891,  tz: -5, iana: 'America/Guayaquil' },
+      { name: 'Lima, Peru',              region: 'Americas — South', lat: -12.0464,  lng: -77.0428,  tz: -5, iana: 'America/Lima' },
+      { name: 'Caracas, Venezuela',      region: 'Americas — South', lat: 10.4806,   lng: -66.9036,  tz: -4, iana: 'America/Caracas' },
+      { name: 'Georgetown, Guyana',      region: 'Americas — South', lat: 6.8013,    lng: -58.1551,  tz: -4, iana: 'America/Guyana' },
+      { name: 'La Paz, Bolivia',         region: 'Americas — South', lat: -16.4897,  lng: -68.1193,  tz: -4, iana: 'America/La_Paz' },
+      { name: 'Asunción, Paraguay',      region: 'Americas — South', lat: -25.2637,  lng: -57.5759,  tz: -4, iana: 'America/Asuncion' },
+      { name: 'Santiago, Chile',         region: 'Americas — South', lat: -33.4489,  lng: -70.6693,  tz: -4, iana: 'America/Santiago' },
+      { name: 'São Paulo, Brazil',       region: 'Americas — South', lat: -23.5505,  lng: -46.6333,  tz: -3, iana: 'America/Sao_Paulo' },
+      { name: 'Rio de Janeiro, Brazil',  region: 'Americas — South', lat: -22.9068,  lng: -43.1729,  tz: -3, iana: 'America/Sao_Paulo' },
+      { name: 'Brasília, Brazil',        region: 'Americas — South', lat: -15.8267,  lng: -47.9218,  tz: -3, iana: 'America/Sao_Paulo' },
+      { name: 'Recife, Brazil',          region: 'Americas — South', lat: -8.0476,   lng: -34.8770,  tz: -3, iana: 'America/Recife' },
+      { name: 'Buenos Aires, Argentina', region: 'Americas — South', lat: -34.6037,  lng: -58.3816,  tz: -3, iana: 'America/Argentina/Buenos_Aires' },
+      { name: 'Montevideo, Uruguay',     region: 'Americas — South', lat: -34.9011,  lng: -56.1645,  tz: -3, iana: 'America/Montevideo' },
 
       // Europe — West
-      { name: 'Lisbon, Portugal',        region: 'Europe — West', lat: 38.7223,  lng: -9.1393,   tz: 0 },
-      { name: 'Dublin, Ireland',         region: 'Europe — West', lat: 53.3498,  lng: -6.2603,   tz: 0 },
-      { name: 'London, UK',              region: 'Europe — West', lat: 51.5074,  lng: -0.1278,   tz: 0 },
-      { name: 'Edinburgh, UK',           region: 'Europe — West', lat: 55.9533,  lng: -3.1883,   tz: 0 },
-      { name: 'Paris, France',           region: 'Europe — West', lat: 48.8566,  lng: 2.3522,    tz: 1 },
-      { name: 'Lyon, France',            region: 'Europe — West', lat: 45.7640,  lng: 4.8357,    tz: 1 },
-      { name: 'Brussels, Belgium',       region: 'Europe — West', lat: 50.8503,  lng: 4.3517,    tz: 1 },
-      { name: 'Luxembourg',              region: 'Europe — West', lat: 49.6116,  lng: 6.1319,    tz: 1 },
-      { name: 'Amsterdam, Netherlands',  region: 'Europe — West', lat: 52.3676,  lng: 4.9041,    tz: 1 },
-      { name: 'Geneva, Switzerland',     region: 'Europe — West', lat: 46.2044,  lng: 6.1432,    tz: 1 },
-      { name: 'Zurich, Switzerland',     region: 'Europe — West', lat: 47.3769,  lng: 8.5417,    tz: 1 },
-      { name: 'Frankfurt, Germany',      region: 'Europe — West', lat: 50.1109,  lng: 8.6821,    tz: 1 },
-      { name: 'Hamburg, Germany',        region: 'Europe — West', lat: 53.5511,  lng: 9.9937,    tz: 1 },
-      { name: 'Berlin, Germany',         region: 'Europe — West', lat: 52.5200,  lng: 13.4050,   tz: 1 },
-      { name: 'Munich, Germany',         region: 'Europe — West', lat: 48.1351,  lng: 11.5820,   tz: 1 },
-      { name: 'Vienna, Austria',         region: 'Europe — West', lat: 48.2082,  lng: 16.3738,   tz: 1 },
+      { name: 'Lisbon, Portugal',        region: 'Europe — West', lat: 38.7223,  lng: -9.1393,   tz: 0, iana: 'Europe/Lisbon' },
+      { name: 'Dublin, Ireland',         region: 'Europe — West', lat: 53.3498,  lng: -6.2603,   tz: 0, iana: 'Europe/Dublin' },
+      { name: 'London, UK',              region: 'Europe — West', lat: 51.5074,  lng: -0.1278,   tz: 0, iana: 'Europe/London' },
+      { name: 'Edinburgh, UK',           region: 'Europe — West', lat: 55.9533,  lng: -3.1883,   tz: 0, iana: 'Europe/London' },
+      { name: 'Paris, France',           region: 'Europe — West', lat: 48.8566,  lng: 2.3522,    tz: 1, iana: 'Europe/Paris' },
+      { name: 'Lyon, France',            region: 'Europe — West', lat: 45.7640,  lng: 4.8357,    tz: 1, iana: 'Europe/Paris' },
+      { name: 'Brussels, Belgium',       region: 'Europe — West', lat: 50.8503,  lng: 4.3517,    tz: 1, iana: 'Europe/Brussels' },
+      { name: 'Luxembourg',              region: 'Europe — West', lat: 49.6116,  lng: 6.1319,    tz: 1, iana: 'Europe/Luxembourg' },
+      { name: 'Amsterdam, Netherlands',  region: 'Europe — West', lat: 52.3676,  lng: 4.9041,    tz: 1, iana: 'Europe/Amsterdam' },
+      { name: 'Geneva, Switzerland',     region: 'Europe — West', lat: 46.2044,  lng: 6.1432,    tz: 1, iana: 'Europe/Zurich' },
+      { name: 'Zurich, Switzerland',     region: 'Europe — West', lat: 47.3769,  lng: 8.5417,    tz: 1, iana: 'Europe/Zurich' },
+      { name: 'Frankfurt, Germany',      region: 'Europe — West', lat: 50.1109,  lng: 8.6821,    tz: 1, iana: 'Europe/Berlin' },
+      { name: 'Hamburg, Germany',        region: 'Europe — West', lat: 53.5511,  lng: 9.9937,    tz: 1, iana: 'Europe/Berlin' },
+      { name: 'Berlin, Germany',         region: 'Europe — West', lat: 52.5200,  lng: 13.4050,   tz: 1, iana: 'Europe/Berlin' },
+      { name: 'Munich, Germany',         region: 'Europe — West', lat: 48.1351,  lng: 11.5820,   tz: 1, iana: 'Europe/Berlin' },
+      { name: 'Vienna, Austria',         region: 'Europe — West', lat: 48.2082,  lng: 16.3738,   tz: 1, iana: 'Europe/Vienna' },
 
       // Europe — North
-      { name: 'Reykjavik, Iceland',      region: 'Europe — North', lat: 64.1466, lng: -21.9426,  tz: 0 },
-      { name: 'Copenhagen, Denmark',     region: 'Europe — North', lat: 55.6761, lng: 12.5683,   tz: 1 },
-      { name: 'Aarhus, Denmark',         region: 'Europe — North', lat: 56.1629, lng: 10.2039,   tz: 1 },
-      { name: 'Oslo, Norway',            region: 'Europe — North', lat: 59.9139, lng: 10.7522,   tz: 1 },
-      { name: 'Bergen, Norway',          region: 'Europe — North', lat: 60.3913, lng: 5.3221,    tz: 1 },
-      { name: 'Stockholm, Sweden',       region: 'Europe — North', lat: 59.3293, lng: 18.0686,   tz: 1 },
-      { name: 'Gothenburg, Sweden',      region: 'Europe — North', lat: 57.7089, lng: 11.9746,   tz: 1 },
-      { name: 'Helsinki, Finland',       region: 'Europe — North', lat: 60.1699, lng: 24.9384,   tz: 2 },
+      { name: 'Reykjavik, Iceland',      region: 'Europe — North', lat: 64.1466, lng: -21.9426,  tz: 0, iana: 'Atlantic/Reykjavik' },
+      { name: 'Copenhagen, Denmark',     region: 'Europe — North', lat: 55.6761, lng: 12.5683,   tz: 1, iana: 'Europe/Copenhagen' },
+      { name: 'Aarhus, Denmark',         region: 'Europe — North', lat: 56.1629, lng: 10.2039,   tz: 1, iana: 'Europe/Copenhagen' },
+      { name: 'Oslo, Norway',            region: 'Europe — North', lat: 59.9139, lng: 10.7522,   tz: 1, iana: 'Europe/Oslo' },
+      { name: 'Bergen, Norway',          region: 'Europe — North', lat: 60.3913, lng: 5.3221,    tz: 1, iana: 'Europe/Oslo' },
+      { name: 'Stockholm, Sweden',       region: 'Europe — North', lat: 59.3293, lng: 18.0686,   tz: 1, iana: 'Europe/Stockholm' },
+      { name: 'Gothenburg, Sweden',      region: 'Europe — North', lat: 57.7089, lng: 11.9746,   tz: 1, iana: 'Europe/Stockholm' },
+      { name: 'Helsinki, Finland',       region: 'Europe — North', lat: 60.1699, lng: 24.9384,   tz: 2, iana: 'Europe/Helsinki' },
 
       // Europe — South
-      { name: 'Madrid, Spain',           region: 'Europe — South', lat: 40.4168, lng: -3.7038,   tz: 1 },
-      { name: 'Valencia, Spain',         region: 'Europe — South', lat: 39.4699, lng: -0.3763,   tz: 1 },
-      { name: 'Barcelona, Spain',        region: 'Europe — South', lat: 41.3851, lng: 2.1734,    tz: 1 },
-      { name: 'Milan, Italy',            region: 'Europe — South', lat: 45.4642, lng: 9.1900,    tz: 1 },
-      { name: 'Rome, Italy',             region: 'Europe — South', lat: 41.9028, lng: 12.4964,   tz: 1 },
-      { name: 'Naples, Italy',           region: 'Europe — South', lat: 40.8518, lng: 14.2681,   tz: 1 },
-      { name: 'Ljubljana, Slovenia',     region: 'Europe — South', lat: 46.0569, lng: 14.5058,   tz: 1 },
-      { name: 'Zagreb, Croatia',         region: 'Europe — South', lat: 45.8150, lng: 15.9819,   tz: 1 },
-      { name: 'Sarajevo, Bosnia and Herzegovina', region: 'Europe — South', lat: 43.8563, lng: 18.4131, tz: 1 },
-      { name: 'Belgrade, Serbia',        region: 'Europe — South', lat: 44.7866, lng: 20.4489,   tz: 1 },
-      { name: 'Skopje, North Macedonia', region: 'Europe — South', lat: 41.9981, lng: 21.4254,   tz: 1 },
-      { name: 'Athens, Greece',          region: 'Europe — South', lat: 37.9838, lng: 23.7275,   tz: 2 },
-      { name: 'Sofia, Bulgaria',         region: 'Europe — South', lat: 42.6977, lng: 23.3219,   tz: 2 },
+      { name: 'Madrid, Spain',           region: 'Europe — South', lat: 40.4168, lng: -3.7038,   tz: 1, iana: 'Europe/Madrid' },
+      { name: 'Valencia, Spain',         region: 'Europe — South', lat: 39.4699, lng: -0.3763,   tz: 1, iana: 'Europe/Madrid' },
+      { name: 'Barcelona, Spain',        region: 'Europe — South', lat: 41.3851, lng: 2.1734,    tz: 1, iana: 'Europe/Madrid' },
+      { name: 'Milan, Italy',            region: 'Europe — South', lat: 45.4642, lng: 9.1900,    tz: 1, iana: 'Europe/Rome' },
+      { name: 'Rome, Italy',             region: 'Europe — South', lat: 41.9028, lng: 12.4964,   tz: 1, iana: 'Europe/Rome' },
+      { name: 'Naples, Italy',           region: 'Europe — South', lat: 40.8518, lng: 14.2681,   tz: 1, iana: 'Europe/Rome' },
+      { name: 'Ljubljana, Slovenia',     region: 'Europe — South', lat: 46.0569, lng: 14.5058,   tz: 1, iana: 'Europe/Ljubljana' },
+      { name: 'Zagreb, Croatia',         region: 'Europe — South', lat: 45.8150, lng: 15.9819,   tz: 1, iana: 'Europe/Zagreb' },
+      { name: 'Sarajevo, Bosnia and Herzegovina', region: 'Europe — South', lat: 43.8563, lng: 18.4131, tz: 1, iana: 'Europe/Sarajevo' },
+      { name: 'Belgrade, Serbia',        region: 'Europe — South', lat: 44.7866, lng: 20.4489,   tz: 1, iana: 'Europe/Belgrade' },
+      { name: 'Skopje, North Macedonia', region: 'Europe — South', lat: 41.9981, lng: 21.4254,   tz: 1, iana: 'Europe/Skopje' },
+      { name: 'Athens, Greece',          region: 'Europe — South', lat: 37.9838, lng: 23.7275,   tz: 2, iana: 'Europe/Athens' },
+      { name: 'Sofia, Bulgaria',         region: 'Europe — South', lat: 42.6977, lng: 23.3219,   tz: 2, iana: 'Europe/Sofia' },
 
       // Europe — East
-      { name: 'Prague, Czechia',         region: 'Europe — East', lat: 50.0755, lng: 14.4378,   tz: 1 },
-      { name: 'Bratislava, Slovakia',    region: 'Europe — East', lat: 48.1486, lng: 17.1077,   tz: 1 },
-      { name: 'Warsaw, Poland',          region: 'Europe — East', lat: 52.2297, lng: 21.0122,   tz: 1 },
-      { name: 'Budapest, Hungary',       region: 'Europe — East', lat: 47.4979, lng: 19.0402,   tz: 1 },
-      { name: 'Bucharest, Romania',      region: 'Europe — East', lat: 44.4268, lng: 26.1025,   tz: 2 },
-      { name: 'Kyiv, Ukraine',           region: 'Europe — East', lat: 50.4501, lng: 30.5234,   tz: 2 },
-      { name: 'Vilnius, Lithuania',      region: 'Europe — East', lat: 54.6872, lng: 25.2797,   tz: 2 },
-      { name: 'Riga, Latvia',            region: 'Europe — East', lat: 56.9496, lng: 24.1052,   tz: 2 },
-      { name: 'Tallinn, Estonia',        region: 'Europe — East', lat: 59.4370, lng: 24.7536,   tz: 2 },
-      { name: 'Moscow, Russia',          region: 'Europe — East', lat: 55.7558, lng: 37.6173,   tz: 3 },
-      { name: 'St. Petersburg, Russia',  region: 'Europe — East', lat: 59.9311, lng: 30.3609,   tz: 3 },
-      { name: 'Minsk, Belarus',          region: 'Europe — East', lat: 53.9006, lng: 27.5590,   tz: 3 },
+      { name: 'Prague, Czechia',         region: 'Europe — East', lat: 50.0755, lng: 14.4378,   tz: 1, iana: 'Europe/Prague' },
+      { name: 'Bratislava, Slovakia',    region: 'Europe — East', lat: 48.1486, lng: 17.1077,   tz: 1, iana: 'Europe/Bratislava' },
+      { name: 'Warsaw, Poland',          region: 'Europe — East', lat: 52.2297, lng: 21.0122,   tz: 1, iana: 'Europe/Warsaw' },
+      { name: 'Budapest, Hungary',       region: 'Europe — East', lat: 47.4979, lng: 19.0402,   tz: 1, iana: 'Europe/Budapest' },
+      { name: 'Bucharest, Romania',      region: 'Europe — East', lat: 44.4268, lng: 26.1025,   tz: 2, iana: 'Europe/Bucharest' },
+      { name: 'Kyiv, Ukraine',           region: 'Europe — East', lat: 50.4501, lng: 30.5234,   tz: 2, iana: 'Europe/Kiev' },
+      { name: 'Vilnius, Lithuania',      region: 'Europe — East', lat: 54.6872, lng: 25.2797,   tz: 2, iana: 'Europe/Vilnius' },
+      { name: 'Riga, Latvia',            region: 'Europe — East', lat: 56.9496, lng: 24.1052,   tz: 2, iana: 'Europe/Riga' },
+      { name: 'Tallinn, Estonia',        region: 'Europe — East', lat: 59.4370, lng: 24.7536,   tz: 2, iana: 'Europe/Tallinn' },
+      { name: 'Moscow, Russia',          region: 'Europe — East', lat: 55.7558, lng: 37.6173,   tz: 3, iana: 'Europe/Moscow' },
+      { name: 'St. Petersburg, Russia',  region: 'Europe — East', lat: 59.9311, lng: 30.3609,   tz: 3, iana: 'Europe/Moscow' },
+      { name: 'Minsk, Belarus',          region: 'Europe — East', lat: 53.9006, lng: 27.5590,   tz: 3, iana: 'Europe/Minsk' },
 
       // Middle East
-      { name: 'Istanbul, Turkey',        region: 'Middle East', lat: 41.0082, lng: 28.9784,   tz: 3 },
-      { name: 'Ankara, Turkey',          region: 'Middle East', lat: 39.9334, lng: 32.8597,   tz: 3 },
-      { name: 'Jerusalem',               region: 'Middle East', lat: 31.7683, lng: 35.2137,   tz: 2 },
-      { name: 'Tel Aviv, Israel',        region: 'Middle East', lat: 32.0853, lng: 34.7818,   tz: 2 },
-      { name: 'Beirut, Lebanon',         region: 'Middle East', lat: 33.8938, lng: 35.5018,   tz: 2 },
-      { name: 'Amman, Jordan',           region: 'Middle East', lat: 31.9454, lng: 35.9284,   tz: 2 },
-      { name: 'Damascus, Syria',         region: 'Middle East', lat: 33.5138, lng: 36.2765,   tz: 2 },
-      { name: 'Baghdad, Iraq',           region: 'Middle East', lat: 33.3128, lng: 44.3615,   tz: 3 },
-      { name: 'Kuwait City, Kuwait',     region: 'Middle East', lat: 29.3759, lng: 47.9774,   tz: 3 },
-      { name: 'Riyadh, Saudi Arabia',    region: 'Middle East', lat: 24.7136, lng: 46.6753,   tz: 3 },
-      { name: 'Doha, Qatar',             region: 'Middle East', lat: 25.2854, lng: 51.5310,   tz: 3 },
-      { name: 'Dubai, UAE',              region: 'Middle East', lat: 25.2048, lng: 55.2708,   tz: 4 },
-      { name: 'Abu Dhabi, UAE',          region: 'Middle East', lat: 24.4539, lng: 54.3773,   tz: 4 },
-      { name: 'Muscat, Oman',            region: 'Middle East', lat: 23.5880, lng: 58.3829,   tz: 4 },
-      { name: 'Tehran, Iran',            region: 'Middle East', lat: 35.6892, lng: 51.3890,   tz: 3.5 },
+      { name: 'Istanbul, Turkey',        region: 'Middle East', lat: 41.0082, lng: 28.9784,   tz: 3, iana: 'Europe/Istanbul' },
+      { name: 'Ankara, Turkey',          region: 'Middle East', lat: 39.9334, lng: 32.8597,   tz: 3, iana: 'Europe/Istanbul' },
+      { name: 'Jerusalem',               region: 'Middle East', lat: 31.7683, lng: 35.2137,   tz: 2, iana: 'Asia/Jerusalem' },
+      { name: 'Tel Aviv, Israel',        region: 'Middle East', lat: 32.0853, lng: 34.7818,   tz: 2, iana: 'Asia/Jerusalem' },
+      { name: 'Beirut, Lebanon',         region: 'Middle East', lat: 33.8938, lng: 35.5018,   tz: 2, iana: 'Asia/Beirut' },
+      { name: 'Amman, Jordan',           region: 'Middle East', lat: 31.9454, lng: 35.9284,   tz: 2, iana: 'Asia/Amman' },
+      { name: 'Damascus, Syria',         region: 'Middle East', lat: 33.5138, lng: 36.2765,   tz: 2, iana: 'Asia/Damascus' },
+      { name: 'Baghdad, Iraq',           region: 'Middle East', lat: 33.3128, lng: 44.3615,   tz: 3, iana: 'Asia/Baghdad' },
+      { name: 'Kuwait City, Kuwait',     region: 'Middle East', lat: 29.3759, lng: 47.9774,   tz: 3, iana: 'Asia/Kuwait' },
+      { name: 'Riyadh, Saudi Arabia',    region: 'Middle East', lat: 24.7136, lng: 46.6753,   tz: 3, iana: 'Asia/Riyadh' },
+      { name: 'Doha, Qatar',             region: 'Middle East', lat: 25.2854, lng: 51.5310,   tz: 3, iana: 'Asia/Qatar' },
+      { name: 'Dubai, UAE',              region: 'Middle East', lat: 25.2048, lng: 55.2708,   tz: 4, iana: 'Asia/Dubai' },
+      { name: 'Abu Dhabi, UAE',          region: 'Middle East', lat: 24.4539, lng: 54.3773,   tz: 4, iana: 'Asia/Dubai' },
+      { name: 'Muscat, Oman',            region: 'Middle East', lat: 23.5880, lng: 58.3829,   tz: 4, iana: 'Asia/Muscat' },
+      { name: 'Tehran, Iran',            region: 'Middle East', lat: 35.6892, lng: 51.3890,   tz: 3.5, iana: 'Asia/Tehran' },
 
       // Africa
-      { name: 'Casablanca, Morocco',     region: 'Africa', lat: 33.5731, lng: -7.5898,   tz: 0 },
-      { name: 'Rabat, Morocco',          region: 'Africa', lat: 33.9716, lng: -6.8498,   tz: 0 },
-      { name: 'Marrakech, Morocco',      region: 'Africa', lat: 31.6295, lng: -7.9811,   tz: 0 },
-      { name: 'Algiers, Algeria',        region: 'Africa', lat: 36.7538, lng: 3.0588,    tz: 1 },
-      { name: 'Tunis, Tunisia',          region: 'Africa', lat: 36.8065, lng: 10.1815,   tz: 1 },
-      { name: 'Tripoli, Libya',          region: 'Africa', lat: 32.8872, lng: 13.1913,   tz: 2 },
-      { name: 'Cairo, Egypt',            region: 'Africa', lat: 30.0444, lng: 31.2357,   tz: 2 },
-      { name: 'Khartoum, Sudan',         region: 'Africa', lat: 15.5007, lng: 32.5599,   tz: 2 },
-      { name: 'Dakar, Senegal',          region: 'Africa', lat: 14.7167, lng: -17.4677,  tz: 0 },
-      { name: 'Accra, Ghana',            region: 'Africa', lat: 5.6037,  lng: -0.1870,   tz: 0 },
-      { name: 'Abidjan, Côte d\'Ivoire', region: 'Africa', lat: 5.3600,  lng: -4.0083,   tz: 0 },
-      { name: 'Bamako, Mali',            region: 'Africa', lat: 12.6392, lng: -8.0029,   tz: 0 },
-      { name: 'Lagos, Nigeria',          region: 'Africa', lat: 6.5244,  lng: 3.3792,    tz: 1 },
-      { name: 'Abuja, Nigeria',          region: 'Africa', lat: 9.0765,  lng: 7.3986,    tz: 1 },
-      { name: 'Kinshasa, DR Congo',      region: 'Africa', lat: -4.4419, lng: 15.2663,   tz: 1 },
-      { name: 'Luanda, Angola',          region: 'Africa', lat: -8.8390, lng: 13.2894,   tz: 1 },
-      { name: 'Addis Ababa, Ethiopia',   region: 'Africa', lat: 9.0320,  lng: 38.7469,   tz: 3 },
-      { name: 'Nairobi, Kenya',          region: 'Africa', lat: -1.2921, lng: 36.8219,   tz: 3 },
-      { name: 'Kampala, Uganda',         region: 'Africa', lat: 0.3476,  lng: 32.5825,   tz: 3 },
-      { name: 'Dar es Salaam, Tanzania', region: 'Africa', lat: -6.7924, lng: 39.2083,   tz: 3 },
-      { name: 'Johannesburg, South Africa', region: 'Africa', lat: -26.2041, lng: 28.0473, tz: 2 },
-      { name: 'Cape Town, South Africa', region: 'Africa', lat: -33.9249, lng: 18.4241,  tz: 2 },
-      { name: 'Harare, Zimbabwe',        region: 'Africa', lat: -17.8252, lng: 31.0335,  tz: 2 },
-      { name: 'Maputo, Mozambique',      region: 'Africa', lat: -25.9692, lng: 32.5732,  tz: 2 },
+      { name: 'Casablanca, Morocco',     region: 'Africa', lat: 33.5731, lng: -7.5898,   tz: 0, iana: 'Africa/Casablanca' },
+      { name: 'Rabat, Morocco',          region: 'Africa', lat: 33.9716, lng: -6.8498,   tz: 0, iana: 'Africa/Casablanca' },
+      { name: 'Marrakech, Morocco',      region: 'Africa', lat: 31.6295, lng: -7.9811,   tz: 0, iana: 'Africa/Casablanca' },
+      { name: 'Algiers, Algeria',        region: 'Africa', lat: 36.7538, lng: 3.0588,    tz: 1, iana: 'Africa/Algiers' },
+      { name: 'Tunis, Tunisia',          region: 'Africa', lat: 36.8065, lng: 10.1815,   tz: 1, iana: 'Africa/Tunis' },
+      { name: 'Tripoli, Libya',          region: 'Africa', lat: 32.8872, lng: 13.1913,   tz: 2, iana: 'Africa/Tripoli' },
+      { name: 'Cairo, Egypt',            region: 'Africa', lat: 30.0444, lng: 31.2357,   tz: 2, iana: 'Africa/Cairo' },
+      { name: 'Khartoum, Sudan',         region: 'Africa', lat: 15.5007, lng: 32.5599,   tz: 2, iana: 'Africa/Khartoum' },
+      { name: 'Dakar, Senegal',          region: 'Africa', lat: 14.7167, lng: -17.4677,  tz: 0, iana: 'Africa/Dakar' },
+      { name: 'Accra, Ghana',            region: 'Africa', lat: 5.6037,  lng: -0.1870,   tz: 0, iana: 'Africa/Accra' },
+      { name: 'Abidjan, Côte d\'Ivoire', region: 'Africa', lat: 5.3600,  lng: -4.0083,   tz: 0, iana: 'Africa/Abidjan' },
+      { name: 'Bamako, Mali',            region: 'Africa', lat: 12.6392, lng: -8.0029,   tz: 0, iana: 'Africa/Bamako' },
+      { name: 'Lagos, Nigeria',          region: 'Africa', lat: 6.5244,  lng: 3.3792,    tz: 1, iana: 'Africa/Lagos' },
+      { name: 'Abuja, Nigeria',          region: 'Africa', lat: 9.0765,  lng: 7.3986,    tz: 1, iana: 'Africa/Lagos' },
+      { name: 'Kinshasa, DR Congo',      region: 'Africa', lat: -4.4419, lng: 15.2663,   tz: 1, iana: 'Africa/Kinshasa' },
+      { name: 'Luanda, Angola',          region: 'Africa', lat: -8.8390, lng: 13.2894,   tz: 1, iana: 'Africa/Luanda' },
+      { name: 'Addis Ababa, Ethiopia',   region: 'Africa', lat: 9.0320,  lng: 38.7469,   tz: 3, iana: 'Africa/Addis_Ababa' },
+      { name: 'Nairobi, Kenya',          region: 'Africa', lat: -1.2921, lng: 36.8219,   tz: 3, iana: 'Africa/Nairobi' },
+      { name: 'Kampala, Uganda',         region: 'Africa', lat: 0.3476,  lng: 32.5825,   tz: 3, iana: 'Africa/Kampala' },
+      { name: 'Dar es Salaam, Tanzania', region: 'Africa', lat: -6.7924, lng: 39.2083,   tz: 3, iana: 'Africa/Dar_es_Salaam' },
+      { name: 'Johannesburg, South Africa', region: 'Africa', lat: -26.2041, lng: 28.0473, tz: 2, iana: 'Africa/Johannesburg' },
+      { name: 'Cape Town, South Africa', region: 'Africa', lat: -33.9249, lng: 18.4241,  tz: 2, iana: 'Africa/Johannesburg' },
+      { name: 'Harare, Zimbabwe',        region: 'Africa', lat: -17.8252, lng: 31.0335,  tz: 2, iana: 'Africa/Harare' },
+      { name: 'Maputo, Mozambique',      region: 'Africa', lat: -25.9692, lng: 32.5732,  tz: 2, iana: 'Africa/Maputo' },
 
       // Asia — Central
-      { name: 'Baku, Azerbaijan',        region: 'Asia — Central', lat: 40.4093, lng: 49.8671,   tz: 4 },
-      { name: 'Tbilisi, Georgia',        region: 'Asia — Central', lat: 41.7151, lng: 44.8271,   tz: 4 },
-      { name: 'Yerevan, Armenia',        region: 'Asia — Central', lat: 40.1792, lng: 44.4991,   tz: 4 },
-      { name: 'Tashkent, Uzbekistan',    region: 'Asia — Central', lat: 41.2995, lng: 69.2401,   tz: 5 },
-      { name: 'Dushanbe, Tajikistan',    region: 'Asia — Central', lat: 38.5598, lng: 68.7870,   tz: 5 },
-      { name: 'Almaty, Kazakhstan',      region: 'Asia — Central', lat: 43.2220, lng: 76.8512,   tz: 5 },
-      { name: 'Astana, Kazakhstan',      region: 'Asia — Central', lat: 51.1694, lng: 71.4491,   tz: 5 },
-      { name: 'Bishkek, Kyrgyzstan',     region: 'Asia — Central', lat: 42.8746, lng: 74.5698,   tz: 6 },
+      { name: 'Baku, Azerbaijan',        region: 'Asia — Central', lat: 40.4093, lng: 49.8671,   tz: 4, iana: 'Asia/Baku' },
+      { name: 'Tbilisi, Georgia',        region: 'Asia — Central', lat: 41.7151, lng: 44.8271,   tz: 4, iana: 'Asia/Tbilisi' },
+      { name: 'Yerevan, Armenia',        region: 'Asia — Central', lat: 40.1792, lng: 44.4991,   tz: 4, iana: 'Asia/Yerevan' },
+      { name: 'Tashkent, Uzbekistan',    region: 'Asia — Central', lat: 41.2995, lng: 69.2401,   tz: 5, iana: 'Asia/Tashkent' },
+      { name: 'Dushanbe, Tajikistan',    region: 'Asia — Central', lat: 38.5598, lng: 68.7870,   tz: 5, iana: 'Asia/Dushanbe' },
+      { name: 'Almaty, Kazakhstan',      region: 'Asia — Central', lat: 43.2220, lng: 76.8512,   tz: 5, iana: 'Asia/Almaty' },
+      { name: 'Astana, Kazakhstan',      region: 'Asia — Central', lat: 51.1694, lng: 71.4491,   tz: 5, iana: 'Asia/Almaty' },
+      { name: 'Bishkek, Kyrgyzstan',     region: 'Asia — Central', lat: 42.8746, lng: 74.5698,   tz: 6, iana: 'Asia/Bishkek' },
 
       // Asia — South
-      { name: 'Kabul, Afghanistan',      region: 'Asia — South', lat: 34.5553, lng: 69.2075,   tz: 4.5 },
-      { name: 'Karachi, Pakistan',       region: 'Asia — South', lat: 24.8607, lng: 67.0011,   tz: 5 },
-      { name: 'Lahore, Pakistan',        region: 'Asia — South', lat: 31.5204, lng: 74.3587,   tz: 5 },
-      { name: 'Islamabad, Pakistan',     region: 'Asia — South', lat: 33.6844, lng: 73.0479,   tz: 5 },
-      { name: 'Delhi, India',            region: 'Asia — South', lat: 28.7041, lng: 77.1025,   tz: 5.5 },
-      { name: 'Mumbai, India',           region: 'Asia — South', lat: 19.0760, lng: 72.8777,   tz: 5.5 },
-      { name: 'Bangalore, India',        region: 'Asia — South', lat: 12.9716, lng: 77.5946,   tz: 5.5 },
-      { name: 'Hyderabad, India',        region: 'Asia — South', lat: 17.3850, lng: 78.4867,   tz: 5.5 },
-      { name: 'Chennai, India',          region: 'Asia — South', lat: 13.0827, lng: 80.2707,   tz: 5.5 },
-      { name: 'Kolkata, India',          region: 'Asia — South', lat: 22.5726, lng: 88.3639,   tz: 5.5 },
-      { name: 'Colombo, Sri Lanka',      region: 'Asia — South', lat: 6.9271,  lng: 79.8612,   tz: 5.5 },
-      { name: 'Kathmandu, Nepal',        region: 'Asia — South', lat: 27.7172, lng: 85.3240,   tz: 5.75 },
-      { name: 'Dhaka, Bangladesh',       region: 'Asia — South', lat: 23.8103, lng: 90.4125,   tz: 6 },
-      { name: 'Thimphu, Bhutan',         region: 'Asia — South', lat: 27.4728, lng: 89.6390,   tz: 6 },
+      { name: 'Kabul, Afghanistan',      region: 'Asia — South', lat: 34.5553, lng: 69.2075,   tz: 4.5, iana: 'Asia/Kabul' },
+      { name: 'Karachi, Pakistan',       region: 'Asia — South', lat: 24.8607, lng: 67.0011,   tz: 5, iana: 'Asia/Karachi' },
+      { name: 'Lahore, Pakistan',        region: 'Asia — South', lat: 31.5204, lng: 74.3587,   tz: 5, iana: 'Asia/Karachi' },
+      { name: 'Islamabad, Pakistan',     region: 'Asia — South', lat: 33.6844, lng: 73.0479,   tz: 5, iana: 'Asia/Karachi' },
+      { name: 'Delhi, India',            region: 'Asia — South', lat: 28.7041, lng: 77.1025,   tz: 5.5, iana: 'Asia/Kolkata' },
+      { name: 'Mumbai, India',           region: 'Asia — South', lat: 19.0760, lng: 72.8777,   tz: 5.5, iana: 'Asia/Kolkata' },
+      { name: 'Bangalore, India',        region: 'Asia — South', lat: 12.9716, lng: 77.5946,   tz: 5.5, iana: 'Asia/Kolkata' },
+      { name: 'Hyderabad, India',        region: 'Asia — South', lat: 17.3850, lng: 78.4867,   tz: 5.5, iana: 'Asia/Kolkata' },
+      { name: 'Chennai, India',          region: 'Asia — South', lat: 13.0827, lng: 80.2707,   tz: 5.5, iana: 'Asia/Kolkata' },
+      { name: 'Kolkata, India',          region: 'Asia — South', lat: 22.5726, lng: 88.3639,   tz: 5.5, iana: 'Asia/Kolkata' },
+      { name: 'Colombo, Sri Lanka',      region: 'Asia — South', lat: 6.9271,  lng: 79.8612,   tz: 5.5, iana: 'Asia/Colombo' },
+      { name: 'Kathmandu, Nepal',        region: 'Asia — South', lat: 27.7172, lng: 85.3240,   tz: 5.75, iana: 'Asia/Kathmandu' },
+      { name: 'Dhaka, Bangladesh',       region: 'Asia — South', lat: 23.8103, lng: 90.4125,   tz: 6, iana: 'Asia/Dhaka' },
+      { name: 'Thimphu, Bhutan',         region: 'Asia — South', lat: 27.4728, lng: 89.6390,   tz: 6, iana: 'Asia/Thimphu' },
 
       // Asia — Southeast
-      { name: 'Yangon, Myanmar',         region: 'Asia — Southeast', lat: 16.8661, lng: 96.1951,  tz: 6.5 },
-      { name: 'Bangkok, Thailand',       region: 'Asia — Southeast', lat: 13.7563, lng: 100.5018, tz: 7 },
-      { name: 'Phnom Penh, Cambodia',    region: 'Asia — Southeast', lat: 11.5564, lng: 104.9282, tz: 7 },
-      { name: 'Vientiane, Laos',         region: 'Asia — Southeast', lat: 17.9757, lng: 102.6331, tz: 7 },
-      { name: 'Hanoi, Vietnam',          region: 'Asia — Southeast', lat: 21.0285, lng: 105.8542, tz: 7 },
-      { name: 'Ho Chi Minh City, Vietnam', region: 'Asia — Southeast', lat: 10.8231, lng: 106.6297, tz: 7 },
-      { name: 'Jakarta, Indonesia',      region: 'Asia — Southeast', lat: -6.2088, lng: 106.8456, tz: 7 },
-      { name: 'Singapore',               region: 'Asia — Southeast', lat: 1.3521,  lng: 103.8198, tz: 8 },
-      { name: 'Kuala Lumpur, Malaysia',  region: 'Asia — Southeast', lat: 3.1390,  lng: 101.6869, tz: 8 },
-      { name: 'Bandar Seri Begawan, Brunei', region: 'Asia — Southeast', lat: 4.9031, lng: 114.9398, tz: 8 },
-      { name: 'Manila, Philippines',     region: 'Asia — Southeast', lat: 14.5995, lng: 120.9842, tz: 8 },
+      { name: 'Yangon, Myanmar',         region: 'Asia — Southeast', lat: 16.8661, lng: 96.1951,  tz: 6.5, iana: 'Asia/Yangon' },
+      { name: 'Bangkok, Thailand',       region: 'Asia — Southeast', lat: 13.7563, lng: 100.5018, tz: 7, iana: 'Asia/Bangkok' },
+      { name: 'Phnom Penh, Cambodia',    region: 'Asia — Southeast', lat: 11.5564, lng: 104.9282, tz: 7, iana: 'Asia/Phnom_Penh' },
+      { name: 'Vientiane, Laos',         region: 'Asia — Southeast', lat: 17.9757, lng: 102.6331, tz: 7, iana: 'Asia/Vientiane' },
+      { name: 'Hanoi, Vietnam',          region: 'Asia — Southeast', lat: 21.0285, lng: 105.8542, tz: 7, iana: 'Asia/Ho_Chi_Minh' },
+      { name: 'Ho Chi Minh City, Vietnam', region: 'Asia — Southeast', lat: 10.8231, lng: 106.6297, tz: 7, iana: 'Asia/Ho_Chi_Minh' },
+      { name: 'Jakarta, Indonesia',      region: 'Asia — Southeast', lat: -6.2088, lng: 106.8456, tz: 7, iana: 'Asia/Jakarta' },
+      { name: 'Singapore',               region: 'Asia — Southeast', lat: 1.3521,  lng: 103.8198, tz: 8, iana: 'Asia/Singapore' },
+      { name: 'Kuala Lumpur, Malaysia',  region: 'Asia — Southeast', lat: 3.1390,  lng: 101.6869, tz: 8, iana: 'Asia/Kuala_Lumpur' },
+      { name: 'Bandar Seri Begawan, Brunei', region: 'Asia — Southeast', lat: 4.9031, lng: 114.9398, tz: 8, iana: 'Asia/Brunei' },
+      { name: 'Manila, Philippines',     region: 'Asia — Southeast', lat: 14.5995, lng: 120.9842, tz: 8, iana: 'Asia/Manila' },
 
       // Asia — East
-      { name: 'Beijing, China',          region: 'Asia — East', lat: 39.9042, lng: 116.4074, tz: 8 },
-      { name: 'Shanghai, China',         region: 'Asia — East', lat: 31.2304, lng: 121.4737, tz: 8 },
-      { name: 'Guangzhou, China',        region: 'Asia — East', lat: 23.1291, lng: 113.2644, tz: 8 },
-      { name: 'Chengdu, China',          region: 'Asia — East', lat: 30.5728, lng: 104.0668, tz: 8 },
-      { name: 'Hong Kong',               region: 'Asia — East', lat: 22.3193, lng: 114.1694, tz: 8 },
-      { name: 'Taipei, Taiwan',          region: 'Asia — East', lat: 25.0330, lng: 121.5654, tz: 8 },
-      { name: 'Ulaanbaatar, Mongolia',   region: 'Asia — East', lat: 47.8864, lng: 106.9057, tz: 8 },
-      { name: 'Seoul, South Korea',      region: 'Asia — East', lat: 37.5665, lng: 126.9780, tz: 9 },
-      { name: 'Pyongyang, North Korea',  region: 'Asia — East', lat: 39.0392, lng: 125.7625, tz: 9 },
-      { name: 'Tokyo, Japan',            region: 'Asia — East', lat: 35.6762, lng: 139.6503, tz: 9 },
-      { name: 'Osaka, Japan',            region: 'Asia — East', lat: 34.6937, lng: 135.5023, tz: 9 },
+      { name: 'Beijing, China',          region: 'Asia — East', lat: 39.9042, lng: 116.4074, tz: 8, iana: 'Asia/Shanghai' },
+      { name: 'Shanghai, China',         region: 'Asia — East', lat: 31.2304, lng: 121.4737, tz: 8, iana: 'Asia/Shanghai' },
+      { name: 'Guangzhou, China',        region: 'Asia — East', lat: 23.1291, lng: 113.2644, tz: 8, iana: 'Asia/Shanghai' },
+      { name: 'Chengdu, China',          region: 'Asia — East', lat: 30.5728, lng: 104.0668, tz: 8, iana: 'Asia/Shanghai' },
+      { name: 'Hong Kong',               region: 'Asia — East', lat: 22.3193, lng: 114.1694, tz: 8, iana: 'Asia/Hong_Kong' },
+      { name: 'Taipei, Taiwan',          region: 'Asia — East', lat: 25.0330, lng: 121.5654, tz: 8, iana: 'Asia/Taipei' },
+      { name: 'Ulaanbaatar, Mongolia',   region: 'Asia — East', lat: 47.8864, lng: 106.9057, tz: 8, iana: 'Asia/Ulaanbaatar' },
+      { name: 'Seoul, South Korea',      region: 'Asia — East', lat: 37.5665, lng: 126.9780, tz: 9, iana: 'Asia/Seoul' },
+      { name: 'Pyongyang, North Korea',  region: 'Asia — East', lat: 39.0392, lng: 125.7625, tz: 9, iana: 'Asia/Pyongyang' },
+      { name: 'Tokyo, Japan',            region: 'Asia — East', lat: 35.6762, lng: 139.6503, tz: 9, iana: 'Asia/Tokyo' },
+      { name: 'Osaka, Japan',            region: 'Asia — East', lat: 34.6937, lng: 135.5023, tz: 9, iana: 'Asia/Tokyo' },
 
       // Oceania
-      { name: 'Perth, Australia',        region: 'Oceania', lat: -31.9505, lng: 115.8605, tz: 8 },
-      { name: 'Adelaide, Australia',     region: 'Oceania', lat: -34.9285, lng: 138.6007, tz: 9.5 },
-      { name: 'Darwin, Australia',       region: 'Oceania', lat: -12.4634, lng: 130.8456, tz: 9.5 },
-      { name: 'Sydney, Australia',       region: 'Oceania', lat: -33.8688, lng: 151.2093, tz: 10 },
-      { name: 'Melbourne, Australia',    region: 'Oceania', lat: -37.8136, lng: 144.9631, tz: 10 },
-      { name: 'Brisbane, Australia',     region: 'Oceania', lat: -27.4698, lng: 153.0251, tz: 10 },
-      { name: 'Canberra, Australia',     region: 'Oceania', lat: -35.2809, lng: 149.1300, tz: 10 },
-      { name: 'Hobart, Australia',       region: 'Oceania', lat: -42.8821, lng: 147.3272, tz: 10 },
-      { name: 'Auckland, New Zealand',   region: 'Oceania', lat: -36.8485, lng: 174.7633, tz: 12 },
-      { name: 'Wellington, New Zealand', region: 'Oceania', lat: -41.2865, lng: 174.7762, tz: 12 },
-      { name: 'Suva, Fiji',              region: 'Oceania', lat: -18.1416, lng: 178.4419, tz: 12 }
+      { name: 'Perth, Australia',        region: 'Oceania', lat: -31.9505, lng: 115.8605, tz: 8, iana: 'Australia/Perth' },
+      { name: 'Adelaide, Australia',     region: 'Oceania', lat: -34.9285, lng: 138.6007, tz: 9.5, iana: 'Australia/Adelaide' },
+      { name: 'Darwin, Australia',       region: 'Oceania', lat: -12.4634, lng: 130.8456, tz: 9.5, iana: 'Australia/Darwin' },
+      { name: 'Sydney, Australia',       region: 'Oceania', lat: -33.8688, lng: 151.2093, tz: 10, iana: 'Australia/Sydney' },
+      { name: 'Melbourne, Australia',    region: 'Oceania', lat: -37.8136, lng: 144.9631, tz: 10, iana: 'Australia/Melbourne' },
+      { name: 'Brisbane, Australia',     region: 'Oceania', lat: -27.4698, lng: 153.0251, tz: 10, iana: 'Australia/Brisbane' },
+      { name: 'Canberra, Australia',     region: 'Oceania', lat: -35.2809, lng: 149.1300, tz: 10, iana: 'Australia/Sydney' },
+      { name: 'Hobart, Australia',       region: 'Oceania', lat: -42.8821, lng: 147.3272, tz: 10, iana: 'Australia/Hobart' },
+      { name: 'Auckland, New Zealand',   region: 'Oceania', lat: -36.8485, lng: 174.7633, tz: 12, iana: 'Pacific/Auckland' },
+      { name: 'Wellington, New Zealand', region: 'Oceania', lat: -41.2865, lng: 174.7762, tz: 12, iana: 'Pacific/Auckland' },
+      { name: 'Suva, Fiji',              region: 'Oceania', lat: -18.1416, lng: 178.4419, tz: 12, iana: 'Pacific/Fiji' }
     ];
 
     // Regions are surfaced in this fixed order in the dropdown
@@ -5055,18 +5680,29 @@
     // ============================================================
     // CHAPTER SYSTEM
     // ============================================================
+    // Reading order: characters → full cast → relationships → backdrop → now.
+    // The Full Report (ch-report) is NOT a chapter — it opens as an add-on
+    // view from the CTA at the end of The Currents (see openReport below).
     const CHAPTERS = [
-      { id: 'ch-voices',   title: 'The Voices' },
-      { id: 'ch-shape',    title: 'The Shape' },
-      { id: 'ch-anatomy',  title: 'The Anatomy' },
-      { id: 'ch-currents', title: 'The Currents' },
-      { id: 'ch-today',    title: 'Today' },
-      { id: 'ch-report',   title: 'The Report' }
+      { id: 'ch-voices',   title: 'The Voices',   part: 'The Blueprint' },
+      { id: 'ch-anatomy',  title: 'The Anatomy',  part: 'The Blueprint' },
+      { id: 'ch-shape',    title: 'The Shape',    part: 'The Blueprint' },
+      { id: 'ch-currents', title: 'The Currents', part: 'The Blueprint' },
+      { id: 'ch-today',    title: 'Today',        part: 'The Sky Now' }
     ];
     let currentChapter = 0;
-    let natalReportOpenTracked = false; // fire once per session (see goToChapter)
+    let natalReportOpenTracked = false; // fire once per session (see openReport)
+    let reportOpen = false;             // the Full Report add-on view is showing
+    let reportReturnChapter = 0;        // chapter to restore when it closes
 
     function goToChapter(idx) {
+      // Leaving the Full Report view (e.g. via a top-nav node) — restore nav
+      if (reportOpen) {
+        reportOpen = false;
+        document.getElementById('ch-report').classList.remove('active');
+        document.querySelector('.chapter-nav').style.display = '';
+      }
+
       idx = Math.max(0, Math.min(CHAPTERS.length - 1, idx));
       currentChapter = idx;
 
@@ -5090,10 +5726,14 @@
         el.style.animation = anim;
       });
 
-      // Update title, dots, and nav buttons
+      // Update part label, title, dots, and nav buttons
+      document.getElementById('chapter-part').textContent = CHAPTERS[idx].part;
       document.getElementById('chapter-title').textContent = CHAPTERS[idx].title;
       document.querySelectorAll('.chapter-dot').forEach((d, i) => {
         d.classList.toggle('active', i === idx);
+      });
+      document.querySelectorAll('.chapter-node').forEach((n, i) => {
+        n.classList.toggle('active', i === idx);
       });
       document.getElementById('ch-prev').disabled = (idx === 0);
       const nextBtn = document.getElementById('ch-next');
@@ -5104,16 +5744,41 @@
         nextBtn.textContent = 'Next →';
       }
 
-      // Analytics: fire once per session when the user first opens the natal report
-      if (CHAPTERS[idx].id === 'ch-report' && !natalReportOpenTracked) {
-        natalReportOpenTracked = true;
-        track('natal_report');
-      }
-
       // Scroll to top of phone frame
       const app = document.getElementById('app');
       if (app) app.scrollTo({ top: 0, behavior: 'smooth' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Full Report add-on view ─────────────────────────────────────
+    // Opened from the CTA at the end of The Currents. Not part of the
+    // chapter sequence. PREMIUM HOOK: to gate this later, run the
+    // entitlement check inside openReport() before showing the view.
+    function openReport() {
+      reportReturnChapter = currentChapter;
+      reportOpen = true;
+
+      CHAPTERS.forEach(ch => document.getElementById(ch.id).classList.remove('active'));
+      document.getElementById('ch-report').classList.add('active');
+
+      document.getElementById('chapter-part').textContent = 'The Blueprint';
+      document.getElementById('chapter-title').textContent = 'The Full Report';
+      document.querySelector('.chapter-nav').style.display = 'none';
+      document.querySelectorAll('.chapter-node').forEach(n => n.classList.remove('active'));
+
+      // Analytics: fire once per session on first open
+      if (!natalReportOpenTracked) {
+        natalReportOpenTracked = true;
+        track('natal_report');
+      }
+
+      const app = document.getElementById('app');
+      if (app) app.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function closeReport() {
+      goToChapter(reportReturnChapter); // clears report state (see goToChapter)
     }
 
     function buildChapterNav() {
@@ -5126,6 +5791,32 @@
         d.addEventListener('click', () => goToChapter(i));
         dots.appendChild(d);
       });
+
+      // Top nav: numbered nodes joined by thin lines.
+      // Today is marked with a moon glyph — it's the live page, not part
+      // of the fixed natal sequence.
+      const topnav = document.getElementById('chapter-topnav');
+      topnav.innerHTML = '';
+      CHAPTERS.forEach((ch, i) => {
+        if (i > 0) {
+          const link = document.createElement('span');
+          link.className = 'chapter-node-link';
+          topnav.appendChild(link);
+        }
+        const isToday = ch.id === 'ch-today';
+        const n = document.createElement('button');
+        n.className = 'chapter-node' + (i === 0 ? ' active' : '') + (isToday ? ' node-today' : '');
+        n.textContent = isToday ? '☽' : String(i + 1);
+        n.title = ch.title;
+        n.setAttribute('aria-label', isToday ? ch.title : `${i + 1}. ${ch.title}`);
+        n.addEventListener('click', () => goToChapter(i));
+        topnav.appendChild(n);
+      });
+
+      // Full Report add-on: CTA + back buttons
+      document.getElementById('report-open').addEventListener('click', openReport);
+      document.getElementById('report-back-top').addEventListener('click', closeReport);
+      document.getElementById('report-back-bottom').addEventListener('click', closeReport);
       document.getElementById('ch-prev').addEventListener('click', () => goToChapter(currentChapter - 1));
       document.getElementById('ch-next').addEventListener('click', () => goToChapter(currentChapter + 1));
     }
@@ -5149,6 +5840,7 @@
       }
 
       stack.addEventListener('touchstart', (e) => {
+        if (reportOpen) return; // no chapter swiping inside the Full Report
         if (e.touches.length !== 1) return;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
@@ -5234,6 +5926,10 @@
         // Don't hijack arrow keys when typing in inputs
         const tag = (document.activeElement && document.activeElement.tagName) || '';
         if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+        if (reportOpen) {
+          if (e.key === 'Escape') closeReport();
+          return;
+        }
         if (e.key === 'ArrowLeft')  goToChapter(currentChapter - 1);
         if (e.key === 'ArrowRight') goToChapter(currentChapter + 1);
       });
@@ -5332,6 +6028,10 @@
       setupGestureNav();
       setupSettings();
 
+      // Practice sync: if the user already syncs, refresh from the server.
+      // A silent no-op when KAAWN_SYNC is unconfigured (fully offline).
+      kaawnSync.init();
+
       // Welcome → Onboarding flow.
       // The Begin button is the explicit opt-in that takes the user from
       // the welcome screen to the birth-data form.
@@ -5390,6 +6090,88 @@
           }
         });
       });
+
+      setupSyncUI();
+    }
+
+    // ── Practice-sync settings section ──────────────────────────────
+    // Invisible unless KAAWN_SYNC is configured. All actions surface
+    // their outcome in #sync-note; nothing here ever throws at the user.
+    function setupSyncUI() {
+      if (!kaawnSync.enabled()) return; // section stays display:none
+      const section  = document.getElementById('sync-section');
+      const statusEl = document.getElementById('sync-status');
+      const onBtn    = document.getElementById('sync-on');
+      const tools    = document.getElementById('sync-tools');
+      const note     = document.getElementById('sync-note');
+      section.style.display = '';
+
+      function say(msg) {
+        note.textContent = msg;
+        note.style.display = msg ? 'block' : 'none';
+      }
+
+      async function refresh() {
+        const info = await kaawnSync.sessionInfo();
+        statusEl.classList.toggle('is-on', info.state === 'anonymous' || info.state === 'linked');
+        if (info.state === 'linked') {
+          statusEl.textContent = `On — linked to ${info.email}.`;
+          onBtn.style.display = 'none'; tools.style.display = '';
+          document.querySelector('#sync-tools .sync-row').style.display = 'none'; // email row done
+        } else if (info.state === 'anonymous') {
+          statusEl.textContent = 'On — anonymous. Link an email to recover your practice if this device is lost.';
+          onBtn.style.display = 'none'; tools.style.display = '';
+        } else {
+          statusEl.textContent = 'Off — your practice lives only in this browser.';
+          onBtn.style.display = ''; tools.style.display = 'none';
+        }
+      }
+
+      onBtn.addEventListener('click', async () => {
+        onBtn.disabled = true; say('Turning on…');
+        try {
+          await kaawnSync.turnOn();
+          say('Sync is on. Your practice is now encrypted and backed up.');
+        } catch (e) { say('Could not reach the sync server. Your practice is safe on this device.'); }
+        onBtn.disabled = false;
+        refresh();
+      });
+
+      document.getElementById('sync-link-email').addEventListener('click', async () => {
+        const email = document.getElementById('sync-email').value.trim();
+        if (!email || !email.includes('@')) { say('Enter an email first.'); return; }
+        try {
+          await kaawnSync.linkEmail(email);
+          say(`Confirmation link sent to ${email}. Open it to finish linking.`);
+        } catch (e) { say('Could not send the link just now. Try again in a moment.'); }
+      });
+
+      document.getElementById('sync-show-code').addEventListener('click', () => {
+        const codeEl = document.getElementById('sync-code');
+        const code = kaawnSync.exportCode();
+        if (!code) { say('No sync key on this device yet — turn on sync first.'); return; }
+        codeEl.textContent = code;
+        codeEl.style.display = codeEl.style.display === 'none' ? 'block' : 'none';
+        say('This code is the key to your encrypted practice. Keep it private; paste it on your other device.');
+      });
+
+      document.getElementById('sync-enter-code').addEventListener('click', () => {
+        const row = document.getElementById('sync-code-entry');
+        row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+      });
+
+      document.getElementById('sync-code-apply').addEventListener('click', async () => {
+        const val = document.getElementById('sync-code-input').value;
+        if (!kaawnSync.importCode(val)) { say("That code doesn't look right — copy it exactly from the other device."); return; }
+        say('Code accepted. Pulling your practice…');
+        try {
+          const ok = await kaawnSync.pullNow();
+          renderDevotionCompletion();
+          say(ok ? 'Your practice history is here.' : 'Code saved. History will appear once the other device syncs.');
+        } catch (e) { say('Code saved. Could not reach the server just now.'); }
+      });
+
+      refresh();
     }
 
     // ============================================================
@@ -5528,9 +6310,11 @@
       const [Y, M, D] = dob.split('-').map(Number);
       const [h, m] = (tob || '12:00').split(':').map(Number);
 
-      // Convert local birth time to UT
-      const utHour = h - city.tz;
-      const jd = julianDay(Y, M, D, utHour, m);
+      // Convert local birth time to UT — DST-aware via the browser's IANA
+      // tz database. A fixed offset was up to 1h wrong for summer births,
+      // which shifted the Ascendant by up to 15° (often a full sign).
+      const ut = localToUT(city.iana, Y, M, D, h, m, city.tz);
+      const jd = julianDay(ut.Y, ut.M, ut.D, ut.h, ut.m);
 
       const sunLon = sunLongitude(jd);
       const moonLon = moonLongitude(jd);
@@ -5593,7 +6377,19 @@
       renderDeepReading(moon.sign);
       renderNatalReport();
 
-      goToChapter(0);
+      // Returning visitors land on Today — the daily page is why they come
+      // back. Once per browser session only, so "Begin again" (e.g. reading
+      // a different chart) still starts the story from chapter 1.
+      let landOn = 0;
+      try {
+        if (localStorage.getItem('kaawn_visited') && !sessionStorage.getItem('kaawn_landed_today')) {
+          landOn = CHAPTERS.findIndex(ch => ch.id === 'ch-today');
+          sessionStorage.setItem('kaawn_landed_today', '1');
+        }
+        localStorage.setItem('kaawn_visited', '1');
+      } catch (e) {}
+
+      goToChapter(landOn);
       show('blueprint');
     }
 
@@ -5652,6 +6448,8 @@
         document.getElementById('voice-rising').style.display = 'none';
         document.getElementById('approx-flag').style.display = 'inline-block';
       }
+
+      renderMoonMansion(moon.longitude, hasTime);
 
       // Climate — weighted whole-chart modality + element.
       // Bug 2 fix: previously this read only the Sun's sign, producing
@@ -6069,6 +6867,272 @@
       try { localStorage.setItem(DEVOTION_STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
     }
 
+    // ============================================================
+    // PRACTICE SYNC — optional, end-to-end encrypted (Supabase)
+    // ============================================================
+    // Zero-knowledge design: the devotion history is AES-GCM encrypted
+    // in the browser with a key that never leaves the device (except as
+    // a sync code the user explicitly copies). The server stores one
+    // ciphertext row per user — no birth data, no plaintext dates.
+    //
+    // Fully dormant unless KAAWN_SYNC is configured: no CDN script is
+    // loaded, no network call is made, and the settings section stays
+    // hidden. The app remains 100% offline-capable either way — all
+    // sync operations are fire-and-forget and never block the UX.
+    //
+    // Setup: see supabase-setup.sql in the repo root.
+    const KAAWN_SYNC = {
+      url: 'https://lixsdwblnayoaeyuctny.supabase.co',
+      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpeHNkd2JsbmF5b2FleXVjdG55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNzM0NzYsImV4cCI6MjA5ODg0OTQ3Nn0.EVqKKEHv8GZ9qgSTU3Kjp2GbxIBnEf9IzVwV-X3n4Aw'   // public anon key (RLS does the isolating)
+    };
+
+    const kaawnSync = (() => {
+      const KEY_STORAGE     = 'kaawn_sync_key';       // base64url raw AES key
+      const HISTORY_STORAGE = 'kaawn_devotion_history'; // JSON array of 'YYYY-MM-DD'
+      const HISTORY_CAP     = 800;                     // ~2 years of daily practice
+
+      let client = null;       // lazy supabase-js instance
+      let session = null;
+
+      const enabled = () =>
+        !!(KAAWN_SYNC.url && KAAWN_SYNC.anonKey) &&
+        !!(window.crypto && crypto.subtle) &&
+        location.protocol !== 'file:';
+
+      // ── base64url helpers ─────────────────────────────────────────
+      const b64 = {
+        enc: (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))),
+        dec: (str) => Uint8Array.from(atob(str), c => c.charCodeAt(0)).buffer
+      };
+
+      // ── device key ────────────────────────────────────────────────
+      async function getOrCreateKey() {
+        let raw;
+        try { raw = localStorage.getItem(KEY_STORAGE); } catch (e) {}
+        if (raw) return crypto.subtle.importKey('raw', b64.dec(raw), 'AES-GCM', true, ['encrypt', 'decrypt']);
+        const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        const exported = await crypto.subtle.exportKey('raw', key);
+        try { localStorage.setItem(KEY_STORAGE, b64.enc(exported)); } catch (e) {}
+        return key;
+      }
+
+      // The sync code IS the key (base64). Anyone with it can read the
+      // history — which is the point: it is how the user carries their
+      // practice to a second device. Losing it only loses the streak.
+      function exportCode() {
+        try { return localStorage.getItem(KEY_STORAGE) || null; } catch (e) { return null; }
+      }
+      function importCode(code) {
+        try {
+          const buf = b64.dec(code.trim());
+          if (buf.byteLength !== 32) return false;
+          localStorage.setItem(KEY_STORAGE, code.trim());
+          return true;
+        } catch (e) { return false; }
+      }
+
+      // ── encryption ────────────────────────────────────────────────
+      async function encrypt(obj) {
+        const key = await getOrCreateKey();
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const data = new TextEncoder().encode(JSON.stringify(obj));
+        const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+        return { ciphertext: b64.enc(ct), iv: b64.enc(iv) };
+      }
+      async function decrypt(ciphertext, iv) {
+        const key = await getOrCreateKey();
+        const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(b64.dec(iv)) }, key, b64.dec(ciphertext));
+        return JSON.parse(new TextDecoder().decode(pt));
+      }
+
+      // ── completion history (superset of the lastDone/streak state) ─
+      function readHistory() {
+        try {
+          const raw = localStorage.getItem(HISTORY_STORAGE);
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        // Bootstrap from the legacy state: reconstruct the current streak
+        // as consecutive days ending at lastDoneDate. Persist immediately —
+        // otherwise a later broken streak would regenerate from the new
+        // state and silently lose these days.
+        const st = readDevotionState();
+        if (!st.lastDoneDate) return [];
+        const out = [];
+        const d = new Date(st.lastDoneDate + 'T12:00:00');
+        for (let i = 0; i < Math.max(1, st.streak); i++) {
+          out.unshift(localDateString(d));
+          d.setDate(d.getDate() - 1);
+        }
+        writeHistory(out);
+        return out;
+      }
+      function writeHistory(dates) {
+        try { localStorage.setItem(HISTORY_STORAGE, JSON.stringify(dates.slice(-HISTORY_CAP))); } catch (e) {}
+      }
+      function recordCompletion(dateStr) {
+        const h = readHistory();
+        if (!h.includes(dateStr)) h.push(dateStr);
+        h.sort();
+        writeHistory(h); // always persist (covers freshly bootstrapped history)
+      }
+      // Derive {lastDoneDate, streak} from a date list (walk back while consecutive)
+      function deriveState(dates) {
+        if (!dates.length) return { lastDoneDate: null, streak: 0 };
+        const sorted = [...dates].sort();
+        const last = sorted[sorted.length - 1];
+        let streak = 1;
+        let cursor = new Date(last + 'T12:00:00');
+        for (let i = sorted.length - 2; i >= 0; i--) {
+          cursor.setDate(cursor.getDate() - 1);
+          if (sorted[i] === localDateString(cursor)) streak++;
+          else break;
+        }
+        return { lastDoneDate: last, streak };
+      }
+
+      // ── supabase client (lazy — only ever loaded when enabled) ────
+      async function getClient() {
+        if (client) return client;
+        const mod = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+        client = mod.createClient(KAAWN_SYNC.url, KAAWN_SYNC.anonKey, {
+          auth: { persistSession: true, autoRefreshToken: true }
+        });
+        return client;
+      }
+
+      async function getSession() {
+        const sb = await getClient();
+        const { data } = await sb.auth.getSession();
+        session = data.session || null;
+        return session;
+      }
+
+      // Anonymous session on demand — created the first time the user
+      // syncs (turning sync on IS the consent), never on page load.
+      async function ensureSession() {
+        if (await getSession()) return session;
+        const sb = await getClient();
+        const { data, error } = await sb.auth.signInAnonymously();
+        if (error) throw error;
+        session = data.session;
+        return session;
+      }
+
+      // ── push / pull ───────────────────────────────────────────────
+      async function push() {
+        const sb = await getClient();
+        if (!(await getSession())) return;
+        const payload = await encrypt({ dates: readHistory(), v: 1 });
+        await sb.from('practice_blobs').upsert({
+          user_id: session.user.id,
+          ciphertext: payload.ciphertext,
+          iv: payload.iv,
+          updated_at: new Date().toISOString()
+        });
+      }
+
+      async function pullAndMerge() {
+        const sb = await getClient();
+        if (!(await getSession())) return false;
+        const { data, error } = await sb.from('practice_blobs')
+          .select('ciphertext, iv').eq('user_id', session.user.id).maybeSingle();
+        if (error || !data) return false;
+        let remote;
+        try { remote = await decrypt(data.ciphertext, data.iv); }
+        catch (e) { return false; } // different key (new device without the code) — leave local alone
+        const local = readHistory();
+        const merged = [...new Set([...(remote.dates || []), ...local])].sort();
+        writeHistory(merged);
+        writeDevotionState(deriveState(merged));
+        if (merged.length > (remote.dates || []).length) await push(); // local had news
+        return true;
+      }
+
+      // Fire-and-forget wrapper: sync must never block or break the UX.
+      function soon(fn) {
+        if (!enabled()) return;
+        Promise.resolve().then(fn).catch(e => console.warn('[sync]', e.message || e));
+      }
+
+      // ── public surface ────────────────────────────────────────────
+      return {
+        enabled,
+        // page load: refresh from server if the user already syncs
+        init() { soon(async () => { if (await getSession()) { await pullAndMerge(); renderDevotionCompletion(); } }); },
+        // devotion tap: record locally, push if syncing (or do nothing)
+        onCompletion(dateStr) {
+          recordCompletion(dateStr);
+          soon(async () => { if (await getSession()) await push(); });
+        },
+        // settings: explicit opt-in — creates the anonymous account
+        async turnOn() {
+          await ensureSession();
+          await pullAndMerge();
+          await push();
+          return session;
+        },
+        // settings: upgrade anonymous → email-linked (magic-link confirm)
+        async linkEmail(email) {
+          await ensureSession();
+          const sb = await getClient();
+          const { error } = await sb.auth.updateUser({ email });
+          if (error) throw error;
+        },
+        async sessionInfo() {
+          if (!enabled()) return { state: 'disabled' };
+          try {
+            const s = await getSession();
+            if (!s) return { state: 'off' };
+            return { state: s.user.email ? 'linked' : 'anonymous', email: s.user.email || null };
+          } catch (e) { return { state: 'off' }; }
+        },
+        exportCode, importCode,
+        pullNow() { return pullAndMerge(); }
+      };
+    })();
+
+    // ── Lunar mansion rendering ─────────────────────────────────────
+    // The ring: 28 ticks around a circle, the occupied mansion lit gold
+    // and lengthened, a crescent resting at the center.
+    function mansionRingSVG(idx) {
+      let ticks = '';
+      for (let i = 0; i < 28; i++) {
+        const ang = (i * MANSION_SPAN - 90) * Math.PI / 180;
+        const active = i === idx;
+        const r1 = active ? 36 : 41;
+        const r2 = active ? 48 : 45;
+        const x1 = 50 + r1 * Math.cos(ang), y1 = 50 + r1 * Math.sin(ang);
+        const x2 = 50 + r2 * Math.cos(ang), y2 = 50 + r2 * Math.sin(ang);
+        ticks += `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"
+          stroke="${active ? '#D4A655' : 'rgba(212,166,85,0.28)'}" stroke-width="${active ? 2 : 1}" stroke-linecap="round"/>`;
+      }
+      return ticks
+        + '<circle cx="50" cy="50" r="30" fill="none" stroke="rgba(212,166,85,0.15)" stroke-width="0.5"/>'
+        + '<path d="M55 38 A13 13 0 1 0 55 62 A10 10 0 1 1 55 38 Z" fill="#D4A655" opacity="0.8"/>';
+    }
+
+    function renderMoonMansion(moonLon, hasTime) {
+      const idx = lunarMansion(moonLon);
+      const mn = MANSIONS[idx];
+      document.getElementById('mansion-ring').innerHTML = mansionRingSVG(idx);
+      document.getElementById('mansion-name').textContent = mn.name;
+      document.getElementById('mansion-arabic').textContent = mn.arabic;
+      document.getElementById('mansion-station').textContent = `Station ${idx + 1} of 28 · ${mn.meaning}`;
+      document.getElementById('mansion-corr').innerHTML =
+        `${mn.letter} &nbsp;·&nbsp; ${mn.divine} — ${mn.divineMeaning}<br>` +
+        `<span class="mansion-degree">${mn.degree}</span>`;
+      document.getElementById('mansion-text').textContent = mn.natal;
+      document.getElementById('mansion-note').style.display = hasTime ? 'none' : 'block';
+    }
+
+    function renderTodayMansion(moonLon) {
+      const idx = lunarMansion(moonLon);
+      const mn = MANSIONS[idx];
+      document.getElementById('mansion-today-name').textContent =
+        `${mn.name} — ${mn.meaning} · Station ${idx + 1} of 28`;
+      document.getElementById('mansion-today-text').textContent = mn.today;
+    }
+
     function renderCosmicWeather() {
       const now = new Date();
       const Y = now.getUTCFullYear(), M = now.getUTCMonth() + 1, D = now.getUTCDate();
@@ -6090,6 +7154,8 @@
       document.getElementById('sun-season').textContent = SEASONS[s.sign].name;
       document.getElementById('moon-position').textContent = `${moonNow.sign} ${Math.floor(moonNow.degree)}°`;
       document.getElementById('moon-phase').textContent = phase.label;
+
+      renderTodayMansion(mLon);
 
       document.getElementById('sky-headline').textContent = composeWeatherHeadline(s.sign, phase.name);
 
@@ -6276,6 +7342,7 @@
       const newStreak = state.lastDoneDate === localDateString(yesterday) ? state.streak + 1 : 1;
 
       writeDevotionState({ lastDoneDate: today, streak: newStreak });
+      kaawnSync.onCompletion(today); // no-op unless sync is configured + on
       track('devotion_complete');
       renderDevotionCompletion();
     }
@@ -6798,6 +7865,22 @@
           lessonEl.style.display = 'none';
         }
       }
+
+      // ── SECTION 1b: The Seven Heavens — Miʿrāj spheres, Moon upward ──
+      const heavensEl = document.getElementById('report-heavens');
+      const HEAVEN_ORDER = ['Moon','Mercury','Venus','Sun','Mars','Jupiter','Saturn'];
+      heavensEl.innerHTML = HEAVEN_ORDER.map(pName => {
+        const hv = SEVEN_HEAVENS[pName];
+        const pData = nrPlanets[pName];
+        return `<div class="heaven-entry">
+          <div class="heaven-header">
+            <span class="heaven-planet">${PLANET_GLYPHS[pName] || ''} ${pName}</span>
+            <span class="heaven-meta">${hv.heaven} · ${hv.prophet}</span>
+          </div>
+          <p class="heaven-text">${hv.text}</p>
+          <p class="heaven-placement">${hv.divine}. In your chart, ${pName} keeps this house in ${pData.sign}.</p>
+        </div>`;
+      }).join('');
 
       // ── SECTION 2: Planetary Aspects (always shown) ────────────────
       // Sort by tightest orb (exactness ascending); use existing aspect strength data
