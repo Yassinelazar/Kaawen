@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kaawn</title>
+  <title>Kaawen</title>
   <meta name="description" content="A reading of your birth chart, made to be sat with. Astrology grounded in care, not prediction. Your data stays in your browser.">
   <meta name="theme-color" content="#0E0F1A">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta property="og:title" content="Kaawn">
+  <meta property="og:title" content="Kaawen">
   <meta property="og:description" content="A reading of your birth chart, made to be sat with.">
   <meta property="og:image" content="og-image.png">
   <meta property="og:image:width" content="1200">
@@ -95,7 +95,7 @@
   <!-- Twitter Card metadata. summary_large_image displays the OG image
        as a hero-sized card in tweets. -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kaawn">
+  <meta name="twitter:title" content="Kaawen">
   <meta name="twitter:description" content="A reading of your birth chart, made to be sat with.">
   <meta name="twitter:image" content="og-image.png">
 
@@ -2647,17 +2647,17 @@
         <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" fill="#D4A655" opacity="0.85"/>
       </svg>
       <div class="welcome-intro">
-        <span class="label">Kaawn</span>
+        <span class="label">Kaawen</span>
         <h1>A reading of your birth chart, made to be sat with.</h1>
         <p>
           Astrology, slow. Five chapters built from your sky: the voices that move in you,
-          the shape of your chart, the inner functions, the long currents, and what today
+          the shape of your chart, the inner faculties, the long currents, and what today
           is asking. Eight minutes the first time you read it. Less, after.
         </p>
       </div>
       <div class="welcome-actions">
         <button type="button" class="btn" id="welcome-begin">Begin</button>
-        <p class="welcome-tagline">No account. Nothing stored. The reading lives in your browser.</p>
+        <p class="welcome-tagline">No account. Your birth data never leaves your browser.</p>
       </div>
     </section>
 
@@ -2689,15 +2689,15 @@
         <div class="form-group">
           <label class="label" for="city">Place of Birth</label>
           <select id="city" required>
-            <option value="">Select a city —</option>
+            <option value="">Select a city…</option>
           </select>
           <div class="field-helper">Where you first arrived.</div>
         </div>
 
-        <button type="submit" class="btn">Reveal the Blueprint</button>
+        <button type="submit" class="btn">Draw the Chart</button>
 
         <p class="privacy-line">
-          Your birth data never leaves your browser. We store nothing.
+          Your birth data never leaves your browser. If you turn on sync, we store only encrypted practice data we can't read.
         </p>
       </form>
     </section>
@@ -2723,7 +2723,7 @@
       </button>
 
       <div class="chapter-header">
-        <span class="label" id="chapter-part">The Blueprint</span>
+        <span class="label" id="chapter-part">The Reading</span>
         <div class="chapter-title" id="chapter-title">The Voices</div>
         <nav class="chapter-topnav" id="chapter-topnav" aria-label="Chapters"></nav>
       </div>
@@ -2778,7 +2778,7 @@
             <div class="mansion-station" id="mansion-station"></div>
             <div class="mansion-corr" id="mansion-corr"></div>
             <p class="mansion-text" id="mansion-text"></p>
-            <p class="mansion-note" id="mansion-note" style="display:none;">Read at noon — without a birth time the Moon may sit one mansion to either side.</p>
+            <p class="mansion-note" id="mansion-note" style="display:none;">Without a birth time, this is read for midday — the Moon may sit one mansion to either side.</p>
           </div>
 
           <div class="climate" id="climate">
@@ -2792,8 +2792,8 @@
               <path d="M12 3 C 8 8 7 12 8.5 16 C 9.5 19 10.5 20 12 22 C 13.5 20 14.5 19 15.5 16 C 17 12 16 8 12 3 Z" fill="#D4A655" opacity="0.85"/>
               <path d="M12 11 C 10.5 13 10 15 11 17 C 11.5 18 11.7 18.4 12 19 C 12.3 18.4 12.5 18 13 17 C 14 15 13.5 13 12 11 Z" fill="#F2E8D0" opacity="0.6"/>
             </svg>
-            <span class="label">The Pilot Light</span>
-            <p class="pilot-prompt">The engine running underneath.</p>
+            <span class="label">The Lamp</span>
+            <p class="pilot-prompt">The flame that lights the rest.</p>
             <div class="pilot-headline">
               <span class="pilot-glyph" id="pilot-glyph"></span>
               <span id="pilot-name"></span>
@@ -2839,7 +2839,7 @@
 
           <div class="fusions" id="fusions" style="display:none;">
             <span class="label">The Fusions</span>
-            <p class="fusions-prompt">Two functions, made one in you.</p>
+            <p class="fusions-prompt">Two voices, made one in you.</p>
             <div id="fusions-list"></div>
           </div>
 
@@ -2853,7 +2853,7 @@
         <!-- ============ CHAPTER 4: CURRENTS ============ -->
         <div class="chapter" id="ch-currents">
           <div class="rx-pattern" id="rx-pattern" style="display:none;">
-            <span class="label">The Inward Pattern</span>
+            <span class="label">The Inward Current</span>
             <div class="rx-pattern-meta">
               <span class="rx-pattern-name" id="rx-pattern-name"></span>
               <span class="rx-pattern-rarity" id="rx-pattern-rarity"></span>
@@ -2873,8 +2873,7 @@
                PREMIUM: gate openReport() behind an entitlement check when
                the paid tier ships; this CTA is the upsell surface. -->
           <div class="report-cta">
-            <span class="label">Go Further</span>
-            <p class="report-cta-text">Everything above, now in full — every placement and every aspect of your birth chart, read in depth.</p>
+            <p class="report-cta-text">Every placement and every aspect of your birth chart, read in depth.</p>
             <button class="btn-report" id="report-open" type="button">Read the Full Report</button>
           </div>
         </div>
@@ -2885,7 +2884,7 @@
                primary focus. The reading stops being something to consume and
                becomes one committed action the moon is asking of you today. -->
           <div class="devotion" id="devotion-block">
-            <span class="label">Today's Devotion</span>
+            <span class="label">The Devotion</span>
             <p class="devotion-instruction" id="devotion-instruction"></p>
             <p class="devotion-meditation" id="devotion-meditation" style="display:none;"></p>
             <p class="devotion-aspect" id="devotion-aspect" style="display:none;"></p>
@@ -2906,7 +2905,7 @@
                no completion gesture. The lunar devotion above is the only
                commitment on this page. -->
           <div class="transit-selector" id="transit-selector" style="display:none;">
-            <span class="label">The Personal Sky Today</span>
+            <span class="label">The Personal Sky</span>
             <p class="transit-selector-sub">Five moving lights, read against your chart. Tap one to see where today lands it.</p>
             <div class="transit-chips" id="transit-chips"></div>
           </div>
@@ -2952,7 +2951,7 @@
 
             <!-- Today's transit (sits inside the sky frame as personal context) -->
             <div class="transit" id="transit-block" style="display:none;">
-              <span class="label">Today's Transit</span>
+              <span class="label">The Transit</span>
               <div class="transit-orb-line">
                 <span class="transit-glyphs" id="transit-glyphs"></span>
                 <span class="transit-orb" id="transit-orb"></span>
@@ -2960,12 +2959,12 @@
             </div>
 
             <div class="transit-quiet" id="transit-quiet" style="display:none;">
-              <p>The slow planets are quiet against your chart today. The cosmic weather alone is your guide.</p>
+              <p>The slow planets are quiet against your chart today. The sky itself is your guide.</p>
             </div>
 
             <!-- The unified practice — single source of "what to do today" -->
             <div class="sky-practice">
-              <span class="label">Today's Practice</span>
+              <span class="label">The Practice</span>
               <div class="sky-practice-name" id="practice-name"></div>
               <p class="sky-practice-text" id="practice-text"></p>
               <p class="practice-frame" id="practice-frame"></p>
@@ -2982,7 +2981,7 @@
             </div>
 
             <div class="deeper-content" id="deeper-content">
-              <span class="label" id="deeper-label">Today's Depth</span>
+              <span class="label" id="deeper-label">The Depth</span>
               <div class="deeper-arabic" id="deeper-arabic"></div>
               <div class="deeper-translation" id="deeper-translation"></div>
               <p class="deeper-text" id="deeper-text"></p>
@@ -2990,15 +2989,15 @@
                 <span class="attribution-label">Drawn from</span><span class="attribution-sources" id="deeper-attribution-sources"></span>
               </p>
               <div class="deeper-invitation">
-                <span class="label">Today's Invitation</span>
+                <span class="label">The Invitation</span>
                 <p class="deeper-invitation-text" id="deeper-invitation"></p>
               </div>
             </div>
           </div>
 
           <div class="restart">
-            <a id="restart">Begin again</a>
-            <a id="feedback-link" href="mailto:hello@kaawn.app?subject=Kaawn%20feedback" class="feedback-link">Share a thought</a>
+            <a id="restart">New reading</a>
+            <a id="feedback-link" href="mailto:hello@kaawen.com?subject=Kaawen%20feedback" class="feedback-link">Share a thought</a>
           </div>
         </div>
 
@@ -3009,7 +3008,7 @@
              Sections 1–2 (Ascendant, Houses) are gated on birth-time availability. -->
         <div class="chapter" id="ch-report">
           <button class="report-back" id="report-back-top" type="button">← Back to your chart</button>
-          <p class="report-intro">Everything in your blueprint, now in full.</p>
+          <p class="report-intro">Your whole chart, read in full.</p>
 
           <!-- Section 1: Ascendant — gated on birth time -->
           <div class="report-section" id="report-ascendant">
@@ -3094,7 +3093,7 @@
              cannot read the practice history it stores. -->
         <div class="settings-section" id="sync-section" style="display:none;">
           <div class="settings-section-label">Practice sync</div>
-          <div class="settings-section-help">Keep your daily practice across visits and devices. Encrypted on your device before it leaves — the server stores only ciphertext it cannot read.</div>
+          <div class="settings-section-help">Keep your daily practice across visits and devices. Encrypted on your device before it leaves — we store only encrypted practice data we can't read.</div>
 
           <div class="sync-status" id="sync-status">Off — your practice lives only in this browser.</div>
           <button class="btn-sync" id="sync-on" type="button">Turn on sync</button>
@@ -4482,7 +4481,7 @@
       'Sun-Neptune':    "Your essence has no clear edge. You are made partly of dream. The work is having a self that can be found, even by you.",
       'Sun-Pluto':      "Your essence is under transformation. You are not the same person from year to year, and this is the path. The work is consenting to keep dying into yourself.",
 
-      'Moon-Mercury':   "Your feeling and your thinking are not separate functions. You feel by thinking and think by feeling. The work is trusting the wisdom of both at once.",
+      'Moon-Mercury':   "Your feeling and your thinking are not separate faculties. You feel by thinking and think by feeling. The work is trusting the wisdom of both at once.",
       'Moon-Venus':     "Your inner life is aesthetic. You feel through beauty, and beauty through feeling. The work is letting your feelings be art, not just decoration.",
       'Moon-Mars':      "Your feelings have force. When you feel something, it moves. The work is feeling fully without immediately reaching for action.",
       'Moon-Jupiter':   "Your inner life is wide. Your feelings carry meaning. The work is letting small feelings be small, without inflating them into a calling.",
@@ -4562,7 +4561,7 @@
     // Each entry has square + opposition variants where the spiritual texture differs.
     const TENSION_READINGS = {
       'Mars-Saturn': {
-        square: "between the will to act and the patience to wait. Your engine and your forge are at odds — and your soul does its work in the friction.",
+        square: "between the will to act and the patience to wait. Your fire and your forge are at odds — and your soul does its work in the friction.",
         opposition: "between the will and the long road. You meet yourself in the gap between starting and enduring. Each side wants the other's permission."
       },
       'Mars-Sun': {
@@ -4640,7 +4639,7 @@
       const fa = TENSION_FUNCTION[planetA];
       const fb = TENSION_FUNCTION[planetB];
       if (aspect === 'square') {
-        return `between ${fa} and ${fb}. These two functions ask different things of you, and the answer is rarely either-or. The work lives in the friction.`;
+        return `between ${fa} and ${fb}. These two voices ask different things of you, and the answer is rarely either-or. The work lives in the friction.`;
       } else {
         return `between ${fa} and ${fb}. You meet yourself in the mirror between these two. Integration is the long work — and it is the work.`;
       }
@@ -5160,7 +5159,7 @@
     // drives whether the reading addresses identity or cohort.
     const STELLIUM_INTRO = {
       3: "A concentration. Three planets gathered in one sign — a register of your chart that runs louder than the others.",
-      4: "A strong concentration. Four planets in one sign — a defining gathering, where several different functions of your life share a single voice.",
+      4: "A strong concentration. Four planets in one sign — a defining gathering, where several different parts of your life share a single voice.",
       5: "A defining concentration. Five planets in one sign — the chart is organized around this gathering. Most of your inner machinery speaks in one register.",
       6: "An overwhelming concentration. Six or more planets in one sign — your chart is built around this single gathering. The rest of the sky is commentary."
     };
@@ -5195,7 +5194,7 @@
       locomotive: {
         name: 'Locomotive',
         prompt: 'A wheel with one missing spoke.',
-        text: "Your chart fills two-thirds of the sky, leaving a clear empty arc. That gap is a pull — the thing you don't have, driving you toward what you do. The work is honoring the lack as the engine."
+        text: "Your chart fills two-thirds of the sky, leaving a clear empty arc. That gap is a pull — the thing you don't have, driving you toward what you do. The work is honoring the lack as what moves you."
       },
       splash: {
         name: 'Splash',
@@ -5285,29 +5284,29 @@
 
     // What it means to have each planet as your engine
     const PILOT_LIGHT_ENGINES = {
-      Sun:     "Your engine is essence itself. Your chart is lit by the Sun — what runs underneath everything is the radiant, expressive self. You are most alive when seen, when offering. The work is shining without needing the light reflected back to feel real.",
-      Moon:    "Your engine is feeling itself. Your chart is moved by the Moon — what runs underneath everything is the tide of your inner life. You are guided by mood, weather, the thousand small impressions of a day. The work is finding solid ground inside the constant shift.",
-      Mercury: "Your engine is the mind itself. Your chart is moved by Mercury — what runs underneath everything is the work of meaning-making, exchange, and signal. You are most alive when translating: an idea into a word, a perception into a sentence. The work is letting some things stay unsaid.",
-      Venus:   "Your engine is attraction itself. Your chart is drawn by Venus — what runs underneath everything is the pull toward beauty, harmony, and the right relation. You are most alive when something or someone calls to you. The work is loving the actual, not just the ideal.",
-      Mars:    "Your engine is the will itself. Your chart is moved by Mars — what runs underneath everything is the impulse to act, to want, to push. You are most alive in motion. The work is choosing what your power is actually for.",
-      Jupiter: "Your engine is the search for meaning itself. Your chart is moved by Jupiter — what runs underneath everything is the wider arc, the longer story, the next horizon. You are most alive when growing toward something. The work is letting the present moment also matter.",
-      Saturn:  "Your engine is patience itself. Your chart is held by Saturn — what runs underneath everything is the long discipline, the slow build, the weight that shapes. You are most alive in what endures. The work is letting joy and ease enter without needing to earn them."
+      Sun:     "Your flame is essence itself. Your chart is lit by the Sun — what runs underneath everything is the radiant, expressive self. You are most alive when seen, when offering. The work is shining without needing the light reflected back to feel real.",
+      Moon:    "Your flame is feeling itself. Your chart is moved by the Moon — what runs underneath everything is the tide of your inner life. You are guided by mood, weather, the thousand small impressions of a day. The work is finding solid ground inside the constant shift.",
+      Mercury: "Your flame is the mind itself. Your chart is moved by Mercury — what runs underneath everything is the work of meaning-making, exchange, and signal. You are most alive when translating: an idea into a word, a perception into a sentence. The work is letting some things stay unsaid.",
+      Venus:   "Your flame is attraction itself. Your chart is drawn by Venus — what runs underneath everything is the pull toward beauty, harmony, and the right relation. You are most alive when something or someone calls to you. The work is loving the actual, not just the ideal.",
+      Mars:    "Your flame is the will itself. Your chart is moved by Mars — what runs underneath everything is the impulse to act, to want, to push. You are most alive in motion. The work is choosing what your power is actually for.",
+      Jupiter: "Your flame is the search for meaning itself. Your chart is moved by Jupiter — what runs underneath everything is the wider arc, the longer story, the next horizon. You are most alive when growing toward something. The work is letting the present moment also matter.",
+      Saturn:  "Your flame is patience itself. Your chart is held by Saturn — what runs underneath everything is the long discipline, the slow build, the weight that shapes. You are most alive in what endures. The work is letting joy and ease enter without needing to earn them."
     };
 
     // How the engine *expresses* through the sign it currently sits in
     const PILOT_LIGHT_FLAVORS = {
-      Aries:       "Lit fast and forward. Your engine likes a starting line more than a finish.",
-      Taurus:      "Lit slow and rooted. Your engine builds heat over time, not in flash.",
-      Gemini:      "Lit through inquiry. Your engine wakes through asking.",
-      Cancer:      "Lit through care. Your engine warms when something needs you.",
-      Leo:         "Lit warm and bright. Your engine wants a witness.",
-      Virgo:       "Lit precise and tended. Your engine is happiest at work that needs the right hand.",
-      Libra:       "Lit through relation. Your engine kindles in the presence of someone else.",
-      Scorpio:     "Lit deep and contained. Your engine runs hot underneath, cool on the surface.",
-      Sagittarius: "Lit by horizons. Your engine fires when the next thing is in view.",
-      Capricorn:   "Lit through discipline. Your engine warms through the long climb.",
-      Aquarius:    "Lit slightly outside. Your engine runs best at a small distance from the crowd.",
-      Pisces:      "Lit dim and porous. Your engine is the hardest to find and the most worth knowing."
+      Aries:       "Lit fast and forward. Your flame likes a starting line more than a finish.",
+      Taurus:      "Lit slow and rooted. Your flame builds heat over time, not in flash.",
+      Gemini:      "Lit through inquiry. Your flame wakes through asking.",
+      Cancer:      "Lit through care. Your flame warms when something needs you.",
+      Leo:         "Lit warm and bright. Your flame wants a witness.",
+      Virgo:       "Lit precise and tended. Your flame is happiest at work that needs the right hand.",
+      Libra:       "Lit through relation. Your flame kindles in the presence of someone else.",
+      Scorpio:     "Lit deep and contained. Your flame burns hot underneath, cool on the surface.",
+      Sagittarius: "Lit by horizons. Your flame leaps when the next thing is in view.",
+      Capricorn:   "Lit through discipline. Your flame warms through the long climb.",
+      Aquarius:    "Lit slightly outside. Your flame burns best at a small distance from the crowd.",
+      Pisces:      "Lit dim and porous. Your flame is the hardest to find and the most worth knowing."
     };
 
     function computePilotLight(risingSign, sun, moon, planets) {
@@ -5706,10 +5705,10 @@
     // The Full Report (ch-report) is NOT a chapter — it opens as an add-on
     // view from the CTA at the end of The Currents (see openReport below).
     const CHAPTERS = [
-      { id: 'ch-voices',   title: 'The Voices',   part: 'The Blueprint' },
-      { id: 'ch-anatomy',  title: 'The Anatomy',  part: 'The Blueprint' },
-      { id: 'ch-shape',    title: 'The Shape',    part: 'The Blueprint' },
-      { id: 'ch-currents', title: 'The Currents', part: 'The Blueprint' },
+      { id: 'ch-voices',   title: 'The Voices',   part: 'The Reading' },
+      { id: 'ch-anatomy',  title: 'The Anatomy',  part: 'The Reading' },
+      { id: 'ch-shape',    title: 'The Shape',    part: 'The Reading' },
+      { id: 'ch-currents', title: 'The Currents', part: 'The Reading' },
       { id: 'ch-today',    title: 'Today',        part: 'The Sky Now' }
     ];
     let currentChapter = 0;
@@ -5783,7 +5782,7 @@
       CHAPTERS.forEach(ch => document.getElementById(ch.id).classList.remove('active'));
       document.getElementById('ch-report').classList.add('active');
 
-      document.getElementById('chapter-part').textContent = 'The Blueprint';
+      document.getElementById('chapter-part').textContent = 'The Reading';
       document.getElementById('chapter-title').textContent = 'The Full Report';
       document.querySelector('.chapter-nav').style.display = 'none';
       document.querySelectorAll('.chapter-node').forEach(n => n.classList.remove('active'));
@@ -7380,7 +7379,7 @@
       // which is more like a personal foundation than a daily phenomenon.
       const labelEl = document.getElementById('deeper-label');
       if (labelEl) {
-        labelEl.textContent = transit ? "Today's Depth" : 'Your Depth';
+        labelEl.textContent = transit ? 'The Depth' : 'Your Depth';
       }
 
       document.getElementById('deeper-arabic').textContent = r.word;
