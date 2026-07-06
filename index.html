@@ -23,7 +23,7 @@
        browser — stays true.
 
        TO ACTIVATE GoatCounter (the provider chosen for launch):
-         1. Sign up free at https://www.goatcounter.com/ — pick a code,
+         1. Sign up free at https://w ww.goatcounter.com/ — pick a code,
             e.g. "kaawn" → your dashboard is https://kaawn.goatcounter.com
          2. Replace YOURCODE below with that code (just the subdomain part).
          3. Deploy. Pageviews + the custom events below start flowing.
@@ -2994,10 +2994,10 @@
             <div id="report-rising-lesson" class="report-rising-lesson" style="display:none;"></div>
           </div>
 
-          <!-- Section 1b: The Seven Heavens — the Miʿrāj spheres, always shown -->
+          <!-- Section 1b: The Seven Heavens — the seven classical spheres, always shown -->
           <div class="report-section">
             <span class="label">The Seven Heavens</span>
-            <p class="report-intro" style="margin-bottom:18px;">In the ascent narrative, each of the seven classical spheres is the house of a prophet, sealed with a Divine Name. Read against your chart, each heaven speaks through the sign it occupied at your birth.</p>
+            <p class="report-intro" style="margin-bottom:18px;">The old cosmology counts the seven classical spheres as seven heavens, each sealed with one of the Divine Names. Read against your chart, each heaven speaks through the sign it occupied at your birth.</p>
             <div id="report-heavens"></div>
           </div>
 
@@ -3503,26 +3503,24 @@
     ];
 
     // ============================================================
-    // THE SEVEN HEAVENS — the planetary spheres of the Miʿrāj
-    // In the ascent narrative, the Prophet greets a prophet in each
-    // heaven; Ibn ʿArabī reads each sphere as the house of that
-    // prophet's spiritual type, sealed with one of the Divine Names.
+    // THE SEVEN HEAVENS — the seven classical spheres of the old
+    // cosmology, each sealed with one of the Divine Names.
     // ============================================================
     const SEVEN_HEAVENS = {
-      Moon:    { heaven: "the first heaven",   prophet: "Ādam",            divine: "Al-Mubīn — The Evident",
-        text: "The sphere of the Moon is the house of Ādam, the first form into which the Breath was breathed. Everything human begins here: receptivity, forgetting, turning back, being forgiven. The Moon receives the light of every sphere above it and hands it down to the earth — as Ādam received the Names and handed them to his children." },
-      Mercury: { heaven: "the second heaven",  prophet: "ʿĪsā",            divine: "Al-Muḥṣī — The Reckoner",
-        text: "The sphere of Mercury is the house of ʿĪsā, the Word cast into Maryam — speech that heals and quickens. Here language is not decoration but power: the word that raises what was dead in a person. Mercury's craft, rightly used, is ʿĪsā's craft — saying the thing that restores." },
-      Venus:   { heaven: "the third heaven",   prophet: "Yūsuf",           divine: "Al-Muṣawwir — The Fashioner of Forms",
-        text: "The sphere of Venus is the house of Yūsuf, who was given half of all beauty and the science of interpreting forms — for dreams are images, and he read them truly. Beauty here is not surface but signature: every lovely form a sentence in the speech of the Fashioner. To love beauty rightly is to read it, as Yūsuf read the dreams." },
-      Sun:     { heaven: "the fourth heaven",  prophet: "Idrīs",           divine: "Al-Nūr — The Light",
-        text: "The sphere of the Sun is the house of Idrīs, who was raised to a high place — the axis of the seven, three above, three below, the heart of the heavens. Here stands the pole of the whole ascent: the station of pure elevation, where the light is not reflected but resident. What the Sun is to the spheres, the heart is to the human being." },
-      Mars:    { heaven: "the fifth heaven",   prophet: "Hārūn",           divine: "Al-Qāhir — The Subduer",
-        text: "The sphere of Mars is the house of Hārūn, the gentle-tongued brother sent to stand beside Mūsā before Pharaoh. The tradition's placement is deliberate: the heaven of force is given to the mildest of prophets. Real strength, it teaches, is force held by kindness — the sword worn by the one slowest to draw it." },
-      Jupiter: { heaven: "the sixth heaven",   prophet: "Mūsā",            divine: "Al-ʿAlīm — The All-Knowing",
-        text: "The sphere of Jupiter is the house of Mūsā, who spoke with the Real directly and carried the Law down a burning mountain. Expansion, abundance, teaching, law — Jupiter's gifts are Mūsā's burdens. Wisdom here is not accumulation but audacity: to ask for the vision, to be broken by it, and to come down the mountain still carrying the tablets." },
-      Saturn:  { heaven: "the seventh heaven", prophet: "Ibrāhīm",         divine: "Al-Rabb — The Lord",
-        text: "The sphere of Saturn is the house of Ibrāhīm, found leaning against the Inhabited House that seventy thousand angels circle each day and never revisit. The last and slowest sphere belongs to the friend of God — the one who was tested by fire, by leaving, by the knife, and remained. Saturn's weight, in the end, is Ibrāhīm's secret: what endures every test becomes the intimate friend." }
+      Moon:    { heaven: "the first heaven",   divine: "Al-Mubīn — The Evident",
+        text: "The sphere of the Moon is the nearest heaven, the last hand in the relay of light: it owns none of what it shines and withholds none of it either. Everything human begins in its manner — receiving, forgetting, waning, turning back, being renewed. Under the Name al-Mubīn it makes the unseen legible: what the higher spheres hold in silence, the Moon spells out upon the earth, the way a face spells out a heart." },
+      Mercury: { heaven: "the second heaven",  divine: "Al-Muḥṣī — The Reckoner",
+        text: "The sphere of Mercury is the heaven of the word — speech that does not decorate but quickens, the sentence that raises what had died in a person. Under the Name al-Muḥṣī every word is counted, which is the craft's whole discipline: nothing said is neutral. Rightly used, this sphere's gift is the word that restores — said at the right hour, weighed before it is spent." },
+      Venus:   { heaven: "the third heaven",   divine: "Al-Muṣawwir — The Fashioner of Forms",
+        text: "The sphere of Venus is the heaven of forms, where beauty is not surface but signature — every lovely thing a sentence in the speech of the Fashioner. Its science is reading: dreams, faces, gardens, all the shaped things that mean more than they show. To love beauty rightly is to read it through to its Maker, and not to stop at the page." },
+      Sun:     { heaven: "the fourth heaven",  divine: "Al-Nūr — The Light",
+        text: "The sphere of the Sun is the axis of the seven — three heavens above it, three below, the heart of the whole order. Here the light is not reflected but resident; every other sphere shines by loan from this one. What the Sun is to the heavens, the heart is to the human being: the middle that everything else arranges itself around." },
+      Mars:    { heaven: "the fifth heaven",   divine: "Al-Qāhir — The Subduer",
+        text: "The sphere of Mars is the heaven of force, and the tradition seals it with a Name that subdues — because the first thing force must subdue is itself. Real strength is force held by kindness: the sword worn by the one slowest to draw it. Heat that has been mastered becomes courage; heat that has not becomes only fire." },
+      Jupiter: { heaven: "the sixth heaven",   divine: "Al-ʿAlīm — The All-Knowing",
+        text: "The sphere of Jupiter is the heaven of increase — expansion, abundance, teaching, law. Under the Name al-ʿAlīm its lesson is that knowledge is a trust, not a treasure: whatever is given here is given to be carried down and handed on. Wisdom in this sphere is generosity with what one knows, and the patience to give it in portions a life can hold." },
+      Saturn:  { heaven: "the seventh heaven", divine: "Al-Rabb — The Lord",
+        text: "The sphere of Saturn is the last and slowest heaven, the threshold where the created order ends. Everything that reaches it has been tested the whole way up — by fire, by leaving, by the long wait — and what remains after every test is the true substance. Saturn's weight is that patient secret: what endures becomes intimate; the slowest orbit keeps the oldest promise." }
     };
 
     // ============================================================
@@ -7866,7 +7864,7 @@
         }
       }
 
-      // ── SECTION 1b: The Seven Heavens — Miʿrāj spheres, Moon upward ──
+      // ── SECTION 1b: The Seven Heavens — Moon upward ──
       const heavensEl = document.getElementById('report-heavens');
       const HEAVEN_ORDER = ['Moon','Mercury','Venus','Sun','Mars','Jupiter','Saturn'];
       heavensEl.innerHTML = HEAVEN_ORDER.map(pName => {
@@ -7875,7 +7873,7 @@
         return `<div class="heaven-entry">
           <div class="heaven-header">
             <span class="heaven-planet">${PLANET_GLYPHS[pName] || ''} ${pName}</span>
-            <span class="heaven-meta">${hv.heaven} · ${hv.prophet}</span>
+            <span class="heaven-meta">${hv.heaven}</span>
           </div>
           <p class="heaven-text">${hv.text}</p>
           <p class="heaven-placement">${hv.divine}. In your chart, ${pName} keeps this house in ${pData.sign}.</p>
