@@ -7436,7 +7436,7 @@
           cta = '<button type="button" class="btn plan-gate-btn" data-plan-action="trial">Begin your week</button>';
         } else if (KAAWN_CHECKOUT_URL) {
           text = 'Your week has ended. The Companion keeps the depth open — the readings, the sources, the report.';
-          cta = `<a class="btn plan-gate-btn" href="${KAAWN_CHECKOUT_URL}">Continue with the Companion</a>`;
+          cta = '<button type="button" class="btn plan-gate-btn" data-plan-action="checkout">Continue with the Companion</button>';
         } else {
           text = 'Your week has ended. The Companion opens soon — nothing here is lost, and your practice stays free.';
         }
@@ -7450,6 +7450,18 @@
         if (old) old.remove();
         container.insertAdjacentHTML('beforeend', gateHTML(context));
         const el = container.querySelector('.plan-gate');
+        // Checkout — Stripe Payment Link, tagged with the Supabase user id
+        // so the webhook (supabase/functions/stripe-webhook) can find the row.
+        const buy = el && el.querySelector('[data-plan-action="checkout"]');
+        if (buy) buy.addEventListener('click', async () => {
+          buy.disabled = true; buy.textContent = 'Opening…';
+          try {
+            const s = await kaawnSync.ensureSession();
+            const sep = KAAWN_CHECKOUT_URL.indexOf('?') === -1 ? '?' : '&';
+            track('checkout_opened');
+            location.href = KAAWN_CHECKOUT_URL + sep + 'client_reference_id=' + encodeURIComponent(s.user.id);
+          } catch (e) { buy.disabled = false; buy.textContent = 'Continue with the Companion'; }
+        });
         const btn = el && el.querySelector('[data-plan-action="trial"]');
         if (btn) btn.addEventListener('click', async () => {
           btn.disabled = true; btn.textContent = 'Opening…';
@@ -7468,6 +7480,16 @@
       }
 
       setTimeout(refresh, 0); // after parse — kaawnSync exists by then
+
+      // Returning from Stripe checkout (Payment Link success URL is
+      // https://kaawen.com/?companion=welcome). The webhook may lag a
+      // few seconds behind the redirect — refresh twice.
+      if (location.search.indexOf('companion=welcome') !== -1) {
+        try { history.replaceState(null, '', location.pathname); } catch (e) {}
+        track('companion_welcome');
+        setTimeout(refresh, 1500);
+        setTimeout(refresh, 8000);
+      }
 
       return { depthOpen, reportOpen, tasteAvailable, claimTaste, openFull,
                trialActive, trialUsed, companionActive,
