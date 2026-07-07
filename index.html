@@ -200,6 +200,31 @@
     :root[data-theme="light"] .theme-toggle .icon-sun  { display: none; }
     :root[data-theme="light"] .theme-toggle .icon-moon { display: block; }
 
+    /* The Companion — gates and notes */
+    .plan-gate {
+      margin-top: var(--space-block);
+      padding: 22px 24px;
+      border: 1px solid var(--rule);
+      background: rgba(var(--gold-rgb), 0.05);
+      text-align: center;
+    }
+    .plan-gate .label { display: block; margin-bottom: 10px; }
+    .plan-gate-text {
+      font-family: var(--body);
+      color: var(--cream-soft);
+      font-size: 15px;
+      line-height: 1.65;
+      margin: 0 0 16px;
+    }
+    .plan-gate .plan-gate-btn, .settings-section .plan-gate-btn { display: inline-block; }
+    .plan-note {
+      font-family: var(--ui);
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: var(--gold);
+      margin: 0 0 var(--space-item);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     /* iOS Safari: remove the gray tap-highlight flash on buttons/links.
@@ -3147,6 +3172,12 @@
         <h2 id="settings-title" class="settings-title">Settings</h2>
 
         <div class="settings-section">
+          <div class="settings-section-label">The Companion</div>
+          <div class="settings-section-help" id="plan-status">The devotion and daily practice are free, always.</div>
+          <button type="button" class="btn plan-gate-btn" id="plan-trial-btn" style="display:none;">Begin your week</button>
+        </div>
+
+        <div class="settings-section">
           <div class="settings-section-label">Appearance</div>
           <div class="settings-section-help">How the page holds its light.</div>
 
@@ -5876,6 +5907,10 @@
     // chapter sequence. PREMIUM HOOK: to gate this later, run the
     // entitlement check inside openReport() before showing the view.
     function openReport() {
+      if (!kaawnPlan.reportOpen()) {
+        kaawnPlan.gate('report', document.querySelector('.report-cta'));
+        return;
+      }
       reportReturnChapter = currentChapter;
       reportOpen = true;
 
@@ -6124,6 +6159,19 @@
 
       // Deeper toggle
       document.getElementById('deeper-btn').addEventListener('click', () => {
+        if (!kaawnPlan.depthOpen()) {
+          if (kaawnPlan.tasteAvailable()) {
+            kaawnPlan.claimTaste();
+            const dc = document.getElementById('deeper-content');
+            if (dc && !dc.querySelector('.plan-note')) {
+              dc.insertAdjacentHTML('afterbegin',
+                '<p class="plan-note">This reading is open to you today — your one open day.</p>');
+            }
+          } else {
+            kaawnPlan.gate('depth', document.querySelector('.deeper'));
+            return;
+          }
+        }
         document.getElementById('deeper-content').classList.add('open');
         document.getElementById('deeper-trigger').style.display = 'none';
         track('go_deeper_tapped');
@@ -6186,7 +6234,38 @@
       const initialRadio = document.querySelector(`input[name="sufi-register"][value="${saved}"]`);
       if (initialRadio) initialRadio.checked = true;
 
-      function openPanel()  { overlay.classList.add('open');    overlay.setAttribute('aria-hidden', 'false'); }
+      // Deferred: if the saved register is Full but the open day/trial has
+      // closed since the last visit, fall gently back to Light.
+      setTimeout(() => {
+        if (sufiCatalog.getRegister() === 'D' && !kaawnPlan.depthOpen()) {
+          sufiCatalog.setRegister('G');
+          try { localStorage.setItem(STORAGE_KEY, 'G'); } catch (e) {}
+          const g = document.querySelector('input[name="sufi-register"][value="G"]');
+          const d = document.querySelector('input[name="sufi-register"][value="D"]');
+          if (g) g.checked = true;
+          if (d) d.checked = false;
+        }
+      }, 0);
+
+      function openPanel()  { overlay.classList.add('open');    overlay.setAttribute('aria-hidden', 'false'); renderPlanStatus(); }
+
+      // The Companion status inside Settings — refreshed each open
+      function renderPlanStatus() {
+        const el  = document.getElementById('plan-status');
+        const btn = document.getElementById('plan-trial-btn');
+        if (!el) return;
+        el.textContent = kaawnPlan.statusLine();
+        if (btn) btn.style.display =
+          (!kaawnPlan.trialUsed() && !kaawnPlan.companionActive() && kaawnSync.enabled()) ? '' : 'none';
+      }
+      const planTrialBtn = document.getElementById('plan-trial-btn');
+      if (planTrialBtn) planTrialBtn.addEventListener('click', async () => {
+        planTrialBtn.disabled = true; planTrialBtn.textContent = 'Opening…';
+        try { await kaawnPlan.startTrial(); } catch (e) {}
+        planTrialBtn.disabled = false; planTrialBtn.textContent = 'Begin your week';
+        renderPlanStatus();
+      });
+      document.addEventListener('kaawn-plan-changed', renderPlanStatus);
       function closePanel() { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true');  }
 
       gear.addEventListener('click', openPanel);
@@ -6224,6 +6303,14 @@
       radios.forEach(r => {
         r.addEventListener('change', (e) => {
           const newRegister = e.target.value;
+          // The Full register belongs to the Companion (or the open day)
+          if (newRegister === 'D' && !kaawnPlan.depthOpen()) {
+            e.target.checked = false;
+            const g = document.querySelector('input[name="sufi-register"][value="G"]');
+            if (g) g.checked = true;
+            kaawnPlan.gate('depth', e.target.closest('.settings-section'));
+            return;
+          }
           sufiCatalog.setRegister(newRegister);
           track(newRegister === 'D' ? 'register_full' : 'register_light');
           try { localStorage.setItem(STORAGE_KEY, newRegister); } catch (err) {}
@@ -7203,6 +7290,8 @@
       // ── public surface ────────────────────────────────────────────
       return {
         enabled,
+        getClient,      // shared auth rail — used by kaawnPlan (entitlements)
+        ensureSession,  // anonymous account on demand (explicit user action)
         // page load: refresh from server if the user already syncs
         init() { soon(async () => { if (await getSession()) { await pullAndMerge(); renderDevotionCompletion(); } }); },
         // devotion tap: record locally, push if syncing (or do nothing)
@@ -7235,6 +7324,154 @@
         exportCode, importCode,
         pullNow() { return pullAndMerge(); }
       };
+    })();
+
+    // ============================================================
+    // THE COMPANION — plan states: taste day → trial week → companion
+    // ------------------------------------------------------------
+    // taste     one open day of the depth layer (Today's Depth, the
+    //           Personal Sky, the Full register), claimed on the first
+    //           "Go Deeper" tap; remembered locally in kaawn_taste.
+    // trial     seven days, everything open including the Full Report,
+    //           free, no card. One per account — public.entitlements is
+    //           insert-once for clients (see entitlements-setup.sql).
+    // companion paid plan; written only by the payment webhook via the
+    //           service role. The client can only ever read it.
+    // The devotion and daily practice are free forever, in every state.
+    // ============================================================
+    const KAAWN_CHECKOUT_URL = ''; // Lemon Squeezy / Paddle link — empty until the store exists
+    const kaawnPlan = (() => {
+      const TASTE_KEY  = 'kaawn_taste';
+      const CACHE_KEY  = 'kaawn_plan';
+      const TRIAL_DAYS = 7;
+
+      const todayStr = () => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      };
+      const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+      const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+      let row = null; // cached entitlements row — refreshed from the server when a session exists
+      try { row = JSON.parse(lsGet(CACHE_KEY) || 'null'); } catch (e) { row = null; }
+
+      function companionActive() {
+        return !!(row && row.plan === 'companion' &&
+          (!row.plan_expires_at || new Date(row.plan_expires_at) > new Date()));
+      }
+      function trialEnd() { return row && row.trial_started_at ? new Date(row.trial_started_at).getTime() + TRIAL_DAYS * 86400000 : 0; }
+      function trialActive() { return !companionActive() && Date.now() < trialEnd(); }
+      function trialUsed()   { return !!(row && row.trial_started_at); }
+      function trialDaysLeft() { return Math.max(0, Math.ceil((trialEnd() - Date.now()) / 86400000)); }
+
+      // Depth layer (Today's Depth, Personal Sky, Full register):
+      // open for companion, trial, or on the one taste day.
+      function depthOpen()  { return companionActive() || trialActive() || lsGet(TASTE_KEY) === todayStr(); }
+      // Full Report: trial or companion only.
+      function reportOpen() { return companionActive() || trialActive(); }
+      function tasteAvailable() { return !lsGet(TASTE_KEY) && !trialUsed() && !companionActive(); }
+      function claimTaste() { lsSet(TASTE_KEY, todayStr()); track('taste_opened'); openFull(); }
+
+      // Opening the depth (taste or trial) also opens the Full register so
+      // the Personal Sky and deep readings actually appear. The deferred
+      // snap-back in the settings wiring returns it to Light when the open
+      // window closes. (Key literal matches STORAGE_KEY in that scope.)
+      function openFull() {
+        try {
+          if (sufiCatalog.getRegister() === 'D') return;
+          sufiCatalog.setRegister('D');
+          try { localStorage.setItem('cosmic-blueprint:register', 'D'); } catch (e) {}
+          const d = document.querySelector('input[name="sufi-register"][value="D"]');
+          const g = document.querySelector('input[name="sufi-register"][value="G"]');
+          if (d) d.checked = true;
+          if (g) g.checked = false;
+          const bp = document.getElementById('blueprint');
+          if (bp && bp.classList.contains('active')) runBlueprint();
+        } catch (e) { /* renderers not ready — the next render reads the register */ }
+      }
+
+      function cacheRow(r) { row = r; lsSet(CACHE_KEY, JSON.stringify(r)); }
+
+      async function refresh() {
+        if (typeof kaawnSync === 'undefined' || !kaawnSync.enabled()) return;
+        try {
+          const sb = await kaawnSync.getClient();
+          const { data } = await sb.auth.getSession();
+          if (!data || !data.session) return;
+          const res = await sb.from('entitlements').select('*').maybeSingle();
+          if (res.data) cacheRow(res.data);
+        } catch (e) { /* offline — the cache stands */ }
+      }
+
+      async function startTrial() {
+        const session = await kaawnSync.ensureSession();
+        const sb = await kaawnSync.getClient();
+        const existing = await sb.from('entitlements').select('*').maybeSingle();
+        if (existing.data) { cacheRow(existing.data); return existing.data; }
+        const ins = await sb.from('entitlements')
+          .insert({ user_id: session.user.id }).select().maybeSingle();
+        if (ins.data) { cacheRow(ins.data); track('trial_started'); return ins.data; }
+        // insert raced or was refused — trust whatever row the server holds
+        const again = await sb.from('entitlements').select('*').maybeSingle();
+        if (again.data) { cacheRow(again.data); return again.data; }
+        throw ins.error || new Error('no entitlement row');
+      }
+
+      function statusLine() {
+        if (companionActive()) return 'Companion — everything is open.';
+        if (trialActive()) { const d = trialDaysLeft(); return `Your week — ${d} day${d === 1 ? '' : 's'} remain${d === 1 ? 's' : ''}. Everything is open.`; }
+        if (trialUsed()) return 'Your week has ended. The devotion and practice stay free, always.';
+        if (tasteAvailable()) return 'One open day of the deep readings is waiting for you on the Today page.';
+        return 'Your open day has been read. A free week is waiting.';
+      }
+
+      // ── the gate — shown in place of what is closed ───────────────
+      function gateHTML(context) {
+        const isReport = context === 'report';
+        let text, cta = '';
+        if (!trialUsed()) {
+          text = isReport
+            ? 'The Full Report belongs to the Companion. Begin your week — seven days, everything open, free, no card.'
+            : 'Your open day has been read. Begin your week — seven days, everything open, free, no card.';
+          cta = '<button type="button" class="btn plan-gate-btn" data-plan-action="trial">Begin your week</button>';
+        } else if (KAAWN_CHECKOUT_URL) {
+          text = 'Your week has ended. The Companion keeps the depth open — the readings, the sources, the report.';
+          cta = `<a class="btn plan-gate-btn" href="${KAAWN_CHECKOUT_URL}">Continue with the Companion</a>`;
+        } else {
+          text = 'Your week has ended. The Companion opens soon — nothing here is lost, and your practice stays free.';
+        }
+        return `<div class="plan-gate"><span class="label">The Companion</span><p class="plan-gate-text">${text}</p>${cta}</div>`;
+      }
+
+      function gate(context, container) {
+        if (!container) return;
+        track(context === 'report' ? 'gate_report' : 'gate_depth');
+        const old = container.querySelector('.plan-gate');
+        if (old) old.remove();
+        container.insertAdjacentHTML('beforeend', gateHTML(context));
+        const el = container.querySelector('.plan-gate');
+        const btn = el && el.querySelector('[data-plan-action="trial"]');
+        if (btn) btn.addEventListener('click', async () => {
+          btn.disabled = true; btn.textContent = 'Opening…';
+          try {
+            await startTrial();
+            el.remove();
+            openFull();
+            document.dispatchEvent(new CustomEvent('kaawn-plan-changed'));
+            if (context === 'report' && typeof openReport === 'function') openReport();
+          } catch (e) {
+            btn.disabled = false; btn.textContent = 'Begin your week';
+            const t = el.querySelector('.plan-gate-text');
+            if (t) t.textContent = 'Could not reach the server just now. Your practice is safe on this device; try again in a moment.';
+          }
+        });
+      }
+
+      setTimeout(refresh, 0); // after parse — kaawnSync exists by then
+
+      return { depthOpen, reportOpen, tasteAvailable, claimTaste, openFull,
+               trialActive, trialUsed, companionActive,
+               startTrial, statusLine, gate, refresh };
     })();
 
     // ── Lunar mansion rendering ─────────────────────────────────────
