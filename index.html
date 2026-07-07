@@ -5,6 +5,21 @@
   <title>Kaawen</title>
   <meta name="description" content="A reading of your birth chart, made to be sat with. Astrology grounded in care, not prediction. Your data stays in your browser.">
   <meta name="theme-color" content="#0E0F1A">
+  <script>
+    // Theme boot — runs before first paint so there is no flash.
+    // kaawn_theme wins; otherwise the system preference decides.
+    (function () {
+      try {
+        var t = localStorage.getItem('kaawn_theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', t === 'light' ? '#F7F1E1' : '#0E0F1A');
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta property="og:title" content="Kaawen">
   <meta property="og:description" content="A reading of your birth chart, made to be sat with.">
@@ -119,8 +134,8 @@
       --gold:       #D4A655;
       --gold-soft:  #8C6F3A;
       --twilight:   #5A4A8C;
-      --rule:       rgba(212, 166, 85, 0.18);
-      --rule-soft:  rgba(242, 232, 208, 0.10);
+      --rule:       rgba(var(--gold-rgb), 0.18);
+      --rule-soft:  rgba(var(--hi-rgb), 0.10);
 
       --display: 'Cormorant Garamond', serif;
       --body:    'Spectral', serif;
@@ -130,7 +145,60 @@
       --space-section: 40px; /* between major sections within a chapter */
       --space-block:   24px; /* between blocks within a section */
       --space-item:    14px; /* between items within a block */
+
+      /* Theme plumbing — RGB triplets feed the translucent washes;
+         accents that must differ between night and day get their own var. */
+      color-scheme: dark;
+      --gold-rgb:   212, 166, 85;
+      --hi-rgb:     242, 232, 208;
+      --ink-rgb:    15, 17, 35;
+      --rx:         #D89580;
+      --flame-core: #F2E8D0;
     }
+
+    /* Day edition — the same manuscript, read by daylight: ink and
+       gold on warm paper. Set via data-theme on <html> (corner toggle
+       or Settings → Appearance), remembered in kaawn_theme, defaults
+       to the system preference. */
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --ink:        #F7F1E1;
+      --ink-2:      #EFE6CF;
+      --cream:      #2B2415;
+      --cream-soft: #5C4F33;
+      --parchment:  #7A6A4C;
+      --gold:       #8F6118;
+      --gold-soft:  #B08A45;
+      --rule:       rgba(143, 97, 24, 0.28);
+      --rule-soft:  rgba(43, 36, 21, 0.12);
+      --gold-rgb:   143, 97, 24;
+      --hi-rgb:     43, 36, 21;
+      --ink-rgb:    247, 241, 225;
+      --rx:         #A6543B;
+      --flame-core: #F7F1E1;
+    }
+
+    /* Corner theme toggle — night/day, always within reach */
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      width: 36px;
+      height: 36px;
+      padding: 7px;
+      background: none;
+      border: none;
+      color: var(--gold-soft);
+      opacity: 0.55;
+      cursor: pointer;
+      z-index: 40;
+      transition: opacity 0.2s, color 0.2s;
+    }
+    .theme-toggle:hover { opacity: 1; color: var(--gold); }
+    .theme-toggle svg { width: 100%; height: 100%; display: block; }
+    .theme-toggle .icon-moon { display: none; }
+    :root[data-theme="light"] .theme-toggle .icon-sun  { display: none; }
+    :root[data-theme="light"] .theme-toggle .icon-moon { display: block; }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -157,7 +225,7 @@
 
     body {
       background:
-        radial-gradient(ellipse at top, rgba(212, 166, 85, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at top, rgba(var(--gold-rgb), 0.08) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 90%, rgba(90, 74, 140, 0.10) 0%, transparent 60%),
         var(--ink);
       min-height: 100vh;
@@ -171,14 +239,14 @@
       position: fixed;
       inset: 0;
       background-image:
-        radial-gradient(1px 1px at 20% 30%, rgba(242, 232, 208, 0.4), transparent),
-        radial-gradient(1px 1px at 60% 70%, rgba(242, 232, 208, 0.3), transparent),
-        radial-gradient(1px 1px at 50% 50%, rgba(242, 232, 208, 0.2), transparent),
-        radial-gradient(1px 1px at 80% 20%, rgba(242, 232, 208, 0.4), transparent),
-        radial-gradient(1px 1px at 30% 80%, rgba(242, 232, 208, 0.25), transparent),
-        radial-gradient(1px 1px at 90% 60%, rgba(242, 232, 208, 0.3), transparent),
-        radial-gradient(1px 1px at 10% 60%, rgba(242, 232, 208, 0.35), transparent),
-        radial-gradient(1px 1px at 70% 10%, rgba(242, 232, 208, 0.25), transparent);
+        radial-gradient(1px 1px at 20% 30%, rgba(var(--hi-rgb), 0.4), transparent),
+        radial-gradient(1px 1px at 60% 70%, rgba(var(--hi-rgb), 0.3), transparent),
+        radial-gradient(1px 1px at 50% 50%, rgba(var(--hi-rgb), 0.2), transparent),
+        radial-gradient(1px 1px at 80% 20%, rgba(var(--hi-rgb), 0.4), transparent),
+        radial-gradient(1px 1px at 30% 80%, rgba(var(--hi-rgb), 0.25), transparent),
+        radial-gradient(1px 1px at 90% 60%, rgba(var(--hi-rgb), 0.3), transparent),
+        radial-gradient(1px 1px at 10% 60%, rgba(var(--hi-rgb), 0.35), transparent),
+        radial-gradient(1px 1px at 70% 10%, rgba(var(--hi-rgb), 0.25), transparent);
       background-size: 600px 600px;
       pointer-events: none;
       opacity: 0.6;
@@ -198,7 +266,7 @@
       border-radius: 32px;
       box-shadow:
         0 30px 80px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(212, 166, 85, 0.05) inset;
+        0 0 0 1px rgba(var(--gold-rgb), 0.05) inset;
       overflow: hidden;
       z-index: 1;
     }
@@ -364,7 +432,7 @@
     }
     .report-back:hover {
       border-color: var(--gold);
-      background: rgba(212, 166, 85, 0.08);
+      background: rgba(var(--gold-rgb), 0.08);
     }
     .report-back-bottom { margin: 36px 0 8px; }
 
@@ -395,8 +463,8 @@
       margin: 0 -28px -40px;
       padding: 18px 28px 22px;
       background: linear-gradient(180deg,
-        rgba(15, 17, 35, 0) 0%,
-        rgba(15, 17, 35, 0.92) 30%,
+        rgba(var(--ink-rgb), 0) 0%,
+        rgba(var(--ink-rgb), 0.92) 30%,
         var(--ink) 100%);
       display: flex;
       align-items: center;
@@ -421,7 +489,7 @@
     }
     .chapter-arrow:hover:not(:disabled) {
       border-color: var(--gold);
-      background: rgba(212, 166, 85, 0.08);
+      background: rgba(var(--gold-rgb), 0.08);
     }
     .chapter-arrow:disabled {
       opacity: 0.3;
@@ -528,7 +596,7 @@
       font-weight: 500;
     }
     .btn-sync-ghost:hover:not(:disabled) {
-      background: rgba(212, 166, 85, 0.08);
+      background: rgba(var(--gold-rgb), 0.08);
       border-color: var(--gold);
     }
     .sync-row {
@@ -540,7 +608,7 @@
     .sync-input {
       flex: 1;
       min-width: 0;
-      background: rgba(242, 232, 208, 0.04);
+      background: rgba(var(--hi-rgb), 0.04);
       border: 1px solid var(--rule);
       border-radius: 8px;
       color: var(--cream);
@@ -553,7 +621,7 @@
     .sync-code {
       margin-top: 10px;
       padding: 10px 12px;
-      background: rgba(212, 166, 85, 0.06);
+      background: rgba(var(--gold-rgb), 0.06);
       border: 1px dashed var(--rule);
       border-radius: 8px;
       font-family: monospace;
@@ -668,10 +736,10 @@
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
     }
-    .settings-option:hover { border-color: var(--rule); background: rgba(212, 166, 85, 0.04); }
+    .settings-option:hover { border-color: var(--rule); background: rgba(var(--gold-rgb), 0.04); }
     .settings-option:has(input:checked) {
       border-color: var(--gold);
-      background: rgba(212, 166, 85, 0.06);
+      background: rgba(var(--gold-rgb), 0.06);
     }
     .settings-option input[type="radio"] {
       margin: 0;
@@ -853,14 +921,14 @@
     .field-error {
       font-family: var(--body);
       font-size: 12.5px;
-      color: #D89580;
+      color: var(--rx);
       margin-top: 8px;
       line-height: 1.4;
       animation: fadeIn 0.3s ease;
     }
     .form-group.has-error input,
     .form-group.has-error select {
-      border-bottom-color: #D89580;
+      border-bottom-color: var(--rx);
     }
 
     input[type="date"], input[type="time"], select {
@@ -1170,7 +1238,7 @@
     .climate {
       margin-top: var(--space-section);
       padding: 28px 24px;
-      background: rgba(212, 166, 85, 0.04);
+      background: rgba(var(--gold-rgb), 0.04);
       border: 1px solid var(--rule);
       border-radius: 4px;
       animation: fadeUp 0.8s ease backwards;
@@ -1181,7 +1249,7 @@
     .mansion {
       margin-top: var(--space-section);
       padding: 28px 24px;
-      background: rgba(212, 166, 85, 0.04);
+      background: rgba(var(--gold-rgb), 0.04);
       border: 1px solid var(--rule);
       border-radius: 4px;
       text-align: center;
@@ -1476,7 +1544,7 @@
       margin-top: var(--space-section);
       padding: 28px 24px;
       background:
-        linear-gradient(180deg, rgba(212, 166, 85, 0.05) 0%, rgba(212, 166, 85, 0.02) 100%);
+        linear-gradient(180deg, rgba(var(--gold-rgb), 0.05) 0%, rgba(var(--gold-rgb), 0.02) 100%);
       border-top: 1px solid var(--rule);
       border-bottom: 1px solid var(--rule);
       text-align: center;
@@ -1493,7 +1561,7 @@
       margin-top: var(--space-section);
       padding: 28px 24px;
       background:
-        linear-gradient(180deg, rgba(212, 166, 85, 0.07) 0%, rgba(212, 166, 85, 0.025) 100%);
+        linear-gradient(180deg, rgba(var(--gold-rgb), 0.07) 0%, rgba(var(--gold-rgb), 0.025) 100%);
       border-top: 1px solid var(--rule);
       border-bottom: 1px solid var(--rule);
       text-align: center;
@@ -1752,8 +1820,8 @@
       border-top: 1px solid var(--rule);
       border-bottom: 1px solid var(--rule);
       background: linear-gradient(180deg,
-        rgba(212, 166, 85, 0.04),
-        rgba(212, 166, 85, 0.015));
+        rgba(var(--gold-rgb), 0.04),
+        rgba(var(--gold-rgb), 0.015));
       animation: fadeUp 0.6s ease backwards;
       animation-delay: 0.05s;
     }
@@ -1886,8 +1954,8 @@
       text-align: center;
       position: relative;
       background:
-        radial-gradient(ellipse at top left, rgba(212, 166, 85, 0.08) 0%, transparent 60%),
-        rgba(15, 17, 35, 0.5);
+        radial-gradient(ellipse at top left, rgba(var(--gold-rgb), 0.08) 0%, transparent 60%),
+        rgba(var(--ink-rgb), 0.5);
       animation: fadeUp 0.8s ease backwards;
     }
     .devotion .label { margin-bottom: 16px; }
@@ -1999,7 +2067,7 @@
       gap: 3px;
       min-width: 64px;
       padding: 12px 10px;
-      background: rgba(15, 17, 35, 0.5);
+      background: rgba(var(--ink-rgb), 0.5);
       border: 1px solid var(--rule);
       border-radius: 4px;
       cursor: pointer;
@@ -2008,7 +2076,7 @@
     }
     .transit-chip:hover {
       border-color: var(--gold-soft);
-      background: rgba(212, 166, 85, 0.06);
+      background: rgba(var(--gold-rgb), 0.06);
     }
     .transit-chip-glyph {
       font-size: 18px;
@@ -2260,7 +2328,7 @@
       position: relative;
       background:
         radial-gradient(ellipse at top right, rgba(90, 74, 140, 0.12) 0%, transparent 60%),
-        rgba(15, 17, 35, 0.5);
+        rgba(var(--ink-rgb), 0.5);
       animation: fadeUp 0.8s ease backwards;
       animation-delay: 0.1s;
     }
@@ -2279,13 +2347,13 @@
       border: 1px solid var(--gold);
       border-radius: 100px;
       background: linear-gradient(180deg,
-        rgba(212, 166, 85, 0.10),
-        rgba(212, 166, 85, 0.04));
+        rgba(var(--gold-rgb), 0.10),
+        rgba(var(--gold-rgb), 0.04));
       animation: stationPulse 3s ease-in-out infinite;
     }
     @keyframes stationPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(212, 166, 85, 0.0); }
-      50%      { box-shadow: 0 0 14px 0 rgba(212, 166, 85, 0.18); }
+      0%, 100% { box-shadow: 0 0 0 0 rgba(var(--gold-rgb), 0.0); }
+      50%      { box-shadow: 0 0 14px 0 rgba(var(--gold-rgb), 0.18); }
     }
     .station-mark {
       font-family: var(--display);
@@ -2633,6 +2701,17 @@
   </style>
 </head>
 <body>
+  <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to day">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.2" style="fill:var(--gold)" opacity="0.85"/>
+      <g stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.9">
+        <path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.6 5.6l1.9 1.9M16.5 16.5l1.9 1.9M18.4 5.6l-1.9 1.9M7.5 16.5l-1.9 1.9"/>
+      </g>
+    </svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" style="fill:var(--gold)" opacity="0.85"/>
+    </svg>
+  </button>
   <div id="app">
 
     <!-- =================== ONBOARDING =================== -->
@@ -2644,7 +2723,7 @@
          before launch. -->
     <section id="welcome" class="view active">
       <svg class="moon-mark" viewBox="0 0 24 24" fill="none">
-        <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" fill="#D4A655" opacity="0.85"/>
+        <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" style="fill:var(--gold)" opacity="0.85"/>
       </svg>
       <div class="welcome-intro">
         <span class="label">Kaawen</span>
@@ -2664,7 +2743,7 @@
     <!-- =================== ONBOARDING (birth data form) =================== -->
     <section id="onboarding" class="view">
       <svg class="moon-mark" viewBox="0 0 24 24" fill="none">
-        <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" fill="#D4A655" opacity="0.85"/>
+        <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" style="fill:var(--gold)" opacity="0.85"/>
       </svg>
       <div class="onboarding-intro">
         <span class="label">Your sky</span>
@@ -2711,7 +2790,7 @@
     <!-- =================== BLUEPRINT =================== -->
     <section id="blueprint" class="view">
       <svg class="moon-mark" viewBox="0 0 24 24" fill="none">
-        <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" fill="#D4A655" opacity="0.85"/>
+        <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" style="fill:var(--gold)" opacity="0.85"/>
       </svg>
 
       <!-- Settings gear (top-right, symmetric to the moon mark) -->
@@ -2789,8 +2868,8 @@
 
           <div class="pilot-light" id="pilot-light" style="display:none;">
             <svg class="pilot-flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 3 C 8 8 7 12 8.5 16 C 9.5 19 10.5 20 12 22 C 13.5 20 14.5 19 15.5 16 C 17 12 16 8 12 3 Z" fill="#D4A655" opacity="0.85"/>
-              <path d="M12 11 C 10.5 13 10 15 11 17 C 11.5 18 11.7 18.4 12 19 C 12.3 18.4 12.5 18 13 17 C 14 15 13.5 13 12 11 Z" fill="#F2E8D0" opacity="0.6"/>
+              <path d="M12 3 C 8 8 7 12 8.5 16 C 9.5 19 10.5 20 12 22 C 13.5 20 14.5 19 15.5 16 C 17 12 16 8 12 3 Z" style="fill:var(--gold)" opacity="0.85"/>
+              <path d="M12 11 C 10.5 13 10 15 11 17 C 11.5 18 11.7 18.4 12 19 C 12.3 18.4 12.5 18 13 17 C 14 15 13.5 13 12 11 Z" style="fill:var(--flame-core)" opacity="0.6"/>
             </svg>
             <span class="label">The Lamp</span>
             <p class="pilot-prompt">The flame that lights the rest.</p>
@@ -3066,6 +3145,27 @@
         <button id="settings-close" class="settings-close" aria-label="Close settings">×</button>
 
         <h2 id="settings-title" class="settings-title">Settings</h2>
+
+        <div class="settings-section">
+          <div class="settings-section-label">Appearance</div>
+          <div class="settings-section-help">How the page holds its light.</div>
+
+          <label class="settings-option" data-theme-choice="dark">
+            <input type="radio" name="theme-choice" value="dark">
+            <div class="settings-option-body">
+              <div class="settings-option-title">Night</div>
+              <div class="settings-option-desc">Gold on deep indigo — the original.</div>
+            </div>
+          </label>
+
+          <label class="settings-option" data-theme-choice="light">
+            <input type="radio" name="theme-choice" value="light">
+            <div class="settings-option-body">
+              <div class="settings-option-title">Day</div>
+              <div class="settings-option-desc">Ink and gold on warm paper.</div>
+            </div>
+          </label>
+        </div>
 
         <div class="settings-section">
           <div class="settings-section-label">Sufi register</div>
@@ -6096,6 +6196,30 @@
       // Esc closes
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('open')) closePanel(); });
 
+      // ── Theme (night / day) ───────────────────────────────────────
+      const themeRadios = document.querySelectorAll('input[name="theme-choice"]');
+      const themeToggleBtn = document.getElementById('theme-toggle');
+      function currentTheme() {
+        return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      }
+      function applyTheme(t, persist) {
+        document.documentElement.setAttribute('data-theme', t);
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', t === 'light' ? '#F7F1E1' : '#0E0F1A');
+        if (themeToggleBtn) themeToggleBtn.setAttribute('aria-label', t === 'light' ? 'Switch to night' : 'Switch to day');
+        themeRadios.forEach(r => { r.checked = (r.value === t); });
+        if (persist) { try { localStorage.setItem('kaawn_theme', t); } catch (e) {} }
+      }
+      applyTheme(currentTheme(), false); // sync radios + button with the boot choice
+      themeRadios.forEach(r => r.addEventListener('change', () => {
+        if (r.checked) { applyTheme(r.value, true); track(r.value === 'light' ? 'theme_day' : 'theme_night'); }
+      }));
+      if (themeToggleBtn) themeToggleBtn.addEventListener('click', () => {
+        const next = currentTheme() === 'light' ? 'dark' : 'light';
+        applyTheme(next, true);
+        track(next === 'light' ? 'theme_day' : 'theme_night');
+      });
+
       // Register change → persist + re-render the Blueprint if it's been drawn
       radios.forEach(r => {
         r.addEventListener('change', (e) => {
@@ -7126,11 +7250,11 @@
         const x1 = 50 + r1 * Math.cos(ang), y1 = 50 + r1 * Math.sin(ang);
         const x2 = 50 + r2 * Math.cos(ang), y2 = 50 + r2 * Math.sin(ang);
         ticks += `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"
-          stroke="${active ? '#D4A655' : 'rgba(212,166,85,0.28)'}" stroke-width="${active ? 2 : 1}" stroke-linecap="round"/>`;
+          stroke="${active ? '#D4A655' : 'rgba(var(--gold-rgb),0.28)'}" stroke-width="${active ? 2 : 1}" stroke-linecap="round"/>`;
       }
       return ticks
-        + '<circle cx="50" cy="50" r="30" fill="none" stroke="rgba(212,166,85,0.15)" stroke-width="0.5"/>'
-        + '<path d="M55 38 A13 13 0 1 0 55 62 A10 10 0 1 1 55 38 Z" fill="#D4A655" opacity="0.8"/>';
+        + '<circle cx="50" cy="50" r="30" fill="none" stroke="rgba(var(--gold-rgb),0.15)" stroke-width="0.5"/>'
+        + '<path d="M55 38 A13 13 0 1 0 55 62 A10 10 0 1 1 55 38 Z" style="fill:var(--gold)" opacity="0.8"/>';
     }
 
     function renderMoonMansion(moonLon, hasTime) {
