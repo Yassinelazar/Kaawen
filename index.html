@@ -60,7 +60,37 @@
     // provider's script was loaded above; degrades to a harmless no-op
     // (local array) if none is present. NEVER pass chart/birth data here.
     window.__kaawnEvents = [];
+
+    // PostHog (EU cloud, anonymous mode) — loads only when a key is set,
+    // the visitor hasn't opted out (DNT / Global Privacy Control), and
+    // we're on the web. persistence:'memory' = no cookie, no storage, no
+    // consent banner; we never call identify(), so events stay anonymous.
+    const KAAWN_POSTHOG_KEY = ''; // phc_... project key (public by design) — empty keeps it off
+    (function () {
+      try {
+        if (!KAAWN_POSTHOG_KEY || location.protocol === 'file:') return;
+        if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://eu-assets.i.posthog.com/static/array.js';
+        s.onload = function () {
+          if (!window.posthog || typeof window.posthog.init !== 'function') return;
+          window.posthog.init(KAAWN_POSTHOG_KEY, {
+            api_host: 'https://eu.i.posthog.com',
+            persistence: 'memory',
+            person_profiles: 'identified_only',
+            autocapture: false,
+            disable_session_recording: true,
+            respect_dnt: true
+          });
+        };
+        document.head.appendChild(s);
+      } catch (e) { /* analytics must never break the app */ }
+    })();
+
     function sendToProvider(eventName) {
+      // PostHog
+      if (window.posthog && typeof window.posthog.capture === 'function') { window.posthog.capture(eventName); return true; }
       // Plausible
       if (typeof window.plausible === 'function') { window.plausible(eventName); return true; }
       // Fathom
