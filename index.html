@@ -28,75 +28,11 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
   <meta property="og:type" content="website">
-  <!-- ============================================================
-       ANALYTICS — privacy-respecting, anonymous counts only.
-       ============================================================
-       IMPORTANT: This never sends birth data, names, or chart content.
-       It sends only anonymous interaction counts (e.g. "a chart was
-       computed") so we can learn whether people return and which features
-       they use. The product's core promise — birth data never leaves the
-       browser — stays true.
-
-       TO ACTIVATE GoatCounter (the provider chosen for launch):
-         1. Sign up free at https://w ww.goatcounter.com/ — pick a code,
-            e.g. "kaween" → your dashboard is https://kaween.goatcounter.com
-         2. Replace YOURCODE below with that code (just the subdomain part).
-         3. Deploy. Pageviews + the custom events below start flowing.
-       GoatCounter counts hits wherever the script is installed regardless
-       of host domain, so a Netlify random URL works now and a custom domain
-       later needs NO change — the same code keeps counting.
-
-       To switch providers later, swap the script tag below; the track()
-       router already handles Plausible, Fathom, and GoatCounter.
-       Other options (cookieless, GDPR-clean):
-         • Plausible:  <script defer data-domain="YOURDOMAIN" src="https://plausible.io/js/script.js"></script>
-         • Fathom:     <script src="https://cdn.usefathom.com/script.js" data-site="YOURID" defer></script>
-       -->
-  <!-- GoatCounter — replace YOURCODE with your registered subdomain code. -->
-  <script data-goatcounter="https://kaween.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
   <script>
-    // Provider-agnostic event tracker. Routes to whichever analytics
-    // provider's script was loaded above; degrades to a harmless no-op
-    // (local array) if none is present. NEVER pass chart/birth data here.
+    // Provider-agnostic event tracker. Degrades to a harmless no-op (local
+    // array) if the funnel can't be reached. NEVER pass chart/birth data here.
     window.__kaawnEvents = [];
 
-    // PostHog (EU cloud, anonymous mode) — loads only when a key is set,
-    // the visitor hasn't opted out (DNT / Global Privacy Control), and
-    // we're on the web. persistence:'memory' = no cookie, no storage, no
-    // consent banner; we never call identify(), so events stay anonymous.
-    const KAAWN_POSTHOG_KEY = 'phc_ms3beSJC3tYCByQjXZekP2QicKrNMU7iwQ5NU6XSL8tf'; // project key (public by design)
-    (function () {
-      try {
-        if (!KAAWN_POSTHOG_KEY || location.protocol === 'file:') return;
-        if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
-        /* Official posthog-js stub — queues calls until array.js loads. */
-        !function(t,e){var o,n,p,r;e.__SV||(window.posthog&&window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="ki Ci init qi Hi pr Bi zi Di capture calculateEventProperties Qi register register_once register_for_session unregister unregister_for_session Ki getFeatureFlag getFeatureFlagPayload getFeatureFlagResult getAllFeatureFlags isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Xi identify setPersonProperties unsetPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset shutdown setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException addExceptionStep captureLog startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty Ji Gi createPersonProfile setInternalOrTestUser Yi Ai rn opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing Vi debug mr it getPageViewId captureTraceFeedback captureTraceMetric Oi".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-        window.posthog.init(KAAWN_POSTHOG_KEY, {
-          api_host: 'https://eu.i.posthog.com',
-          defaults: '2026-05-30',
-          persistence: 'memory',
-          person_profiles: 'identified_only',
-          autocapture: false,
-          disable_session_recording: true,
-          respect_dnt: true
-        });
-      } catch (e) { /* analytics must never break the app */ }
-    })();
-
-    function sendToProvider(eventName) {
-      // PostHog
-      if (window.posthog && typeof window.posthog.capture === 'function') { window.posthog.capture(eventName); return true; }
-      // Plausible
-      if (typeof window.plausible === 'function') { window.plausible(eventName); return true; }
-      // Fathom
-      if (window.fathom && typeof window.fathom.trackEvent === 'function') { window.fathom.trackEvent(eventName); return true; }
-      // GoatCounter
-      if (window.goatcounter && typeof window.goatcounter.count === 'function') {
-        window.goatcounter.count({ path: 'event/' + eventName, event: true }); return true;
-      }
-      return false;
-    }
     // Funnel intake — anonymous events into our own Supabase table
     // (usage-events-setup.sql in the repo root). One random session id
     // per page load, held in memory only: no cookie, no storage, no
@@ -120,16 +56,10 @@
       try {
         window.__kaawnEvents.push({ event: eventName, t: Date.now() });
         sendToFunnel(eventName);
-        if (sendToProvider(eventName)) return;
-        // Provider script not loaded yet (async) — retry once shortly so
-        // early taps (e.g. "Begin" tapped immediately) aren't lost. If still
-        // no provider after the retry, the event lives only in the local array.
-        setTimeout(function () { sendToProvider(eventName); }, 1500);
       } catch (e) { /* analytics must never break the app */ }
     };
-    // Session-start marker for the funnel. GoatCounter already counts the
-    // pageview itself; this is deferred so KAAWN_SYNC (declared later in
-    // the body) exists by the time it fires.
+    // Session-start marker for the funnel. Deferred so KAAWN_SYNC (declared
+    // later in the body) exists by the time it fires.
     document.addEventListener('DOMContentLoaded', function () { sendToFunnel('visit'); });
   </script>
 
@@ -141,12 +71,12 @@
   <meta name="twitter:image" content="og-image.png">
 
   <!-- Favicons.
-       Inlined as data URIs to keep the prototype single-file. The SVG
-       favicon is supported by all modern browsers (Chrome, Firefox,
-       Safari, Edge). The Apple touch icon uses the same SVG; iOS 14+
-       accepts SVG for home-screen pinning. -->
+       The small tab/search icon stays the inline SVG crescent — it's a
+       bold single shape that still reads at 16-32px. The Apple touch icon
+       (shown at 120-180px on iOS home screens) uses the full logo artwork,
+       which only reads at that larger size. -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20fill%3D%22%230E0F1A%22%2F%3E%3Cpath%20d%3D%22M21%207%20A9%209%200%201%200%2021%2025%20A7%207%200%201%201%2021%207%20Z%22%20fill%3D%22%23D4A655%22%2F%3E%3C%2Fsvg%3E">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20180%20180%22%3E%3Crect%20width%3D%22180%22%20height%3D%22180%22%20fill%3D%22%230E0F1A%22%2F%3E%3Cpath%20d%3D%22M118%2040%20A50%2050%200%201%200%20118%20140%20A38%2038%200%201%201%20118%2040%20Z%22%20fill%3D%22%23D4A655%22%2F%3E%3C%2Fsvg%3E">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
@@ -955,6 +885,13 @@
       max-width: 320px;
       margin: 20px auto 0;
       line-height: 1.6;
+    }
+    .privacy-link {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--gold);
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
 
     .form-group {
@@ -2828,6 +2765,7 @@
 
         <p class="privacy-line">
           Your birth data never leaves your browser. If you turn on sync, we store only encrypted practice data we can't read.
+          <a class="privacy-link" href="privacy.html">Privacy policy</a>
         </p>
       </form>
     </section>
