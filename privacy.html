@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaawen Confidentiality</title>
+  <meta name="description" content="Confidentiality and data handling information for Kaawen.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #0E0F1A;
+      --cream: #F2E8D0;
+      --cream-soft: #C9BCA0;
+      --parchment: #9A8E78;
+      --gold: #D4A655;
+      --rule: rgba(212, 166, 85, 0.22);
+      --body: "Spectral", Georgia, serif;
+      --ui: "Manrope", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--body);
+      background: var(--ink);
+      color: var(--cream);
+      line-height: 1.7;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(760px, 100%);
+      padding: 32px;
+      border: 1px solid var(--rule);
+      background: rgba(255,255,255,0.03);
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 30px;
+      line-height: 1.2;
+      color: var(--cream);
+    }
+    .eyebrow {
+      font-family: var(--ui);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-size: 11px;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    p, li {
+      font-size: 16px;
+      color: var(--cream-soft);
+    }
+    ul { padding-left: 20px; }
+    a {
+      color: var(--gold);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      font-family: var(--ui);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .section-rule {
+      border: none;
+      border-top: 1px solid var(--rule);
+      margin: 36px 0 28px;
+    }
+    h2 {
+      margin: 0 0 4px;
+      font-size: 22px;
+      line-height: 1.3;
+      color: var(--cream);
+    }
+    h3 {
+      margin: 26px 0 8px;
+      font-family: var(--ui);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .meta {
+      font-family: var(--ui);
+      font-size: 12px;
+      color: var(--parchment);
+      margin: 0 0 18px;
+    }
+    code {
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 0.9em;
+      color: var(--cream);
+      background: rgba(255,255,255,0.06);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="eyebrow">Kaawen Confidentiality</div>
+    <h1>How your information is handled</h1>
+    <p>Kaawen is built around the idea that your birth data remains private. The reading is generated in your browser, and your personal chart details are not sent to a server for analysis.</p>
+    <ul>
+      <li>Your birth date, birth time, and place are used only to generate your reading locally in the app.</li>
+      <li>If you turn on sync, we store only encrypted practice data that is not readable by us.</li>
+      <li>Analytics are limited to anonymous interaction counts and never include your chart content or identifying personal information.</li>
+    </ul>
+    <p>If you want to use this page for app submission or review, you can link to this URL directly once the site is hosted.</p>
+
+    <hr class="section-rule">
+
+    <div class="eyebrow">PerTutto · Pinterest Integration</div>
+    <h2>Privacy Policy</h2>
+    <p class="meta">PerTutto Pinterest Integration · Last updated 3 August 2026 · a side ecommerce business under the same group as Kaawen</p>
+
+    <p>This policy describes how the PerTutto Pinterest Integration (the "Tool") handles data. The Tool is a private, single-operator utility that publishes product listings from the PerTutto Etsy shop to a Pinterest board owned by the same operator. It is operated by Yassin Lazar and is not offered to, installed by, or accessible to the public.</p>
+
+    <h3>Who uses this Tool</h3>
+    <p>The operator is the only user. The Tool authorizes against a single Pinterest account and a single Etsy shop, both owned by the operator. It has no user accounts, no sign-up, no multi-tenant access, and it does not act on behalf of any third party.</p>
+
+    <h3>What data the Tool accesses</h3>
+    <ul>
+      <li><strong>Etsy product listing data</strong> — listing titles, descriptions, product photographs, listing URLs and listing IDs from the operator's own shop. This is information already published publicly on Etsy.</li>
+      <li><strong>Pinterest account and board data</strong> — the operator's own board identifiers and names, retrieved to determine where pins should be published.</li>
+    </ul>
+    <p>The Tool does not access, collect, request or process personal data belonging to Etsy buyers, Pinterest users, site visitors, or any other individual. It reads no orders, no customer records, no messages, and no Pinterest user data beyond the operator's own account identifiers.</p>
+
+    <h3>What the Tool stores</h3>
+    <ul>
+      <li>OAuth tokens for Etsy and Pinterest, stored in a local configuration file on the operator's own computer. Tokens are never transmitted to any third party, never displayed in full, and never committed to source control.</li>
+      <li>A local record of published pins — a file mapping Etsy listing IDs to the Pinterest pin IDs created from them, so the Tool does not create duplicate pins on repeat runs.</li>
+    </ul>
+    <p>There is no server, no hosted database, and no cloud storage. All state remains on the operator's machine.</p>
+
+    <h3>How the Tool authenticates</h3>
+    <p>Access to the Pinterest API is obtained exclusively through Pinterest's OAuth 2.0 authorization flow. The operator is redirected to Pinterest, approves the requested scopes, and the resulting authorization code is exchanged for an access token. The Tool never collects, stores or transmits Pinterest login credentials, passwords, or session cookies.</p>
+    <p>The scopes requested are <code>boards:read</code>, <code>boards:write</code>, <code>pins:read</code>, <code>pins:write</code> and <code>user_accounts:read</code> — the minimum required to read the operator's boards and publish pins to them.</p>
+
+    <h3>What the Tool shares</h3>
+    <p>Nothing. No data is sold, rented, shared, transferred, or disclosed to any third party. There are no analytics, no advertising networks, no tracking pixels, and no third-party processors. The only external services contacted are the Etsy API and the Pinterest API themselves.</p>
+
+    <h3>Data retention and deletion</h3>
+    <p>Locally stored tokens and pin records persist until the operator deletes them, which can be done at any time by removing the Tool's configuration and state files. Pinterest access can be revoked at any time from Pinterest account settings, which immediately invalidates the Tool's tokens. Content published to Pinterest is governed by Pinterest's own policies and can be deleted directly from the Pinterest account.</p>
+
+    <h3>Children</h3>
+    <p>The Tool is not directed to children and processes no data from anyone other than its single operator.</p>
+
+    <h3>Changes to this policy</h3>
+    <p>If the Tool's data handling changes, this page will be updated and the date at the top of this section revised.</p>
+
+    <h3>Contact</h3>
+    <p>Questions about this policy can be sent to <a href="mailto:hello@kaawen.com">hello@kaawen.com</a>.</p>
+
+    <p class="meta">Operated by Yassin Lazar · PerTutto on Etsy · Pinterest app ID 1591239</p>
+
+    <a class="back-link" href="index.html">Return to Kaawen</a>
+  </main>
+</body>
+</html>
