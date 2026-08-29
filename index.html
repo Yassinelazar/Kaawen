@@ -3145,6 +3145,252 @@
     }
 
     /* ============================================================
+       THE TOOLS — chart instruments: list rows on the landing, the
+       two-chart views, bi-wheel legend, and reading rows.
+       ============================================================ */
+    :root { --partner: #8E7CC3; } /* the second chart's color on bi-wheels */
+
+    .tools { margin-top: 72px; max-width: 820px; margin-left: auto; margin-right: auto; }
+    .tools-head {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .tools-kicker {
+      font-family: var(--ui);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+    }
+    .tools-kicker-right { color: var(--parchment); opacity: 0.7; }
+    .tool-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--rule-soft);
+      padding: 22px 4px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .tool-row:hover { background: rgba(var(--gold-rgb), 0.04); }
+    .tool-icon {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      border: 1px solid var(--rule);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-soft);
+      transition: color 0.3s ease, border-color 0.3s ease;
+    }
+    .tool-row:hover .tool-icon { color: var(--gold); border-color: var(--rule); }
+    .tool-icon svg { width: 34px; height: 34px; }
+    .tool-body { flex: 1; min-width: 0; }
+    .tool-no {
+      display: block;
+      font-family: var(--ui);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      margin-bottom: 4px;
+    }
+    .tool-name {
+      display: block;
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 21px;
+      color: var(--cream);
+      margin-bottom: 4px;
+    }
+    .tool-line {
+      display: block;
+      font-family: var(--body);
+      font-size: 13px;
+      color: var(--parchment);
+      line-height: 1.5;
+    }
+    .tool-arrow { color: var(--gold-soft); font-size: 16px; transition: transform 0.3s ease, color 0.3s ease; }
+    .tool-row:hover .tool-arrow { transform: translateX(4px); color: var(--gold); }
+
+    /* Tool views */
+    .tool-head { text-align: center; max-width: 520px; margin: 0 auto 36px; }
+    .tool-head .label { margin-bottom: 18px; }
+    .tool-title {
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 30px;
+      color: var(--cream);
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+    .tool-sub {
+      font-family: var(--body);
+      font-size: 13.5px;
+      color: var(--parchment);
+      line-height: 1.65;
+    }
+    .duo-mode { display: flex; justify-content: center; gap: 8px; margin-top: 22px; }
+    .duo-mode-btn {
+      background: none;
+      border: 1px solid var(--rule);
+      border-radius: 100px;
+      color: var(--parchment);
+      font-family: var(--ui);
+      font-size: 10.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 8px 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .duo-mode-btn.active { color: var(--gold); border-color: var(--gold); background: rgba(var(--gold-rgb), 0.06); }
+    .duo-form { max-width: 760px; margin: 0 auto; }
+    .duo-people { display: grid; gap: 24px; }
+    .duo-people-single { max-width: 340px; margin: 0 auto; }
+    .duo-person {
+      border: 1px solid var(--rule-soft);
+      border-radius: 10px;
+      padding: 22px 20px 8px;
+      background: rgba(var(--gold-rgb), 0.02);
+    }
+    .duo-person-label {
+      display: block;
+      font-family: var(--ui);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .duo-a-label { color: var(--gold); }
+    .duo-b-label { color: var(--partner); }
+    .duo-optional {
+      font-size: 8.5px;
+      letter-spacing: 0.1em;
+      color: var(--parchment);
+      opacity: 0.7;
+      margin-left: 6px;
+    }
+    .tool-btn { max-width: 400px; margin-left: auto; margin-right: auto; animation-delay: 0s; }
+
+    /* Bi-wheel legend — which color is whose */
+    .tool-legend {
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      margin: 40px 0 8px;
+      font-family: var(--ui);
+      font-size: 10.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--parchment);
+    }
+    .tool-legend-chip { display: flex; align-items: center; gap: 7px; }
+    .tool-legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .tool-legend-dot.dot-a { background: var(--gold); }
+    .tool-legend-dot.dot-b { background: var(--partner); }
+    .whl-b .whl-planet-glyph { fill: var(--partner); }
+    .tool-wheel { max-width: 560px; margin: 0 auto; }
+
+    /* Tool reading — the interpreted list under the wheel */
+    .tool-reading { max-width: 640px; margin: 28px auto 0; text-align: left; }
+    .tool-section-label {
+      display: block;
+      font-family: var(--ui);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      text-align: center;
+      margin: 40px 0 18px;
+    }
+    .tool-aspect {
+      padding: 16px 0 18px;
+      border-bottom: 1px solid var(--rule-soft);
+    }
+    .tool-aspect-head {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 8px;
+    }
+    .tool-aspect-glyphs { font-size: 14px; }
+    .tool-aspect-glyphs .g-a { color: var(--gold); }
+    .tool-aspect-glyphs .g-b { color: var(--partner); }
+    .tool-aspect-glyphs .g-asp { color: var(--cream-soft); margin: 0 3px; }
+    .tool-aspect-label {
+      font-family: var(--ui);
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cream-soft);
+    }
+    .tool-aspect-meta {
+      font-family: var(--ui);
+      font-size: 10px;
+      color: var(--parchment);
+      margin-left: auto;
+      letter-spacing: 0.06em;
+    }
+    .tool-aspect-meta .ta-applying { color: var(--gold); }
+    .tool-aspect-text {
+      font-family: var(--body);
+      font-size: 13.5px;
+      color: var(--cream-soft);
+      line-height: 1.68;
+    }
+    .tool-aspect-text.is-current {
+      font-style: italic;
+      opacity: 0.85;
+    }
+    /* Placement rows (composite placements, houses-crossing lists) */
+    .tool-place {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--rule-soft);
+      font-family: var(--body);
+      font-size: 13px;
+      color: var(--cream-soft);
+      line-height: 1.6;
+    }
+    .tool-place-glyph { color: var(--gold); font-size: 14px; flex-shrink: 0; width: 20px; }
+    .tool-place-glyph.g-b { color: var(--partner); }
+    .tool-place b {
+      font-family: var(--ui);
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cream);
+    }
+    .tool-note {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 12px;
+      color: var(--parchment);
+      opacity: 0.8;
+      text-align: center;
+      max-width: 420px;
+      margin: 18px auto 0;
+      line-height: 1.6;
+    }
+
+    /* ============================================================
        DESKTOP — ≥960px. Full-bleed page; content constrained by
        inner max-widths, chrome aligned to a 1200px column via the
        max() padding trick (its % resolves against full page width).
@@ -3234,6 +3480,12 @@
 
       /* Transit detail panel breathes */
       .tp-panel { max-width: 560px; }
+
+      /* Tools */
+      .duo-people { grid-template-columns: 1fr 1fr; gap: 28px; }
+      .duo-people-single { grid-template-columns: 1fr; }
+      .tool-head { max-width: 620px; }
+      .tool-title { font-size: 38px; }
     }
   </style>
 </head>
@@ -3333,6 +3585,150 @@
           <span class="chapter-card-line">The sky now, read against the sky you were born under.</span>
           <span class="chapter-card-arrow">→</span>
         </button>
+      </div>
+
+      <!-- The Tools — the chart instruments, under the big charts -->
+      <div class="tools">
+        <div class="tools-head">
+          <span class="tools-kicker">The Tools</span>
+          <span class="tools-kicker tools-kicker-right">Where to begin</span>
+        </div>
+        <button type="button" class="tool-row" data-nav="begin">
+          <span class="tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="14" stroke="currentColor" stroke-width="1"/><circle cx="20" cy="20" r="2" fill="currentColor"/><circle cx="20" cy="20" r="9" stroke="currentColor" stroke-width="0.7" stroke-dasharray="1 3"/></svg>
+          </span>
+          <span class="tool-body">
+            <span class="tool-no">n° 01</span>
+            <span class="tool-name">Birth chart</span>
+            <span class="tool-line">Your sky, drawn whole and read in full — planets, houses, aspects, and patterns.</span>
+          </span>
+          <span class="tool-arrow">→</span>
+        </button>
+        <button type="button" class="tool-row" data-nav="tool:syn">
+          <span class="tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none"><circle cx="16" cy="20" r="11" stroke="currentColor" stroke-width="1"/><circle cx="24" cy="20" r="11" stroke="currentColor" stroke-width="1"/></svg>
+          </span>
+          <span class="tool-body">
+            <span class="tool-no">n° 02</span>
+            <span class="tool-name">Synastry chart</span>
+            <span class="tool-line">Two charts laid over each other — where you meet, and where you grind, point by point.</span>
+          </span>
+          <span class="tool-arrow">→</span>
+        </button>
+        <button type="button" class="tool-row" data-nav="tool:comp">
+          <span class="tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="14" stroke="currentColor" stroke-width="1"/><circle cx="16" cy="22" r="5" stroke="currentColor" stroke-width="0.8"/><circle cx="24" cy="22" r="5" stroke="currentColor" stroke-width="0.8"/><circle cx="20" cy="15" r="5" stroke="currentColor" stroke-width="0.8"/></svg>
+          </span>
+          <span class="tool-body">
+            <span class="tool-no">n° 03</span>
+            <span class="tool-name">Composite chart</span>
+            <span class="tool-line">The chart a bond itself casts — one wheel, drawn from the midpoints of two skies.</span>
+          </span>
+          <span class="tool-arrow">→</span>
+        </button>
+        <button type="button" class="tool-row" data-nav="tool:transits">
+          <span class="tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="10" stroke="currentColor" stroke-width="1"/><circle cx="20" cy="20" r="15" stroke="currentColor" stroke-width="0.7" stroke-dasharray="1 3"/><circle cx="20" cy="5" r="1.6" fill="currentColor"/><circle cx="33" cy="26" r="1.6" fill="currentColor"/><circle cx="8" cy="28" r="1.6" fill="currentColor"/></svg>
+          </span>
+          <span class="tool-body">
+            <span class="tool-no">n° 04</span>
+            <span class="tool-name">Transits chart</span>
+            <span class="tool-line">Today's sky overlaid on your own — the weather of this exact moment.</span>
+          </span>
+          <span class="tool-arrow">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =================== TOOL: SYNASTRY / COMPOSITE =================== -->
+    <!-- One view, two readings of the same pair of charts. Synastry lays
+         chart B over chart A (bi-wheel + inter-aspects); Composite folds
+         both into one midpoint chart (Rob Hand method). -->
+    <section id="tool-duo" class="view">
+      <div class="tool-head">
+        <span class="label" id="duo-label">Synastry</span>
+        <h1 class="tool-title" id="duo-title">Two skies, laid over each other.</h1>
+        <p class="tool-sub" id="duo-sub">Enter both charts. Where the planets of one touch the planets of the other, the relationship speaks.</p>
+        <div class="duo-mode" role="tablist" aria-label="Reading mode">
+          <button type="button" class="duo-mode-btn active" data-duo-mode="syn">Synastry</button>
+          <button type="button" class="duo-mode-btn" data-duo-mode="comp">Composite</button>
+        </div>
+      </div>
+      <form id="duo-form" class="duo-form">
+        <div class="duo-people">
+          <div class="duo-person">
+            <span class="duo-person-label duo-a-label">First chart — you</span>
+            <div class="form-group">
+              <label class="label" for="duo-a-dob">Date of birth</label>
+              <input type="date" id="duo-a-dob" required>
+            </div>
+            <div class="form-group">
+              <label class="label" for="duo-a-tob">Time of birth <span class="duo-optional">optional</span></label>
+              <input type="time" id="duo-a-tob">
+            </div>
+            <div class="form-group">
+              <label class="label" for="duo-a-city">Place of birth</label>
+              <select id="duo-a-city" required><option value="">Select a city…</option></select>
+            </div>
+          </div>
+          <div class="duo-person">
+            <span class="duo-person-label duo-b-label">Second chart — them</span>
+            <div class="form-group">
+              <label class="label" for="duo-b-dob">Date of birth</label>
+              <input type="date" id="duo-b-dob" required>
+            </div>
+            <div class="form-group">
+              <label class="label" for="duo-b-tob">Time of birth <span class="duo-optional">optional</span></label>
+              <input type="time" id="duo-b-tob">
+            </div>
+            <div class="form-group">
+              <label class="label" for="duo-b-city">Place of birth</label>
+              <select id="duo-b-city" required><option value="">Select a city…</option></select>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn tool-btn" id="duo-submit">Lay the charts together</button>
+        <p class="privacy-line">Both charts are computed in your browser and kept nowhere.</p>
+      </form>
+      <div id="duo-result" style="display:none;">
+        <div class="tool-legend" id="duo-legend"></div>
+        <div class="wheel-visual tool-wheel" id="duo-wheel"></div>
+        <div class="tool-reading" id="duo-reading"></div>
+      </div>
+    </section>
+
+    <!-- =================== TOOL: TRANSITS =================== -->
+    <section id="tool-transits" class="view">
+      <div class="tool-head">
+        <span class="label">Transits</span>
+        <h1 class="tool-title">Today's sky, over your own.</h1>
+        <p class="tool-sub">The planets as they stand right now, laid over the sky you were born under. Tight orbs only — a transit is an event, not a mood.</p>
+      </div>
+      <form id="tr-form" class="duo-form">
+        <div class="duo-people duo-people-single">
+          <div class="duo-person">
+            <span class="duo-person-label duo-a-label">Your birth chart</span>
+            <div class="form-group">
+              <label class="label" for="tr-dob">Date of birth</label>
+              <input type="date" id="tr-dob" required>
+            </div>
+            <div class="form-group">
+              <label class="label" for="tr-tob">Time of birth <span class="duo-optional">optional</span></label>
+              <input type="time" id="tr-tob">
+            </div>
+            <div class="form-group">
+              <label class="label" for="tr-city">Place of birth</label>
+              <select id="tr-city" required><option value="">Select a city…</option></select>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn tool-btn">Read this moment against your sky</button>
+        <p class="privacy-line">Computed in your browser and kept nowhere.</p>
+      </form>
+      <div id="tr-result" style="display:none;">
+        <div class="tool-legend" id="tr-legend"></div>
+        <div class="wheel-visual tool-wheel" id="tr-wheel"></div>
+        <div class="tool-reading" id="tr-reading"></div>
       </div>
     </section>
 
@@ -6051,8 +6447,17 @@
     // textPath ids so two wheels can live in the same document, and
     // interactive:false omits every hit target, halo, and data attribute.
     function buildWheelSVG(positions, opts) {
-      const { rot, hasTime, rising, aspects, retro = {}, idp = 'whl', interactive = true } = opts;
+      const { rot, hasTime, rising, aspects, retro = {}, idp = 'whl', interactive = true,
+              overlay = null } = opts;
       const { CX, CY, R_OUT, R_IN, R_LBL, R_PLANET, R_ASP, R_NUM } = WHL;
+      // Bi-wheel mode (synastry/transits): the base chart moves inward to
+      // make room for the partner ring between it and the sign band, the
+      // aspect hub tightens, and inter-aspect lines run ring-to-ring so
+      // ownership is visible in the geometry itself.
+      const hubR   = overlay ? 92 : R_ASP;
+      const numR   = overlay ? 74 : R_NUM;
+      const baseStagger = overlay ? [120, 107, 133] : [R_PLANET, R_PLANET - 16, R_PLANET + 14];
+      const overStagger = [154, 166];
 
       // ── Sign band: boundaries, curved names, hit wedges ──────────
       let signBand = '';
@@ -6085,7 +6490,7 @@
           const a = signIdx * 30, b = a + 30, mid = a + 15;
           const sp1 = wheelPt(a, 22, rot), sp2 = wheelPt(a, R_IN, rot);
           housesSVG += `<line x1="${sp1.x.toFixed(1)}" y1="${sp1.y.toFixed(1)}" x2="${sp2.x.toFixed(1)}" y2="${sp2.y.toFixed(1)}" stroke="var(--rule-soft)" stroke-width="1" stroke-dasharray="1.5 4"/>`;
-          const np = wheelPt(mid, R_NUM, rot);
+          const np = wheelPt(mid, numR, rot);
           housesSVG += `<text class="whl-house-num" x="${np.x.toFixed(1)}" y="${np.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central">${n}</text>`;
           if (interactive) {
             const w1 = wheelPt(a, 24, rot), w2 = wheelPt(a, R_IN, rot);
@@ -6105,37 +6510,46 @@
                 + `<path d="M ${xL} ${CY} l 8 -4.5 v 9 Z" fill="var(--parchment)" opacity="0.55"/>`;
       }
 
-      // ── Aspect lines (conjunctions excluded — they read as proximity) ──
-      const KIND_STROKE = { flow: 'var(--gold-soft)', friction: 'var(--rx)', mirror: 'var(--parchment)' };
-      const aspectSVG = aspects.filter(a => a.kind !== 'fusion').map(asp => {
-        const p1 = wheelPt(positions[asp.a], R_ASP, rot);
-        const p2 = wheelPt(positions[asp.b], R_ASP, rot);
+      // ── Aspect lines. Natal wheels connect hub points; bi-wheels run
+      // ring-to-ring (base-planet end inner, partner end outer), and keep
+      // conjunction lines — across two charts a conjunction is a meeting,
+      // not mere proximity. ──
+      const KIND_STROKE = { fusion: 'var(--gold)', flow: 'var(--gold-soft)', friction: 'var(--rx)', mirror: 'var(--parchment)' };
+      const drawnAspects = overlay ? aspects : aspects.filter(a => a.kind !== 'fusion');
+      const aspectSVG = drawnAspects.map(asp => {
+        const p1 = overlay ? wheelPt(positions[asp.a], 100, rot) : wheelPt(positions[asp.a], hubR, rot);
+        const p2 = overlay ? wheelPt(overlay.positions[asp.b], 142, rot) : wheelPt(positions[asp.b], hubR, rot);
         const w = (0.7 + asp.strength * 0.9).toFixed(2);
         const op = (0.3 + asp.strength * 0.45).toFixed(2);
         return `<line class="whl-aspect" data-a="${asp.a}" data-b="${asp.b}" pointer-events="none" x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${KIND_STROKE[asp.kind] || 'var(--parchment)'}" stroke-width="${w}" opacity="${op}"/>`;
       }).join('');
 
-      // ── Planets: rim ticks + glyphs, clusters staggered radially ──
-      const sorted = Object.entries(positions).map(([p, lon]) => ({ p, lon })).sort((x, y) => x.lon - y.lon);
-      // Start the cluster walk at the widest gap so wrap-around clusters group correctly
-      let startIdx = 0, widest = -1;
-      for (let i = 0; i < sorted.length; i++) {
-        const prev = sorted[(i + sorted.length - 1) % sorted.length];
-        let gap = sorted[i].lon - prev.lon; if (gap < 0) gap += 360;
-        if (gap > widest) { widest = gap; startIdx = i; }
-      }
-      const STAGGER = [R_PLANET, R_PLANET - 16, R_PLANET + 14];
-      let clusterPos = 0, prevLon = null;
-      const planetR = {};
-      for (let k = 0; k < sorted.length; k++) {
-        const { p, lon } = sorted[(startIdx + k) % sorted.length];
-        if (prevLon !== null) {
-          let gap = lon - prevLon; if (gap < 0) gap += 360;
-          clusterPos = (gap < 10) ? clusterPos + 1 : 0;
+      // ── Planets: rim ticks + glyphs, clusters staggered radially.
+      // The walk starts at the widest gap so wrap-around clusters group
+      // correctly; the same walk serves both rings of a bi-wheel. ──
+      function staggerRadii(pos, radii) {
+        const sorted = Object.entries(pos).map(([p, lon]) => ({ p, lon })).sort((x, y) => x.lon - y.lon);
+        let startIdx = 0, widest = -1;
+        for (let i = 0; i < sorted.length; i++) {
+          const prev = sorted[(i + sorted.length - 1) % sorted.length];
+          let gap = sorted[i].lon - prev.lon; if (gap < 0) gap += 360;
+          if (gap > widest) { widest = gap; startIdx = i; }
         }
-        planetR[p] = STAGGER[clusterPos % STAGGER.length];
-        prevLon = lon;
+        let clusterPos = 0, prevLon = null;
+        const out = {};
+        for (let k = 0; k < sorted.length; k++) {
+          const { p, lon } = sorted[(startIdx + k) % sorted.length];
+          if (prevLon !== null) {
+            let gap = lon - prevLon; if (gap < 0) gap += 360;
+            clusterPos = (gap < 10) ? clusterPos + 1 : 0;
+          }
+          out[p] = radii[clusterPos % radii.length];
+          prevLon = lon;
+        }
+        return out;
       }
+
+      const planetR = staggerRadii(positions, baseStagger);
       const planetsSVG = Object.entries(positions).map(([p, lon]) => {
         const tick1 = wheelPt(lon, R_IN - 7, rot), tick2 = wheelPt(lon, R_IN, rot);
         const g = wheelPt(lon, planetR[p], rot);
@@ -6153,16 +6567,33 @@
         </g>`;
       }).join('');
 
+      // ── Partner ring (bi-wheel): second chart's planets in their own
+      // color, seated between the base ring and the sign band. ──
+      let overlaySVG = '';
+      if (overlay) {
+        const overR = staggerRadii(overlay.positions, overStagger);
+        overlaySVG = Object.entries(overlay.positions).map(([p, lon]) => {
+          const g = wheelPt(lon, overR[p], rot);
+          const retroMark = (overlay.retro && overlay.retro[p])
+            ? `<text x="${(g.x + 8).toFixed(1)}" y="${(g.y + 6).toFixed(1)}" font-size="7" class="whl-planet-rx">℞</text>` : '';
+          return `<g class="whl-planet whl-static whl-b">
+            <text class="whl-planet-glyph" x="${g.x.toFixed(1)}" y="${g.y.toFixed(1)}" font-size="${(WHL_GLYPH_SIZE[p] || 14) - 1}" text-anchor="middle" dominant-baseline="central">${PLANET_GLYPHS[p]}</text>${retroMark}
+          </g>`;
+        }).join('');
+      }
+
       return `
         <svg viewBox="0 0 ${WHL.SIZE} ${WHL.SIZE}" class="wheel-svg" role="img" aria-label="Chart wheel">
           <circle cx="${CX}" cy="${CY}" r="${R_OUT}" fill="none" stroke="var(--rule)" stroke-width="1.2"/>
           <circle cx="${CX}" cy="${CY}" r="${R_IN}" fill="none" stroke="var(--rule)" stroke-width="1"/>
-          <circle cx="${CX}" cy="${CY}" r="${R_ASP}" fill="none" stroke="var(--rule-soft)" stroke-width="1"/>
+          <circle cx="${CX}" cy="${CY}" r="${hubR}" fill="none" stroke="var(--rule-soft)" stroke-width="1"/>
+          ${overlay ? `<circle cx="${CX}" cy="${CY}" r="146" fill="none" stroke="var(--rule-soft)" stroke-width="1" stroke-dasharray="1 5"/>` : ''}
           ${housesSVG}
           ${axisSVG}
           ${signBand}
           ${aspectSVG}
           ${planetsSVG}
+          ${overlaySVG}
           <circle cx="${CX}" cy="${CY}" r="2.5" fill="var(--gold-soft)"/>
         </svg>`;
     }
@@ -6233,6 +6664,516 @@
           <span class="wheel-cell-meta">${pl.sign} ${pl.degree.toFixed(0)}°${housePart}</span>
         </button>`;
       }).join('');
+    }
+
+    // ============================================================
+    // TWO-CHART ENGINE — synastry, composite, transits
+    // ============================================================
+    // computeChartAt: one person's full chart from raw birth inputs.
+    // The same pipeline the main reading uses (hist-aware timezone,
+    // UT conversion, all ten bodies, whole-sign rising).
+    function computeChartAt(Y, M, D, h, m, city, hasTime) {
+      const ut = localToUT(city, Y, M, D, hasTime ? h : 12, hasTime ? m : 0);
+      const jd = julianDay(ut.Y, ut.M, ut.D, ut.h, ut.m);
+      const positions = { Sun: sunLongitude(jd), Moon: moonLongitude(jd) };
+      ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'].forEach(p => {
+        positions[p] = planetLongitude(p, jd);
+      });
+      positions.Pluto = plutoLongitude(jd);
+      const retro = {};
+      ['Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'].forEach(p => {
+        retro[p] = isRetrograde(p, jd);
+      });
+      return {
+        jd, positions, retro, hasTime,
+        rising: hasTime ? risingSign(jd, city.lat, city.lng) : null
+      };
+    }
+
+    // Shorter-arc midpoint — the standard composite method (Rob Hand,
+    // "Planets in Composite"): the composite planet sits at the midpoint
+    // of the two natal positions along the shorter arc between them.
+    function midpointLon(a, b) {
+      let mid = (a + b) / 2;
+      if (Math.abs(a - b) > 180) mid += 180;
+      return norm360(mid);
+    }
+
+    // Inter-aspects between two charts (synastry) or a chart and the
+    // current sky (transits). Unlike natal detection this compares every
+    // planet of chart A against every planet of chart B — including the
+    // same planet on both sides (their Sun on your Sun is real synastry).
+    // Orb tables differ by use: synastry runs a little tighter than natal;
+    // transits run much tighter (a transit is an event, not a temperament).
+    const SYN_ORBS = { conjunction: 7, sextile: 4, square: 6, trine: 6, opposition: 7 };
+    const TRANSIT_ORBS = { conjunction: 3, sextile: 2, square: 2.5, trine: 2.5, opposition: 3 };
+
+    function interAspects(posA, posB, orbs) {
+      const found = [];
+      Object.keys(posA).forEach(a => {
+        Object.keys(posB).forEach(b => {
+          const sep = angularSeparation(posA[a], posB[b]);
+          for (const asp of ASPECTS) {
+            const orb = orbs[asp.name];
+            const exact = Math.abs(sep - asp.angle);
+            if (exact <= orb) {
+              found.push({ a, b, aspect: asp.name, kind: asp.kind, exactness: exact,
+                           strength: 1 - exact / orb });
+              break;
+            }
+          }
+        });
+      });
+      return found.sort((x, y) => x.exactness - y.exactness);
+    }
+
+    // Applying or separating — is the moving chart closing on exact or
+    // pulling away? Judged by re-measuring the pair half a day later.
+    function transitPhase(natalLon, transitor, jdNow, aspAngle) {
+      const lonNow = transitor === 'Sun' ? sunLongitude(jdNow)
+                   : transitor === 'Moon' ? moonLongitude(jdNow)
+                   : transitor === 'Pluto' ? plutoLongitude(jdNow)
+                   : planetLongitude(transitor, jdNow);
+      const lonNext = transitor === 'Sun' ? sunLongitude(jdNow + 0.5)
+                    : transitor === 'Moon' ? moonLongitude(jdNow + 0.5)
+                    : transitor === 'Pluto' ? plutoLongitude(jdNow + 0.5)
+                    : planetLongitude(transitor, jdNow + 0.5);
+      const offNow = Math.abs(angularSeparation(lonNow, natalLon) - aspAngle);
+      const offNext = Math.abs(angularSeparation(lonNext, natalLon) - aspAngle);
+      return offNext < offNow ? 'applying' : 'separating';
+    }
+
+    // ============================================================
+    // TOOL INTERPRETATION TABLES
+    // ============================================================
+    // Composition sources for the readings the tools assemble. Written
+    // entries (SYNASTRY_ASPECTS below) carry the personal seven; pairs
+    // that involve the outer three compose from these tables instead —
+    // generational currents read honestly as currents, not chemistry.
+
+    // What each planet IS in a person, phrased to sit inside a sentence.
+    const PLANET_ESSENCE = {
+      Sun: 'core self', Moon: 'emotional life', Mercury: 'mind and voice',
+      Venus: 'way of loving', Mars: 'will and drive', Jupiter: 'faith and reach',
+      Saturn: 'discipline and weight', Uranus: 'awakening current',
+      Neptune: 'dream and longing', Pluto: 'depth and power'
+    };
+
+    // Synastry fallback for outer-planet contacts, keyed by aspect kind.
+    const SYN_KIND_TEXT = {
+      fusion:   (a, b) => `One person's ${a} stands exactly where the other's ${b} lives. This is a fusion contact: in each other's company these two capacities run as one current, hard to tell apart and hard to switch off. It gives the bond a signature — and it asks both of you to notice whose energy is actually moving at any given moment.`,
+      flow:     (a, b) => `One person's ${a} feeds the other's ${b} without effort. This is an ease contact: what one naturally is, supports what the other naturally does, and neither has to work for it. Its only risk is going unnoticed — ease that is never named is ease that never deepens.`,
+      friction: (a, b) => `One person's ${a} works at cross-purposes to the other's ${b}. This is a friction contact: the two capacities catch on each other, reliably, in ways neither of you chooses. Worked honestly, it is where this bond builds its strength; avoided, it is where the same argument keeps being had.`,
+      mirror:   (a, b) => `One person's ${a} faces the other's ${b} across the axis. This is a mirror contact: each of you shows the other something disowned, and the pull between attraction and opposition is the same pull. What irritates here, instructs.`
+    };
+
+    // Composite: what each planet of the merged chart carries for the
+    // relationship as its own entity (midpoint method, Rob Hand).
+    const COMPOSITE_ROLE = {
+      Sun:     "the relationship's center of gravity — what this bond is for",
+      Moon:    "the relationship's inner weather — how it feels to be inside it",
+      Mercury: "how the two of you speak and decide as one thing",
+      Venus:   "the bond's affection — what it cherishes and how it shows it",
+      Mars:    "the bond's will — how it acts, wants, and fights",
+      Jupiter: "where the relationship grows and what it believes",
+      Saturn:  "the bond's structure — what it must build and carry to last",
+      Uranus:  "where the relationship needs air, freedom, and its own strangeness",
+      Neptune: "the shared dream — what the bond longs toward and idealizes",
+      Pluto:   "the deep engine — where this bond transforms the people in it"
+    };
+
+    const COMP_KIND_TEXT = {
+      fusion:   (a, b) => `In this relationship's own chart, ${a} and ${b} are fused — these two functions of the bond arrive together, always, as a single force. The relationship cannot do one without doing the other.`,
+      flow:     (a, b) => `In this relationship's own chart, ${a} supports ${b} without strain. The bond does these two things well together, and leans on that ease in hard seasons.`,
+      friction: (a, b) => `In this relationship's own chart, ${a} grinds against ${b}. The bond must work this angle — it is where the relationship itself is asked to grow, independent of either person's chart.`,
+      mirror:   (a, b) => `In this relationship's own chart, ${a} and ${b} face each other. The bond swings between these two poles and matures by learning to hold both at once.`
+    };
+
+    // Transits: the pressure each moving planet brings when it touches
+    // a natal point. Tight-orb contacts only — these read as events.
+    const TRANSIT_BRINGS = {
+      Sun:     'a day of visibility and vitality for',
+      Moon:    'a passing emotional tide across',
+      Mercury: 'a few days of traffic — words, news, decisions — through',
+      Venus:   'a softening, a sweetness, a valuing passing over',
+      Mars:    'heat, urgency, and provocation to',
+      Jupiter: 'weeks of enlargement and opportunity around',
+      Saturn:  'a long season of weight, testing, and consolidation upon',
+      Uranus:  'months of disruption and sudden truth through',
+      Neptune: 'a long slow tide of dissolving and longing across',
+      Pluto:   'years of deep, irreversible transformation working on'
+    };
+
+    const TRANSIT_KIND_TEXT = {
+      fusion:   'The contact is direct — this energy and that part of you occupy the same degree, and the theme is unmissable while the orb holds.',
+      flow:     'The contact is easy — the pressure arrives as opportunity, and works with you if you work at all.',
+      friction: 'The contact is hard — the pressure arrives as friction or crisis, and pays exactly those who neither dodge it nor dramatize it.',
+      mirror:   'The contact is a confrontation — the matter arrives through others and events that stand opposite you, asking for balance rather than victory.'
+    };
+
+    // ============================================================
+    // SYNASTRY LIBRARY — written contacts for the personal seven
+    // ============================================================
+    // Key: "[p1]_[p2]_[aspect]", planets alphabetical (same planet twice
+    // is legal: "sun_sun_conjunction"). Direction-neutral voice — the
+    // header names whose planet is whose; the text serves both castings.
+    const SYNASTRY_ASPECTS = {
+      // ── Sun–Sun — two centers ─────────────────────────────────────
+      "sun_sun_conjunction": "Your Suns stand together — two centers built on the same ground. Recognition is immediate and durable: you want the same kind of life, lit the same way. The strength is a companionship that never needs translating; the watch-point is sameness — two people steering by one star can miss what neither of them sees.",
+      "sun_sun_sextile": "Your Suns support each other from neighboring ground — different enough to be interesting, alike enough to be easy. Each of you can pursue your own life while genuinely warming the other's. This is one of the quiet compatibilities: it rarely announces itself, and it rarely fails.",
+      "sun_sun_square": "Your Suns are built at cross-purposes — what makes one of you feel most alive tends to cut across what the other is for. This is not a verdict; it is friction between two real selves, and worked honestly it keeps both of you honest. The bond grows exactly as fast as each learns to want the other's flourishing on the other's terms.",
+      "sun_sun_trine": "Your Suns run in the same element — two lives that agree about what matters without ever having discussed it. Being together costs neither of you anything essential, which is rarer than it sounds. The only tax on so much ease: it can idle. Aim it at something.",
+      "sun_sun_opposition": "Your Suns face each other across the wheel — opposite signs, complementary lives. Each of you carries what the other's way of being leaves out, which is why the pull is strong and the friction instructive. This is the classic axis of partnership: whole together, provided neither asks the other to switch poles.",
+
+      // ── Sun–Moon — the day and the night of a bond ────────────────
+      "moon_sun_conjunction": "One of you shines where the other feels — a Sun standing on a Moon. This is among the oldest bonding signatures in astrology: the solar one animates, the lunar one receives and harbors, and each supplies what the other runs on. Its care-point is asymmetry: light can overwhelm tide, and tide can dampen light, when either forgets the other moves differently.",
+      "moon_sun_sextile": "The Sun of one gently lights the Moon of the other — purpose warming feeling without scorching it. Comfort comes easily here; each of you tends to leave the other's company a little steadier. An undramatic gift, and one of the most livable.",
+      "moon_sun_square": "The aim of one grates against the moods of the other — the Sun person's direction keeps crossing the Moon person's needs at right angles. Days go wrong on a schedule neither of you chose: one pushing forward, one pulled inward. The repair is translation, not surrender — learning that the other's weather is information, not obstruction.",
+      "moon_sun_trine": "The purpose of one and the inner life of the other run in the same current. The Sun person feels received; the Moon person feels lit without being examined. Homes get built on this aspect — it makes shared daily life feel like the natural state of things rather than an achievement.",
+      "moon_sun_opposition": "The direction of one faces the needs of the other across the full sky — the full-moon signature between two people. The attraction is strong and the casting is real: one of you tends to carry the outward life, the other the inward one. It works as long as both remember the poles are one axis, and neither pole is the junior partner.",
+
+      // ── Moon–Moon — two inner weathers ────────────────────────────
+      "moon_moon_conjunction": "Your Moons live in the same sign — two inner weathers with one climate. You do not have to explain your needs to each other; they are the same needs, felt on the same schedule. The comfort is profound. So is the risk: when the shared weather turns, no one is standing outside the storm to hold the umbrella.",
+      "moon_moon_sextile": "Your Moons are good neighbors — needs that differ but do not argue. Each of you finds the other's ways of resting, worrying, and wanting comfort legible, and small kindnesses land accurately. This aspect does its work in kitchens and late evenings, invisibly, for years.",
+      "moon_moon_square": "Your Moons need different things at the same moments — one wants talk where the other wants quiet, closeness where the other wants air. Neither is wrong; the wiring is simply crossed, and it shows most under stress, exactly when tenderness is hardest to engineer. The bond matures when each learns the other's comfort language as a second tongue.",
+      "moon_moon_trine": "Your Moons share an element — feeling moves between you like water finding its level. Moods are caught, held, and released without negotiation, and being at home together is genuinely restful. Guard only against the softness of it: two comfortable Moons can soothe what occasionally needed saying.",
+      "moon_moon_opposition": "Your Moons face each other — needs at opposite poles of one axis. What steadies one unsettles the other; what feeds one starves the other, at least at first. Yet opposite Moons often make lasting pairs: each learns, slowly, a whole second way of feeling, and the household that holds both is roomier than either alone.",
+
+      // ── Sun–Mercury / Moon–Mercury / Mercury–Mercury — the traffic ─
+      "mercury_sun_conjunction": "The mind of one stands in the light of the other — conversation between you carries identity, not just information. The Mercury person often becomes the voice of the pair; the Sun person, its subject and its warmth. Talk is the bond's bloodstream here. Keep it honest and it keeps everything else.",
+      "mercury_sun_sextile": "The mind of one and the self of the other trade easily — ideas warm in this pairing, and encouragement is specific rather than general. You make each other articulate. Little drama, much daily use.",
+      "mercury_sun_square": "The words of one keep catching the pride of the other at a bad angle — questions land as challenges, observations as verdicts. Neither intends it; the geometry does it. The repair is small and repeatable: the Mercury person says the kind thing out loud instead of assuming it, and the Sun person hears a question as interest, not audit.",
+      "mercury_sun_trine": "Thought and self flow between you — one of you thinks the other into clearer focus, and the talk never quite runs out. This is the aspect of the long conversation that a shared life can be built inside. Its gift compounds: every year adds vocabulary.",
+      "mercury_sun_opposition": "The mind of one faces the purpose of the other — you debate by nature, and the debate is the contact. At best, each sharpens the other into their clearest self. At worst, the Mercury person feels reduced to commentary and the Sun person to material. The balance point: argue with each other, never about each other.",
+      "mercury_moon_conjunction": "The voice of one lives where the other feels — words land directly on the heart here, for good and ill. The Mercury person can say what the Moon person could only feel; the Moon person gives the Mercury person's words their weather. Between you, talk is intimacy. Which means carelessness is never merely careless.",
+      "mercury_moon_sextile": "The mind of one reads the moods of the other with easy accuracy — the right question at the right hour, the joke that lands as comfort. This is the confiding aspect: things get said between you that neither says elsewhere.",
+      "mercury_moon_square": "The words of one and the feelings of the other keep missing — explanation arriving where comfort was needed, mood arriving where clarity was asked. Both of you leave certain conversations lonelier than you entered, without either having done wrong. The mend is the old one: name the channel before using it. 'Do you want help or company?' is this aspect's healing sentence.",
+      "mercury_moon_trine": "Speech and feeling run in one channel between you — the Moon person feels understood without performing, the Mercury person feels heard beneath the words. Conversations here have unusual depth per syllable. It is the aspect of being known on short evidence.",
+      "mercury_moon_opposition": "The talker and the feeler face off — one of you processes aloud what the other processes in silence, and each can experience the other's mode as a locked door. The attraction is real: each holds the half of understanding the other lacks. The work is patience at the threshold — neither mode is the finished one.",
+      "mercury_mercury_conjunction": "Your minds run on the same track — one signal, two receivers. Sentences get finished, references caught, plans drafted in shorthand. The pleasure of it is enormous; the blind spot is shared: what neither of you thinks of, no one in the room thinks of.",
+      "mercury_mercury_sextile": "Your minds are compatible instruments in different keys — you think differently enough to be useful to each other and similarly enough to enjoy it. Between you, problems get smaller by being discussed. A working friendship lives in this aspect, whatever else does.",
+      "mercury_mercury_square": "Your minds process at cross-angles — one linear where the other leaps, one wanting the point where the other wants the texture. Misunderstanding is structural, not moral; you are genuinely speaking dialects. Bonds with this aspect that learn to translate end up with the widest combined vocabulary of all.",
+      "mercury_mercury_trine": "Your minds share an element — thought flows between you without gearing. Long drives, long letters, long years of talk: this aspect makes conversation a place the relationship lives rather than a tool it uses.",
+      "mercury_mercury_opposition": "Your minds face each other — you reach opposite conclusions from the same facts, reliably, and each finds the other's logic both maddening and magnetic. Held lightly, this is the debating partnership that keeps both of you honest for life. Held tightly, it is a cold war of citations. The difference is entirely in the holding.",
+
+      // ── Venus contacts — the affection lines ──────────────────────
+      "sun_venus_conjunction": "The love of one stands on the self of the other — the Venus person cherishes what the Sun person simply is, and the Sun person feels valued at the root rather than for performance. Affection and identity braid here. Its keeping asks one thing: that the cherishing stay for the actual person, as they keep becoming.",
+      "sun_venus_sextile": "The affection of one and the essence of the other cooperate — liking comes easily and stays easy. The Venus person adorns the Sun person's life; the Sun person warms the Venus person's. Friendship survives inside this aspect even when other angles storm.",
+      "sun_venus_square": "What one loves and what the other is sit at a working angle — the Venus person keeps trying to sweeten or style the Sun person into a slightly different shape, and the Sun person keeps feeling loved a degree off-center. The affection is real; its aim needs honesty. Loved as-is is this square's finish line.",
+      "sun_venus_trine": "Affection and identity flow — the Venus person's tastes and the Sun person's nature agree, so that pleasing each other is nearly effortless. Together you make things more beautiful than either does alone. Spend the ease on the hard days; that is what it banks for.",
+      "sun_venus_opposition": "The love of one faces the self of the other — strong attraction with a built-in mirror. The Venus person sees in the Sun person what they most value and do not yet own; admiration can shade into wanting the other to carry the beauty for both. Returned to its owner, the admiration becomes the bond's balance.",
+      "moon_venus_conjunction": "Tenderness and need share one address — the Venus person's affection lands exactly where the Moon person feels, and comfort between you takes physical, daily forms. This is one of the sweetest domestic signatures: care that tastes like home. Guard only its honesty — sweetness this natural can round off truths that mattered.",
+      "moon_venus_sextile": "Affection reads need accurately here — the small gift on the right day, the softness at the right hour. You are kind to each other in workable, ordinary ways, and the kindness accumulates into safety.",
+      "moon_venus_square": "The way one shows love and the way the other needs it keep mismatching — the gesture given is not the comfort wanted, and both of you end up generous and unsatisfied. Nothing is broken; the currencies differ. Learn each other's exchange rate and this square quietly becomes one of the bond's competencies.",
+      "moon_venus_trine": "Comfort and affection run in one stream — being cared for by each other feels natural, unforced, almost pre-arranged. Homes, meals, rest: this aspect blesses the unphotographed parts of a shared life, which are most of it.",
+      "moon_venus_opposition": "The heart's need of one faces the heart's delight of the other — you attract each other across the oldest axis of love: comfort versus charm. Each carries what the other's love-life was missing. The work is not choosing between them; it is letting the axis be one thing, tended from both ends.",
+      "mercury_venus_conjunction": "The voice of one and the affection of the other stand together — between you, love is spoken. Compliments are accurate, apologies articulate, and the daily talk carries warmth as cargo. A bond with this aspect always has one working channel; keep it open and much else self-repairs.",
+      "mercury_venus_sextile": "Words and warmth trade easily — the conversation between you is kind without being soft, honest without being cold. You negotiate well, tease well, and repair well. Undervalued in poems, invaluable in years.",
+      "mercury_venus_square": "The words of one and the tastes of the other snag — the tone lands wrong, the joke bruises, the honest note reads as unkind. Neither of you is careless; the frequencies differ. This square is fixed at the level of the sentence: slower speech, gentler drafts, and the assumption of goodwill it keeps testing.",
+      "mercury_venus_trine": "Speech and sweetness share an element — talking with each other is one of this bond's genuine pleasures, and it stays one. Letters, banter, the private dictionary of a long companionship: this aspect writes them.",
+      "mercury_venus_opposition": "The mind of one faces the affection of the other — one of you reaches for words where the other reaches for warmth, and each can find the other's reach beside the point. Both are the point. When analysis learns to be a love language and affection learns to be an argument, this axis is complete.",
+      "venus_venus_conjunction": "Your ways of loving are the same way — you cherish alike, want to be cherished alike, and your tastes agree at the root. Harmony of this kind feels fated and mostly behaves. Its single caution: two identical currencies can inflate together — keep one eye on what neither of you values enough.",
+      "venus_venus_sextile": "Your ways of loving are adjacent — different styles, no argument between them. Each finds the other's affection legible and the other's taste interesting rather than foreign. Pleasant, durable, and better than it sounds.",
+      "venus_venus_square": "You love in crossed currencies — what reads as devotion from one arrives as something slighter, or heavier, to the other. Both of you give; both of you occasionally starve. The repair is explicit: say what love looks like when you send it, ask what it looks like when they receive it, and trade at the stated rate.",
+      "venus_venus_trine": "Your ways of loving share an element — affection flows between you in compatible forms, and pleasure taken together multiplies instead of dividing. This is the aspect of shared beauty: rooms, tables, seasons enjoyed into memory.",
+      "venus_venus_opposition": "Your ways of loving face each other — one adorns where the other simplifies, one savors where the other spends. The polarity is attractive first, expensive second, and educational always. Bonds that keep both styles end up loving in stereo.",
+
+      // ── Mars contacts — the heat lines ────────────────────────────
+      "mars_sun_conjunction": "The drive of one stands on the self of the other — energy meets identity, and the pair of you generate momentum other couples envy. The Mars person spurs, the Sun person steadies the aim. Heat is never far — nor is combustion. The rule this aspect rewards: compete beside each other, not against.",
+      "mars_sun_sextile": "The energy of one backs the purpose of the other — you activate each other at a livable voltage. Projects begun together tend to finish. As a working alliance inside any bond, this aspect earns its keep for decades.",
+      "mars_sun_square": "The push of one crosses the person of the other — the Mars person's drive lands on the Sun person as pressure, challenge, or interruption, and sparks fly on a schedule. Attraction and irritation share a fuse here. Channeled at shared obstacles the square is an engine; aimed inward it is a duel. Choose the obstacle, daily if needed.",
+      "mars_sun_trine": "Vitality flows between you — each of you is more energetic, braver, slightly more alive in the other's company. Bodies, projects, and plans all move better together. One of the great doing aspects: it turns affection into built things.",
+      "mars_sun_opposition": "The force of one faces the self of the other — you rouse each other, and the rousing does not always ask permission. Contest is this axis's native language: at best the worthy-opponent marriage that keeps both sharp; at worst a long war over who leads. The settlement is alternation — this axis has two thrones or none.",
+      "mars_moon_conjunction": "The drive of one lives where the other feels — action lands on tenderness at zero distance. The Mars person stirs the Moon person constantly: protective at best, abrasive at worst, never neutral. Passion and safety must learn to share one room here. They can — when the heat learns to knock.",
+      "mars_moon_sextile": "Energy and feeling cooperate — the Mars person defends without being asked, the Moon person warms the effort without dampening it. Between you, courage is comforted and comfort is defended. A quietly excellent pairing of functions.",
+      "mars_moon_square": "The heat of one keeps bruising the tide of the other — pace against mood, push against need. The Mars person feels slowed; the Moon person feels stormed. Both readings are accurate and neither is the story. The story is timing: this square heals in the hour taken before reacting, more than in anything either of you says.",
+      "mars_moon_trine": "Drive and feeling run together — passion here includes tenderness by default, and protection includes respect. The Moon person feels safer for the Mars person's fire, not despite it. This is heat that homes can be kept warm by.",
+      "mars_moon_opposition": "The will of one faces the needs of the other — desire and comfort at opposite poles, each provoking the other into visibility. Quarrels on this axis are rarely about their subjects; they are the axis itself, asking both of you to hold fire and water at once. Held, it is passion with a hearth.",
+      "mars_mercury_conjunction": "The force of one stands on the voice of the other — words become deeds between you, fast. Debate turns real in minutes; plans turn real in days. The blade is sharp on both edges: this aspect builds and cuts with the same speed. Its one commandment: never argue to win what you argued to understand.",
+      "mars_mercury_sextile": "Drive and mind trade cleanly — one of you turns talk into motion, the other turns motion into sense. Decisions get made and kept. As the operations department of a relationship, this aspect is elite.",
+      "mars_mercury_square": "The push of one and the words of the other scrape — tone arrives as attack, speed as dismissal, question as challenge. Arguments escalate past their subjects before either of you votes. The mend is mechanical and unglamorous: slower replies, softer starts, and the standing agreement that neither meant the sharpest reading.",
+      "mars_mercury_trine": "Act and word flow — you plan aloud together easily, correct course without offense, and get things done with unusual lack of friction. The bond thinks on its feet because between you, thought has feet.",
+      "mars_mercury_opposition": "The doer faces the talker — one of you moves before the meaning is settled, the other settles meaning before moving, and each experiences the other as the obstacle. Each is the missing half of one competent will. Alternate who leads and this axis runs like a relay instead of a tug-of-war.",
+      "mars_venus_conjunction": "Desire and affection stand together — the oldest chemistry signature between two charts. The Mars person wants; the Venus person draws; the current runs both ways and rarely runs out. What it does not supply on its own is patience — attraction this immediate must still learn the slow arts. It is worth teaching.",
+      "mars_venus_sextile": "Heat and charm cooperate — pursuit stays graceful, yielding stays strong, and the spark renews at a sustainable rate. Romance here has good manners without losing its pulse.",
+      "mars_venus_square": "Desire and affection catch at right angles — wanting and cherishing keep arriving out of phase: too hot where softness was needed, too soft where heat was called. The chemistry is undeniable and unpunctual. Its education is rhythm — this square, worked, produces couples who can finally dance to the other's tempo.",
+      "mars_venus_trine": "Desire and affection share one current — attraction that includes liking, passion that includes kindness. The rarest ordinary thing: wanting each other and being good to each other at the same time, for a long time.",
+      "mars_venus_opposition": "Desire faces affection across the axis — magnetism first, negotiation forever after. One of you tends to carry the wanting, the other the withholding, and the roles trade without notice. The polarity is the engine; resentment is its only rust. Keep the exchange spoken and this axis stays a romance instead of a market.",
+      "mars_mars_conjunction": "Your wills occupy the same degree — you fight alike, want alike, and move at one speed. As allies, formidable; as opponents, symmetrical, which is the expensive kind. The bond thrives exactly when it has something outside itself to push against — give the shared engine a road.",
+      "mars_mars_sextile": "Your drives cooperate — different angles of attack, compatible tempos. Work divides naturally between you and recombines without seams. In practical life together, this is one of the most useful aspects two charts can trade.",
+      "mars_mars_square": "Your wills cross at ninety degrees — you provoke each other by existing, and every joint task carries a small duel inside it. The friction is real energy; spent on each other it scorches, spent together it accomplishes double. This square's whole curriculum is target selection.",
+      "mars_mars_trine": "Your drives share an element — effort synchronizes, tempers burn compatible fuels, and physical life together (work, sport, the road) goes easily. You simply move well as a pair, which smooths a thousand small days.",
+      "mars_mars_opposition": "Your wills face each other — the sparring aspect. Each of you knows precisely how to rouse the other, and does. As rivalry it is exhausting; as practice it is the rare bond where both stay sharp, honest, and fully met. The dojo rule keeps it clean: bow before, bow after.",
+
+      // ── Jupiter contacts — the growth lines ───────────────────────
+      "jupiter_sun_conjunction": "The faith of one stands on the self of the other — the Jupiter person believes in the Sun person at scale, and the Sun person grows toward the belief. Doors open around this pairing; generosity is its climate. Watch only the exchange rate of promises — enthusiasm this mutual can sign for more than any two people can deliver.",
+      "jupiter_sun_sextile": "Belief and being cooperate — one of you enlarges the other's possibilities in passing, without ceremony. Luck runs slightly warmer when you act together. A bond with this aspect always has one door propped open.",
+      "jupiter_sun_square": "The enthusiasm of one crosses the center of the other — encouragement arrives as pressure, plans as impositions, and the Sun person can feel inflated into a version of themselves the Jupiter person prefers. The generosity is genuine; its aim wants consent. Growth invited, rather than assigned, is this square's resolution.",
+      "jupiter_sun_trine": "Faith and identity flow — being believed in by this person costs you nothing and returns everything. Optimism between you is earned rather than performed, and shared ventures tend to land upright. One of the luckiest angles two charts can trade.",
+      "jupiter_sun_opposition": "The horizon of one faces the center of the other — the Jupiter person keeps pointing at a larger life, and the Sun person keeps being the ground it must launch from. Inspiration and exasperation trade shifts. Held rightly, one of you dreams and the other realizes — and the roles, crucially, rotate.",
+      "jupiter_moon_conjunction": "Abundance sits on the heart — the Jupiter person's warmth lands where the Moon person feels, and comfort between you comes in generous portions. This is the aspect of emotional plenty: quick forgiveness, wide margins, a big table. Its only flood-line: feelings, like meals, can be over-served — leave room for the small and the sad.",
+      "jupiter_moon_sextile": "Generosity reads need gracefully — encouragement arrives in digestible sizes, comfort with a horizon in it. The Moon person feels lighter in this company; the Jupiter person feels genuinely received. Kind, easy, renewable.",
+      "jupiter_moon_square": "The optimism of one rides over the weather of the other — cheer arriving where witness was wanted, the bright side offered while the dark side still needed sitting with. The Jupiter person means only kindness; the Moon person needs it slower. This square is healed at the pace of listening.",
+      "jupiter_moon_trine": "Plenty and feeling run in one stream — hope is contagious in this pairing, and home has a horizon in it. Hard seasons stay survivable because neither of you can quite stop believing on the other's behalf. A deeply fortunate emotional angle.",
+      "jupiter_moon_opposition": "The far calls one where the near holds the other — journeys against home, more against enough, the horizon against the hearth. Each of you carries half of a complete life. The axis matures when the traveler learns the hearth is not smallness, and the keeper learns the horizon is not abandonment.",
+      "jupiter_mercury_conjunction": "The faith of one stands on the voice of the other — talk between you enlarges; every subject grows doors. The Mercury person gives the Jupiter person's vision its words; the Jupiter person gives the Mercury person's words their reach. Verify the details together and this pairing can teach rooms.",
+      "jupiter_mercury_sextile": "Vision and articulation trade well — big pictures get workable captions, small facts get generous frames. You learn from each other constantly and pleasantly. The classic aspect of the enriching conversation.",
+      "jupiter_mercury_square": "The sweep of one and the precision of the other snag — one inflates where the other itemizes, promises where the other proofs. Each can make the other feel either pedantic or unserious. Both functions are load-bearing. Assign them consciously and this square becomes the bond's editorial department.",
+      "jupiter_mercury_trine": "Meaning and language flow — ideas grow well in this shared climate, and the talk between you tends upward without effort. Plans made together carry both scope and sense. Teaching, writing, and long roads suit this pairing.",
+      "jupiter_mercury_opposition": "The believer faces the examiner — one of you speaks in horizons, the other in footnotes, and each secretly needs the other's genre. At full maturity this axis is a publishing house: vision and verification under one roof. Until then, mind the mutual condescension; it is the only real toxin here.",
+      "jupiter_venus_conjunction": "Generosity stands on affection — love in this pairing arrives in large denominations: warmth, gifts, welcome, benefit of the doubt. It is a genuinely fortunate romantic signature. Its single excess is excess — sweetness at this scale can skip the vegetables. Keep some plainness in the diet.",
+      "jupiter_venus_sextile": "Warmth and charm cooperate — social life together flourishes, kindness circulates, and celebration comes easily to this pairing. The bond photosynthesizes in company. Pleasant, and more structural than it looks.",
+      "jupiter_venus_square": "The largesse of one and the taste of the other misalign — too much where refinement was wanted, curation where abundance was offered. Each can feel the other's love as slightly miscalibrated. It is — by exactly one setting. Name the setting; the affection underneath needs no repair.",
+      "jupiter_venus_trine": "Abundance and affection share a current — being together simply feels fortunate, and often is. Hospitality, beauty, and goodwill compound around this pairing. Among the most pleasant aspects two charts can exchange; its only task is gratitude.",
+      "jupiter_venus_opposition": "The horizon of one faces the affection of the other — freedom and closeness negotiate here: the Jupiter person needs range, the Venus person needs presence, and each enlarges or starves the other by degrees. The settlement is roomy love — devotion with visas in it, adventure with a return ticket.",
+      "jupiter_mars_conjunction": "Faith stands on force — conviction and drive fuse between you, and together you attempt what neither would alone. This is the expedition aspect: bold, warm, occasionally past the map's edge. One of you must always be carrying the fuel math; trade the duty, but never leave it home.",
+      "jupiter_mars_sextile": "Belief backs effort — one of you supplies the why, the other the how, and undertakings between you tend to actually launch. As a pairing for shared projects, business, or travel, quietly first-rate.",
+      "jupiter_mars_square": "The vision of one spurs the force of the other at a bad angle — plans outrun means, dares outrun sense, and each eggs the other past their own judgment. The energy is magnificent and needs a governor neither of you naturally is. Appoint the brake explicitly, per venture, and this square builds empires instead of debts.",
+      "jupiter_mars_trine": "Conviction and drive flow together — courage is renewable in this pairing, and enterprise feels natural. You make each other braver at a survivable rate. Things get built; horizons get reached; the story compounds.",
+      "jupiter_mars_opposition": "The believer faces the fighter — one of you frames the campaign the other wages, and each suspects the other of missing the real point. Meaning without force is a sermon; force without meaning is a brawl. This axis, integrated, is a crusade with its feet on the ground — rotate the command.",
+      "jupiter_jupiter_conjunction": "Your faiths coincide — you believe in the same directions, laugh at the same size, and enlarge each other by resonance. Shared philosophy is this bond's weather. Its blind spot is shared too: the same too-far, twice. Keep one skeptic on retainer, even if hired by the hour.",
+      "jupiter_jupiter_sextile": "Your faiths are compatible neighbors — different creeds, no border war. Each of you finds the other's sense of meaning refreshing rather than rival. Growth happens in parallel and meets at dinner.",
+      "jupiter_jupiter_square": "Your faiths cross — what growth means to one is beside the point to the other, and each can find the other's enthusiasms faintly heretical. No one must convert. The bond is richest when each funds the other's pilgrimage without auditing its route.",
+      "jupiter_jupiter_trine": "Your faiths share an element — optimism harmonizes, meaning aligns, and the future feels jointly owned. Long plans suit this pairing; so do long tables. Fortune tends to visit where it is this welcome.",
+      "jupiter_jupiter_opposition": "Your faiths face each other — two philosophies of the larger life, pole to pole. Each of you holds the corrective to the other's excess, which is either a decades-long argument or a complete education, depending entirely on tone. Choose the education.",
+
+      // ── Saturn contacts — the binding lines ───────────────────────
+      "saturn_sun_conjunction": "The weight of one stands on the self of the other — the Saturn person takes the Sun person seriously, permanently, and the bond acquires spine early. This is the signature of lasting alliances — and of gravity: the Sun person can feel graded, the Saturn person indispensable and unthanked. The cure is spoken warmth, on schedule, from both directions.",
+      "saturn_sun_sextile": "Structure supports selfhood — the Saturn person steadies without confining; the Sun person brightens without destabilizing. Commitments between you form naturally and keep well. An aspect banks trust year over year.",
+      "saturn_sun_square": "The discipline of one crosses the shine of the other — the Saturn person's caution lands on the Sun person as doubt, and the Sun person's confidence lands back as recklessness. Both are half right, which is the trap. Respect, stated explicitly and often, is the toll this square charges — and it is worth paying: bonds that pay it become unbreakable.",
+      "saturn_sun_trine": "Weight and light cooperate — the bond matures without aging, keeps its word without ceremony, and holds in weathers that scatter lighter pairings. This is the aspect of the reliable decades. Not glamorous; merely what everyone is actually looking for.",
+      "saturn_sun_opposition": "The judge faces the light — the Saturn person holds the standard, the Sun person the vitality, and each can reduce the other to a role: the warden and the child. Reversed rightly, the axis is a crown: authority lending permanence to joy, joy lending purpose to authority. The thrones, as always on an axis, must alternate.",
+      "moon_saturn_conjunction": "Weight sits on the heart — the Saturn person steadies the Moon person's inner weather, and the Moon person softens the Saturn person's walls, slowly, in private. Trust here is earned in layers and nearly permanent once set. The frost-point: duty can impersonate love so well that no one remembers to actually say it. Say it.",
+      "moon_saturn_sextile": "Steadiness supports feeling — comfort in this pairing takes reliable forms: presence, punctuality, kept promises. The Moon person rests on it; the Saturn person is quietly fed by being restable. Undemonstrative, and very strong.",
+      "moon_saturn_square": "The wall of one and the tide of the other grind — need reads as demand, reserve reads as rejection, and both of you ration what the other most wants. This is the heaviest of the personal squares and among the most binding: worked, it produces the loyalty of two people who chose each other with eyes open. The work is one word at a time, unguarded.",
+      "moon_saturn_trine": "Feeling and structure flow — emotional life between you has walls and a roof: moods weather safely inside it, and time deepens rather than erodes. The signature of bonds that read as fated in retrospect and were actually built.",
+      "moon_saturn_opposition": "The heart faces the wall — one of you carries the needing, the other the guarding, and the axis keeps asking whether tenderness and safety can share a bed. They can, in shifts: the guard must sometimes need, the needing sometimes guard. Bonds that learn the rotation retire the wall entirely.",
+      "mercury_saturn_conjunction": "Weight sits on the voice — the Saturn person takes the Mercury person's words seriously enough to test them, and speech between you carries consequence. Conversations here become commitments. The chill to watch: examination can silence what it meant to strengthen. Grade less; ask more.",
+      "mercury_saturn_sextile": "Thought and structure cooperate — plans made between you are sound, promises specific, and advice worth taking. This pairing is the bond's notary: unglamorous, and the reason things hold.",
+      "mercury_saturn_square": "The words of one meet the walls of the other — questions read as audits, silences as verdicts, and the talk between you can narrow to the safe and the practical. The mend is asymmetric by design: the Saturn person goes first with approval, the Mercury person goes second with patience. In that order, the channel reopens.",
+      "mercury_saturn_trine": "Speech and discipline flow — you can discuss anything, including money and death and the thing itself, without the room icing. Words kept; records straight; counsel sound. The talking partnership that eldering couples are envied for.",
+      "mercury_saturn_opposition": "The voice faces the examiner — one of you speaks to explore, the other listens to verify, and each can mistake the other's mode for disrespect. Fused, they are wisdom's two halves: the thought ventured and the thought proven. Let the venture finish before the proof begins.",
+      "saturn_venus_conjunction": "Weight stands on affection — love in this pairing is a serious matter: given carefully, meant entirely, built to keep. Devotion with a foundation under it. Its tax is joy deferred — a love this responsible must calendar its own delight, or the delight quietly retires. Calendar it.",
+      "saturn_venus_sextile": "Loyalty supports affection — the bond's sweetness has a spine, its promises have dates, and its tenderness survives administration. The aspect of love that files taxes and still holds hands.",
+      "saturn_venus_square": "The ledger of one crosses the affection of the other — love kept feeling conditional from one side, unserious from the other. Both readings are the square, not the person. Its healing is anti-arithmetic: kindness given before it is earned, received without being repaid. Practiced, this becomes the most durable warmth either of you has known.",
+      "saturn_venus_trine": "Affection and permanence flow — what is cherished gets kept, what is kept stays cherished. This is the vineyard aspect: love that improves with years and rewards the staying. The long anniversary lives here.",
+      "saturn_venus_opposition": "Love faces the ledger — one of you carries the romance, the other the terms, and the axis keeps asking whether devotion is a gift or a contract. It is a covenant — which is both. When the romantic learns to keep and the keeper learns to romance, the axis signs itself.",
+      "mars_saturn_conjunction": "Force stands on restraint — the Mars person's fire meets the Saturn person's governor at zero distance. At best: disciplined power, the pair that finishes what it starts. At worst: the brake riding the engine, resentment on both pedals. The treaty that works: Saturn sets the road, Mars sets the speed, and neither grabs the other's wheel.",
+      "mars_saturn_sextile": "Drive and discipline cooperate — effort between you is paced, aimed, and completed. You are the pair that actually renovates the house. Trust in each other's competence becomes its own kind of intimacy.",
+      "mars_saturn_square": "The engine of one grinds against the brake of the other — initiative meets obstruction, caution meets recklessness, and each of you is certain the other is the problem. The square is the problem, and it is also the forge: pairs that survive it develop force that stops on command — the rarest competence two wills can share.",
+      "mars_saturn_trine": "Power and patience flow — the bond works like a good tool: force transmitted without slippage, endurance without grimness. What you undertake together tends to be both begun and finished, which over a life is nearly everything.",
+      "mars_saturn_opposition": "The fighter faces the builder — one of you charges, the other fortifies, and each holds the other's missing virtue in irritating custody. Armies need both; so do households. The axis settles when charging is scheduled and fortifying is thanked — in writing if necessary.",
+      "jupiter_saturn_conjunction": "The dreamer and the builder stand together, one in each chart — vision and structure fused across two people. This pairing founds things: families, ventures, bodies of work. The permanent negotiation — how much sail, how much keel — is not a flaw in the bond; it is the bond, and it is a good one.",
+      "jupiter_saturn_sextile": "Hope and prudence trade well — plans between you carry both a horizon and a foundation. One of you opens what the other secures, in rotation. The aspect of the partnership that actually retires comfortably.",
+      "jupiter_saturn_square": "The sail of one and the anchor of the other cross — expansion reads as risk to one chart, caution as smallness to the other, and every joint decision convenes the same committee. The committee, chaired with humor, is excellent judgment. Unchaired, it is weather. Chair it.",
+      "jupiter_saturn_trine": "Growth and structure flow — the bond expands at a rate it can afford, and consolidates without shrinking. Timing between you is quietly excellent: doors get taken when open, holds get held when not. The compound-interest aspect.",
+      "jupiter_saturn_opposition": "Faith faces form — one of you carries the more, the other the enough, pole to pole. Alone, each position is half a life; married, they are the whole art of scale. This axis, integrated, is why some pairs both dream and keep. Integrate it.",
+      "saturn_saturn_conjunction": "Your weights coincide — the same lessons, the same walls, the same slow curriculum in both charts. You understand each other's seriousness without translation, and can carry loads together that would flatten other pairs. Mind only the climate: two Saturns can winter each other. Import warmth deliberately.",
+      "saturn_saturn_sextile": "Your disciplines cooperate — duties divide sensibly, standards respect each other, and the joint structure stands plumb. Not romantic on paper; profoundly romantic in decades.",
+      "saturn_saturn_square": "Your weights cross — each chart's fears press on the other's walls, and caution compounds into constriction if unattended. The bond's task is scheduled lightness: air let in on purpose, at intervals, as maintenance. Done, the two structures brace each other for life.",
+      "saturn_saturn_trine": "Your disciplines share an element — endurance harmonizes, and time itself becomes the bond's ally rather than its test. What you build together is built once. The old-growth aspect.",
+      "saturn_saturn_opposition": "Your weights face each other — two systems of duty at opposite poles, each certain its load-bearing wall is the load-bearing wall. Both are. The axis completes when each of you inspects the other's architecture with respect instead of a red pen — the whole house needs both walls.",
+    };
+
+    // ============================================================
+    // TOOL RENDERERS — synastry / composite / transits
+    // ============================================================
+    const ASP_GLYPHS = { conjunction: '☌', sextile: '⚹', square: '□', trine: '△', opposition: '☍' };
+
+    function readDuoPerson(prefix) {
+      const dob = document.getElementById(prefix + '-dob').value;
+      const tob = document.getElementById(prefix + '-tob').value;
+      const cityIdx = document.getElementById(prefix + '-city').value;
+      if (!dob || cityIdx === '') return null;
+      const [Y, M, D] = dob.split('-').map(Number);
+      const hasTime = !!tob;
+      const [h, m] = (tob || '12:00').split(':').map(Number);
+      return computeChartAt(Y, M, D, h, m, CITIES[parseInt(cityIdx, 10)], hasTime);
+    }
+
+    function synAspectText(asp) {
+      const pair = [asp.a.toLowerCase(), asp.b.toLowerCase()].sort();
+      const entry = SYNASTRY_ASPECTS[`${pair[0]}_${pair[1]}_${asp.aspect}`];
+      if (entry) return { text: entry, composed: false };
+      return { text: SYN_KIND_TEXT[asp.kind](PLANET_ESSENCE[asp.a], PLANET_ESSENCE[asp.b]), composed: true };
+    }
+
+    function toolAspectRow(asp, ownerA, ownerB, extraMeta, text, composed) {
+      const label = asp.aspect.charAt(0).toUpperCase() + asp.aspect.slice(1);
+      return `<div class="tool-aspect">
+        <div class="tool-aspect-head">
+          <span class="tool-aspect-glyphs"><span class="g-a">${PLANET_GLYPHS[asp.a]}</span><span class="g-asp">${ASP_GLYPHS[asp.aspect]}</span><span class="g-b">${PLANET_GLYPHS[asp.b]}</span></span>
+          <span class="tool-aspect-label">${ownerA} ${asp.a} ${label} ${ownerB} ${asp.b}</span>
+          <span class="tool-aspect-meta">${asp.exactness.toFixed(1)}°${extraMeta || ''}</span>
+        </div>
+        <p class="tool-aspect-text${composed ? ' is-current' : ''}">${text}</p>
+      </div>`;
+    }
+
+    let duoMode = 'syn';
+
+    const DUO_COPY = {
+      syn:  { label: 'Synastry', title: 'Two skies, laid over each other.',
+              sub: 'Where the planets of one chart touch the planets of the other, the relationship speaks. The inner ring is the first chart; the outer ring, in violet, the second.',
+              btn: 'Lay the charts together' },
+      comp: { label: 'Composite', title: 'The chart the bond itself casts.',
+              sub: 'Each composite planet sits at the midpoint of yours and theirs — one wheel for the relationship as its own being, drawn by the midpoint method.',
+              btn: 'Cast the composite' }
+    };
+
+    function duoSetMode(mode) {
+      duoMode = mode;
+      document.querySelectorAll('.duo-mode-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.duoMode === mode));
+      const c = DUO_COPY[mode];
+      document.getElementById('duo-label').textContent = c.label;
+      document.getElementById('duo-title').textContent = c.title;
+      document.getElementById('duo-sub').textContent = c.sub;
+      document.getElementById('duo-submit').textContent = c.btn;
+      // If a result is already on screen, re-read it in the new mode
+      if (document.getElementById('duo-result').style.display !== 'none') renderDuo();
+    }
+
+    function renderDuo() {
+      const A = readDuoPerson('duo-a');
+      const B = readDuoPerson('duo-b');
+      if (!A || !B) return;
+      track('tool_duo_' + duoMode);
+
+      const legendEl = document.getElementById('duo-legend');
+      const wheelEl = document.getElementById('duo-wheel');
+      const readEl = document.getElementById('duo-reading');
+      document.getElementById('duo-result').style.display = '';
+
+      if (duoMode === 'syn') {
+        const aspects = interAspects(A.positions, B.positions, SYN_ORBS);
+        legendEl.innerHTML =
+          `<span class="tool-legend-chip"><span class="tool-legend-dot dot-a"></span>First chart (inner)</span>` +
+          `<span class="tool-legend-chip"><span class="tool-legend-dot dot-b"></span>Second chart (outer)</span>`;
+        // The wheel draws only close contacts (≤4°) so it stays legible;
+        // the list below carries every contact within orb.
+        wheelEl.innerHTML = buildWheelSVG(A.positions, {
+          rot: (A.hasTime && A.rising) ? A.rising.longitude : 0,
+          hasTime: A.hasTime, rising: A.rising,
+          aspects: aspects.filter(a => a.exactness <= 4), retro: A.retro,
+          idp: 'syn', interactive: false,
+          overlay: { positions: B.positions, retro: B.retro }
+        });
+
+        let html = `<p class="tool-note">The wheel draws the close contacts; the full list follows, tightest first.</p>`;
+        html += `<span class="tool-section-label">The contacts — tightest first</span>`;
+        html += aspects.map(asp => {
+          const t = synAspectText(asp);
+          return toolAspectRow(asp, 'Your', 'their', '', t.text, t.composed);
+        }).join('') || '<p class="tool-note">No cross-aspects within orb — these two skies run unusually parallel.</p>';
+
+        // Where the second chart's planets land in the first chart's houses
+        if (A.hasTime && A.rising) {
+          html += `<span class="tool-section-label">Their planets in your houses</span>`;
+          html += Object.entries(B.positions).map(([p, lon]) => {
+            const s = longToSign(lon);
+            const hn = houseOfSign(s.sign, A.rising.sign);
+            return `<div class="tool-place"><span class="tool-place-glyph g-b">${PLANET_GLYPHS[p]}</span>
+              <span><b>Their ${p}</b> falls in your ${ordinal(hn)} house — the room of ${HOUSES[hn].text}. Their ${PLANET_ESSENCE[p]} lives there when you are together.</span></div>`;
+          }).join('');
+        }
+        if (B.hasTime && B.rising) {
+          html += `<span class="tool-section-label">Your planets in their houses</span>`;
+          html += Object.entries(A.positions).map(([p, lon]) => {
+            const s = longToSign(lon);
+            const hn = houseOfSign(s.sign, B.rising.sign);
+            return `<div class="tool-place"><span class="tool-place-glyph">${PLANET_GLYPHS[p]}</span>
+              <span><b>Your ${p}</b> falls in their ${ordinal(hn)} house — the room of ${HOUSES[hn].text}.</span></div>`;
+          }).join('');
+        }
+        if (!A.hasTime && !B.hasTime) {
+          html += '<p class="tool-note">Add a birth time to either chart to see whose planets land in whose houses.</p>';
+        }
+        readEl.innerHTML = html;
+      } else {
+        // Composite — one chart from two, planet by midpoint
+        const comp = {};
+        Object.keys(A.positions).forEach(p => {
+          comp[p] = midpointLon(A.positions[p], B.positions[p]);
+        });
+        const bothTimes = A.hasTime && A.rising && B.hasTime && B.rising;
+        const compAscLon = bothTimes ? midpointLon(A.rising.longitude, B.rising.longitude) : null;
+        const compRising = bothTimes ? longToSign(compAscLon) : null;
+        const aspects = detectAspects(comp);
+
+        legendEl.innerHTML =
+          `<span class="tool-legend-chip"><span class="tool-legend-dot dot-a"></span>The composite — one chart from two</span>`;
+        wheelEl.innerHTML = buildWheelSVG(comp, {
+          rot: compAscLon !== null ? compAscLon : 0,
+          hasTime: bothTimes, rising: compRising, aspects, retro: {},
+          idp: 'comp', interactive: false
+        });
+
+        let html = `<span class="tool-section-label">The relationship's own placements</span>`;
+        html += NR_PLANET_ORDER.map(p => {
+          const s = longToSign(comp[p]);
+          const housePart = compRising ? ` · ${ordinal(houseOfSign(s.sign, compRising.sign))} house` : '';
+          return `<div class="tool-place"><span class="tool-place-glyph">${PLANET_GLYPHS[p]}</span>
+            <span><b>Composite ${p} in ${s.sign}</b>${housePart} — ${COMPOSITE_ROLE[p]}. ${SIGN_NOTES[s.sign]}</span></div>`;
+        }).join('');
+
+        const drawn = aspects.sort((x, y) => x.exactness - y.exactness);
+        if (drawn.length) {
+          html += `<span class="tool-section-label">The relationship's own aspects</span>`;
+          html += drawn.map(asp => toolAspectRow(
+            asp, 'Composite', 'composite', '',
+            COMP_KIND_TEXT[asp.kind](COMPOSITE_ROLE[asp.a], COMPOSITE_ROLE[asp.b]), false
+          )).join('');
+        }
+        if (!bothTimes) {
+          html += '<p class="tool-note">With both birth times, the composite gets its own Ascendant and houses.</p>';
+        }
+        readEl.innerHTML = html;
+      }
+      document.getElementById('duo-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderTransitsTool() {
+      const N = readDuoPerson('tr');
+      if (!N) return;
+      track('tool_transits');
+      const now = new Date();
+      const jdNow = julianDay(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(),
+                              now.getUTCHours(), now.getUTCMinutes());
+      const sky = { Sun: sunLongitude(jdNow), Moon: moonLongitude(jdNow) };
+      ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'].forEach(p => {
+        sky[p] = planetLongitude(p, jdNow);
+      });
+      sky.Pluto = plutoLongitude(jdNow);
+      const skyRetro = {};
+      ['Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'].forEach(p => {
+        skyRetro[p] = isRetrograde(p, jdNow);
+      });
+
+      const aspects = interAspects(N.positions, sky, TRANSIT_ORBS);
+      document.getElementById('tr-result').style.display = '';
+      document.getElementById('tr-legend').innerHTML =
+        `<span class="tool-legend-chip"><span class="tool-legend-dot dot-a"></span>Your birth chart (inner)</span>` +
+        `<span class="tool-legend-chip"><span class="tool-legend-dot dot-b"></span>The sky right now (outer)</span>`;
+      document.getElementById('tr-wheel').innerHTML = buildWheelSVG(N.positions, {
+        rot: (N.hasTime && N.rising) ? N.rising.longitude : 0,
+        hasTime: N.hasTime, rising: N.rising, aspects, retro: N.retro,
+        idp: 'tr', interactive: false,
+        overlay: { positions: sky, retro: skyRetro }
+      });
+
+      const ANGLE = { conjunction: 0, sextile: 60, square: 90, trine: 120, opposition: 180 };
+      let html = `<span class="tool-section-label">Active transits — tightest first</span>`;
+      html += aspects.map(asp => {
+        const phase = transitPhase(N.positions[asp.a], asp.b, jdNow, ANGLE[asp.aspect]);
+        const phaseChip = ` · <span class="${phase === 'applying' ? 'ta-applying' : ''}">${phase}</span>`;
+        const text = `${TRANSIT_BRINGS[asp.b].charAt(0).toUpperCase() + TRANSIT_BRINGS[asp.b].slice(1)} your ${PLANET_ESSENCE[asp.a]}. ${TRANSIT_KIND_TEXT[asp.kind]}`;
+        return toolAspectRow({ a: asp.a, b: asp.b, aspect: asp.aspect, exactness: asp.exactness },
+                             'Natal', 'transiting', phaseChip, text, false);
+      }).join('') || '<p class="tool-note">No tight transits at this hour — the sky is leaving your chart alone today.</p>';
+      html += `<p class="tool-note">Moon contacts pass within hours; Mercury, Venus, and Sun within days; Mars in a week or two; the rest are seasons, not moments. Applying contacts are still building; separating ones are already told.</p>`;
+      document.getElementById('tr-reading').innerHTML = html;
+      document.getElementById('tr-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // The landing hero draws the sky as it stands at this very moment —
@@ -7203,9 +8144,9 @@
     // ============================================================
     // INITIALIZE
     // ============================================================
-    function init() {
-      // Populate cities — grouped by region for scannability
-      const sel = document.getElementById('city');
+    // Populate a city select — grouped by region for scannability.
+    // Shared by the main form and every tool form.
+    function populateCitySelect(sel) {
       const byRegion = {};
       CITIES.forEach((c, i) => {
         if (!byRegion[c.region]) byRegion[c.region] = [];
@@ -7222,6 +8163,15 @@
           grp.appendChild(opt);
         });
         sel.appendChild(grp);
+      });
+    }
+
+    function init() {
+      const sel = document.getElementById('city');
+      populateCitySelect(sel);
+      ['duo-a-city', 'duo-b-city', 'tr-city'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) populateCitySelect(el);
       });
       // Default to San Diego (looked up by name so insertion order doesn't matter)
       const defaultIdx = CITIES.findIndex(c => c.name === 'San Diego, USA');
@@ -7330,6 +8280,16 @@
         } else if (val === 'report') {
           if (hasChart && typeof openReport === 'function') { show('blueprint'); openReport(); }
           else show('onboarding');
+        } else if (val === 'tool:syn' || val === 'tool:comp') {
+          duoSetMode(val === 'tool:syn' ? 'syn' : 'comp');
+          show('tool-duo');
+        } else if (val === 'tool:transits') {
+          // Prefill from the main form so a returning reader doesn't retype
+          ['dob', 'tob', 'city'].forEach(f => {
+            const src = document.getElementById(f), dst = document.getElementById('tr-' + f);
+            if (src && dst && src.value) dst.value = src.value;
+          });
+          show('tool-transits');
         } else if (val.indexOf('chapter:') === 0) {
           const chId = val.slice(8);
           if (hasChart) { show('blueprint'); goToChapter(CHAPTERS.findIndex(c => c.id === chId)); }
@@ -7337,6 +8297,13 @@
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
+
+      // Tools — mode toggle and form submits
+      document.querySelectorAll('.duo-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => duoSetMode(btn.dataset.duoMode));
+      });
+      document.getElementById('duo-form').addEventListener('submit', e => { e.preventDefault(); renderDuo(); });
+      document.getElementById('tr-form').addEventListener('submit', e => { e.preventDefault(); renderTransitsTool(); });
 
       // The landing hero draws the current sky
       renderHeroWheel();
