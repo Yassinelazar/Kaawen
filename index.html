@@ -82,11 +82,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink:        #0E0F1A;
-      --ink-2:      #15172A;
-      --cream:      #F2E8D0;
-      --cream-soft: #C9BCA0;
-      --parchment:  #9A8E78;
+      /* Night palette, comfort-tuned: the ink lifted off pitch black and
+         the reading grays brightened a step — long text should sit easy. */
+      --ink:        #14151F;
+      --ink-2:      #1B1D2E;
+      --cream:      #F4EBD6;
+      --cream-soft: #D9CEB5;
+      --parchment:  #AC9F87;
       --gold:       #D4A655;
       --gold-soft:  #8C6F3A;
       --twilight:   #5A4A8C;
@@ -107,7 +109,7 @@
       color-scheme: dark;
       --gold-rgb:   212, 166, 85;
       --hi-rgb:     242, 232, 208;
-      --ink-rgb:    15, 17, 35;
+      --ink-rgb:    20, 21, 31;
       --rx:         #D89580;
       --flame-core: #F2E8D0;
     }
@@ -118,18 +120,20 @@
        to the system preference. */
     :root[data-theme="light"] {
       color-scheme: light;
-      --ink:        #F7F1E1;
-      --ink-2:      #EFE6CF;
+      /* Day palette, comfort-tuned: paper a touch lighter, reading
+         browns a step darker — more contrast, less squint. */
+      --ink:        #FAF5E9;
+      --ink-2:      #F3EBD8;
       --cream:      #2B2415;
-      --cream-soft: #5C4F33;
-      --parchment:  #7A6A4C;
+      --cream-soft: #453A24;
+      --parchment:  #6B5C40;
       --gold:       #8F6118;
       --gold-soft:  #B08A45;
       --rule:       rgba(143, 97, 24, 0.28);
       --rule-soft:  rgba(43, 36, 21, 0.12);
       --gold-rgb:   143, 97, 24;
       --hi-rgb:     43, 36, 21;
-      --ink-rgb:    247, 241, 225;
+      --ink-rgb:    250, 245, 233;
       --rx:         #A6543B;
       --flame-core: #F7F1E1;
     }
@@ -3487,6 +3491,66 @@
       .tool-head { max-width: 620px; }
       .tool-title { font-size: 38px; }
     }
+
+    /* ============================================================
+       COMFORT PASS — one place, every reading size up a step.
+       Long-form text moves to 15px+, supporting text follows, and
+       generous line-height throughout. Kept as a single override
+       block so the scale can be tuned without hunting the sheet.
+       ============================================================ */
+    /* Long-form reading paragraphs */
+    .report-entry-text,
+    .report-aspect-text,
+    .wheel-card-text,
+    .tool-aspect-text { font-size: 15px; line-height: 1.75; }
+    .tool-place { font-size: 14.5px; line-height: 1.7; }
+    .report-rising-portrait,
+    .shape-text,
+    .moon-phase-text,
+    .tp-move,
+    .voice-text { font-size: 15.5px; line-height: 1.75; }
+    .report-rising-lesson { font-size: 15px; }
+    .heaven-text { font-size: 14.5px; }
+    .function-text { font-size: 15px; line-height: 1.72; }
+
+    /* Intros, captions, and notes */
+    .report-intro { font-size: 14.5px; }
+    .wheel-intro { font-size: 14px; }
+    .hero-wheel-caption { font-size: 13px; }
+    .tool-sub { font-size: 15px; }
+    .tool-note, .wheel-index-note { font-size: 13.5px; }
+    .moon-phase-note { font-size: 12.5px; }
+    .wheel-card-hint { font-size: 13px; }
+    .welcome-tagline { font-size: 10.5px; }
+    .privacy-line { font-size: 11px; }
+
+    /* Titles and cards */
+    .shape-name, .moon-phase-name { font-size: 26px; }
+    .wheel-card-name, .tool-name { font-size: 22px; }
+    .chapter-card-name { font-size: 20px; }
+    .chapter-card-line { font-size: 13.5px; }
+    .tool-line { font-size: 14px; }
+    .wheel-cell-name { font-size: 17px; }
+    .wheel-cell-meta { font-size: 11px; }
+    .wheel-card-pos { font-size: 11.5px; }
+    .site-footer-link { font-size: 13px; }
+    .site-nav-link { font-size: 11px; }
+
+    /* Small caps and metadata rows */
+    .label { font-size: 11px; }
+    .report-entry-planet, .report-aspect-label { font-size: 11px; }
+    .report-entry-position { font-size: 12px; }
+    .report-aspect-kind, .report-aspect-orb { font-size: 11px; }
+    .tool-aspect-label { font-size: 11.5px; }
+    .tool-aspect-meta { font-size: 11px; }
+    .wheel-card-row { font-size: 12px; }
+    .wc-row-kind { font-size: 11px; }
+    .moon-strip-label { font-size: 9px; }
+    .moon-phase-meta { font-size: 11px; }
+
+    /* The wheel itself — sign names and house numbers step up */
+    .whl-sign-name { font-size: 10.5px; }
+    .whl-house-num { font-size: 12.5px; }
   </style>
 </head>
 <body>
