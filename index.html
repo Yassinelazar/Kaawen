@@ -8760,6 +8760,17 @@
       document.getElementById('duo-form').addEventListener('submit', e => { e.preventDefault(); renderDuo(); });
       document.getElementById('tr-form').addEventListener('submit', e => { e.preventDefault(); renderTransitsTool(); });
 
+      // Hash deep-links — shareable entry points for marketing and bios:
+      // kaawen.com/#synastry, #composite, #transits, #begin
+      const HASH_ROUTES = {
+        '#synastry':  () => { duoSetMode('syn');  show('tool-duo'); },
+        '#composite': () => { duoSetMode('comp'); show('tool-duo'); },
+        '#transits':  () => { show('tool-transits'); },
+        '#begin':     () => { show('onboarding'); }
+      };
+      const hashRoute = HASH_ROUTES[location.hash];
+      if (hashRoute) { track('deeplink_' + location.hash.slice(1)); hashRoute(); }
+
       // The landing hero draws the current sky
       renderHeroWheel();
 
