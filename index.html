@@ -1135,6 +1135,18 @@
       line-height: 1.7;
       color: var(--cream-soft);
     }
+    /* The exact delineation under the poetic voice — same placement,
+       stated plainly, pulled from the natal library. */
+    .voice-precise {
+      font-family: var(--body);
+      font-size: 16px;
+      color: var(--parchment);
+      line-height: 1.72;
+      max-width: 460px;
+      margin: 14px auto 0;
+      padding-top: 12px;
+      border-top: 1px solid var(--rule-soft);
+    }
     .voice-house {
       font-family: var(--display);
       font-style: italic;
@@ -1611,6 +1623,15 @@
       max-width: 320px;
       margin: 0 auto 20px;
     }
+    .moon-phase-mansion {
+      font-family: var(--body);
+      font-size: 14px;
+      color: var(--parchment);
+      max-width: 400px;
+      margin: -6px auto 20px;
+      line-height: 1.65;
+    }
+    .moon-phase-mansion b { color: var(--gold-soft); font-weight: 500; }
     .moon-phase-note {
       font-family: var(--body);
       font-style: italic;
@@ -3664,31 +3685,31 @@
 
       <!-- The five chapters, astro-charts style: numbered cards, each a door -->
       <div class="chapter-cards">
-        <button type="button" class="chapter-card" data-nav="begin">
+        <button type="button" class="chapter-card" data-nav="chapter:ch-shape">
           <span class="chapter-card-no">n° 01</span>
           <span class="chapter-card-name">The Wheel</span>
           <span class="chapter-card-line">Your sky drawn whole — planets, houses, and aspects, live to the touch.</span>
           <span class="chapter-card-arrow">→</span>
         </button>
-        <button type="button" class="chapter-card" data-nav="begin">
+        <button type="button" class="chapter-card" data-nav="chapter:ch-voices">
           <span class="chapter-card-no">n° 02</span>
           <span class="chapter-card-name">The Voices</span>
           <span class="chapter-card-line">Sun, Moon, and Rising — the three that speak first, and loudest.</span>
           <span class="chapter-card-arrow">→</span>
         </button>
-        <button type="button" class="chapter-card" data-nav="begin">
+        <button type="button" class="chapter-card" data-nav="chapter:ch-anatomy">
           <span class="chapter-card-no">n° 03</span>
           <span class="chapter-card-name">The Anatomy</span>
           <span class="chapter-card-line">The five quieter faculties — mind, love, will, faith, and weight.</span>
           <span class="chapter-card-arrow">→</span>
         </button>
-        <button type="button" class="chapter-card" data-nav="begin">
+        <button type="button" class="chapter-card" data-nav="chapter:ch-currents">
           <span class="chapter-card-no">n° 04</span>
           <span class="chapter-card-name">The Currents</span>
           <span class="chapter-card-line">The long weather of your generation, and where it runs through you.</span>
           <span class="chapter-card-arrow">→</span>
         </button>
-        <button type="button" class="chapter-card" data-nav="begin">
+        <button type="button" class="chapter-card" data-nav="chapter:ch-today">
           <span class="chapter-card-no">n° 05</span>
           <span class="chapter-card-name">Today</span>
           <span class="chapter-card-line">The sky now, read against the sky you were born under.</span>
@@ -3702,7 +3723,7 @@
           <span class="tools-kicker">The Tools</span>
           <span class="tools-kicker tools-kicker-right">Where to begin</span>
         </div>
-        <button type="button" class="tool-row" data-nav="begin">
+        <button type="button" class="tool-row" data-nav="reading">
           <span class="tool-icon" aria-hidden="true">
             <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="14" stroke="currentColor" stroke-width="1"/><circle cx="20" cy="20" r="2" fill="currentColor"/><circle cx="20" cy="20" r="9" stroke="currentColor" stroke-width="0.7" stroke-dasharray="1 3"/></svg>
           </span>
@@ -3923,27 +3944,29 @@
           <div class="voice" id="voice-sun">
             <div class="voice-header">
               <span class="voice-name" id="sun-name"></span>
-              <span class="voice-position">Sun · Core self</span>
+              <span class="voice-position" id="sun-pos">Sun · Core self</span>
             </div>
             <p class="voice-prompt">What you are when no one is watching.</p>
             <p class="voice-house" id="sun-house" style="display:none;"></p>
             <p class="voice-text" id="sun-text"></p>
+            <p class="voice-precise" id="sun-precise"></p>
           </div>
 
           <div class="voice" id="voice-moon">
             <div class="voice-header">
               <span class="voice-name" id="moon-name"></span>
-              <span class="voice-position">Moon · Inner life</span>
+              <span class="voice-position" id="moon-pos">Moon · Inner life</span>
             </div>
             <p class="voice-prompt">What you need to feel safe.</p>
             <p class="voice-house" id="moon-house" style="display:none;"></p>
             <p class="voice-text" id="moon-text"></p>
+            <p class="voice-precise" id="moon-precise"></p>
           </div>
 
           <div class="voice" id="voice-rising" style="display:none;">
             <div class="voice-header">
               <span class="voice-name" id="rising-name"></span>
-              <span class="voice-position">Rising · First impression</span>
+              <span class="voice-position" id="rising-pos">Rising · First impression</span>
             </div>
             <p class="voice-prompt">What you look like before you speak.</p>
             <p class="voice-text" id="rising-text"></p>
@@ -7283,6 +7306,8 @@
                              'Natal', 'transiting', phaseChip, text, false);
       }).join('') || '<p class="tool-note">No tight transits at this hour — the sky is leaving your chart alone today.</p>';
       html += `<p class="tool-note">Moon contacts pass within hours; Mercury, Venus, and Sun within days; Mars in a week or two; the rest are seasons, not moments. Applying contacts are still building; separating ones are already told.</p>`;
+      const mnNow = MANSIONS[lunarMansion(sky.Moon)];
+      html += `<p class="tool-note">And in the mansion reckoning: the Moon crosses <b>${mnNow.name}</b> — ${mnNow.meaning}. ${mnNow.today}</p>`;
       document.getElementById('tr-reading').innerHTML = html;
       document.getElementById('tr-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -7513,7 +7538,7 @@
     function renderMoonBlock(sunLon, moonLon, moonSign, hasTime) {
       const phase = norm360(moonLon - sunLon);
       const nativeIdx = Math.floor(phase / 45) % 8;
-      window.__moonCtx = { phase, nativeIdx, moonSign, hasTime };
+      window.__moonCtx = { phase, nativeIdx, moonSign, hasTime, moonLon };
 
       const strip = document.getElementById('moon-strip');
       strip.innerHTML = MOON_PHASES.map((p, i) => {
@@ -7544,12 +7569,22 @@
       const timeNote = (isNative && !m.hasTime)
         ? `<p class="moon-phase-note">Computed for midday — without a birth time the Moon can sit a few degrees to either side.</p>` : '';
 
+      // The older lunar reckoning alongside the phase: which of the 28
+      // mansions the natal Moon keeps (al-Būnī's tradition; full reading
+      // in The Voices chapter).
+      const mansionLine = isNative
+        ? (() => {
+            const mn = MANSIONS[lunarMansion(m.moonLon)];
+            return `<p class="moon-phase-mansion">In the mansion reckoning of the twenty-eight, your Moon keeps <b>${mn.name}</b> — ${mn.meaning}. Its full reading waits in The Voices.</p>`;
+          })()
+        : '';
+
       document.getElementById('moon-panel').innerHTML = `
         <div class="moon-disc">${moonDiscSVG(phase)}</div>
         <div class="moon-phase-name">${p.name}</div>
         <div class="moon-phase-meta">${meta}</div>
         <p class="moon-phase-text">${p.text}</p>
-        ${visiting}${timeNote}`;
+        ${mansionLine}${visiting}${timeNote}`;
 
       document.querySelectorAll('.moon-strip-item').forEach(el =>
         el.classList.toggle('viewing', parseInt(el.dataset.phase, 10) === idx && !isNative));
@@ -8863,11 +8898,25 @@
       const chartLine = `${sun.sign} sun · ${moon.sign} moon` + (rising ? ` · ${rising.sign} rising` : '');
       document.getElementById('chart-line').textContent = chartLine;
 
-      // Voice texts
+      // Voice texts. The epithet is the poetry; the position line under it
+      // states the astronomy plainly — sign, exact degree, house — so the
+      // reader always knows what the name is a name FOR. The precise
+      // paragraph beneath the voice reuses the natal library's exact
+      // delineation for the same placement.
+      const sunH  = rising ? houseOfSign(sun.sign,  rising.sign) : null;
+      const moonH = rising ? houseOfSign(moon.sign, rising.sign) : null;
       document.getElementById('sun-name').textContent  = sunArche;
+      document.getElementById('sun-pos').textContent =
+        `Sun in ${sun.sign} · ${sun.degree.toFixed(1)}°${sunH ? ' · ' + ordinal(sunH) + ' house' : ''}`;
       document.getElementById('sun-text').textContent  = VOICES[sun.sign].sun;
+      document.getElementById('sun-precise').textContent =
+        NATAL_PLANET_IN_SIGN[0][SIGNS.indexOf(sun.sign)].light;
       document.getElementById('moon-name').textContent = moonArche;
+      document.getElementById('moon-pos').textContent =
+        `Moon in ${moon.sign} · ${moon.degree.toFixed(1)}°${moonH ? ' · ' + ordinal(moonH) + ' house' : ''}`;
       document.getElementById('moon-text').textContent = VOICES[moon.sign].moon;
+      document.getElementById('moon-precise').textContent =
+        NATAL_PLANET_IN_SIGN[1][SIGNS.indexOf(moon.sign)].light;
 
       // House info on Sun and Moon (only when birth time is known)
       const sunHouseEl  = document.getElementById('sun-house');
@@ -8887,6 +8936,8 @@
       if (rising) {
         document.getElementById('voice-rising').style.display = 'block';
         document.getElementById('rising-name').textContent = ARCHETYPES[rising.sign].rising;
+        document.getElementById('rising-pos').textContent =
+          `Rising in ${rising.sign} · ${rising.degree.toFixed(1)}° · the Ascendant`;
         document.getElementById('rising-text').textContent = VOICES[rising.sign].rising;
       } else {
         document.getElementById('voice-rising').style.display = 'none';
