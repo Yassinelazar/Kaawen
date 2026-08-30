@@ -8768,8 +8768,12 @@
         '#transits':  () => { show('tool-transits'); },
         '#begin':     () => { show('onboarding'); }
       };
-      const hashRoute = HASH_ROUTES[location.hash];
-      if (hashRoute) { track('deeplink_' + location.hash.slice(1)); hashRoute(); }
+      const applyHashRoute = () => {
+        const route = HASH_ROUTES[location.hash];
+        if (route) { track('deeplink_' + location.hash.slice(1)); route(); }
+      };
+      applyHashRoute();
+      window.addEventListener('hashchange', applyHashRoute);
 
       // The landing hero draws the current sky
       renderHeroWheel();
