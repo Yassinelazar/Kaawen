@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kaawen</title>
-  <meta name="description" content="A reading of your birth chart, made to be sat with. Astrology grounded in care, not prediction. Your data stays in your browser.">
+  <title>Kaawen — Astrological Charts</title>
+  <meta name="description" content="Kaawen — Astrological Charts. Your birth chart computed exactly and read in plain words. Synastry, composite, and transit charts. Your data stays in your browser.">
   <meta name="theme-color" content="#0E0F1A">
   <script>
     // Theme boot — runs before first paint so there is no flash.
@@ -20,7 +20,7 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta property="og:title" content="Kaawen">
+  <meta property="og:title" content="Kaawen — Astrological Charts">
   <meta property="og:description" content="A reading of your birth chart, made to be sat with.">
   <meta property="og:image" content="og-image.png">
   <meta property="og:image:width" content="1200">
@@ -65,7 +65,7 @@
   <!-- Twitter Card metadata. summary_large_image displays the OG image
        as a hero-sized card in tweets. -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kaawen">
+  <meta name="twitter:title" content="Kaawen — Astrological Charts">
   <meta name="twitter:description" content="A reading of your birth chart, made to be sat with.">
   <meta name="twitter:image" content="og-image.png">
 
@@ -3017,6 +3017,21 @@
       color: var(--cream);
       letter-spacing: 0.02em;
     }
+    /* The subtitle beside the wordmark — the site's descriptor, not its name */
+    .site-brand-sub {
+      font-family: var(--ui);
+      font-size: 8.5px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--parchment);
+      text-align: left;
+      line-height: 1.5;
+      border-left: 1px solid var(--rule);
+      padding-left: 10px;
+      margin-left: 5px;
+    }
+    @media (max-width: 559px) { .site-header .site-brand-sub { display: none; } }
     .site-nav { display: flex; align-items: center; gap: 26px; }
     .site-nav-link {
       background: none;
@@ -3782,11 +3797,12 @@
          data-nav delegate in init() — destinations that need a computed
          chart fall back to the birth-data form. -->
     <header class="site-header">
-      <button type="button" class="site-brand" data-nav="home" aria-label="Kaawen home">
+      <button type="button" class="site-brand" data-nav="home" aria-label="Kaawen — Astrological Charts, home">
         <svg class="site-brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" style="fill:var(--gold)" opacity="0.85"/>
+          <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" style="fill:var(--gold)" opacity="0.85"/>
         </svg>
         <span class="site-brand-name">Kaawen</span>
+        <span class="site-brand-sub">Astrological<br>Charts</span>
       </button>
       <nav class="site-nav" aria-label="Site">
         <button type="button" class="site-nav-link" data-nav="reading">The Reading</button>
@@ -3801,7 +3817,7 @@
             </g>
           </svg>
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" style="fill:var(--gold)" opacity="0.85"/>
+            <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" style="fill:var(--gold)" opacity="0.85"/>
           </svg>
         </button>
       </nav>
@@ -4010,7 +4026,7 @@
     <!-- =================== ONBOARDING (birth data form) =================== -->
     <section id="onboarding" class="view">
       <svg class="moon-mark" viewBox="0 0 24 24" fill="none">
-        <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" style="fill:var(--gold)" opacity="0.85"/>
+        <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" style="fill:var(--gold)" opacity="0.85"/>
       </svg>
       <div class="onboarding-intro">
         <span class="label">Your sky</span>
@@ -4058,7 +4074,7 @@
     <!-- =================== BLUEPRINT =================== -->
     <section id="blueprint" class="view">
       <svg class="moon-mark" viewBox="0 0 24 24" fill="none">
-        <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" style="fill:var(--gold)" opacity="0.85"/>
+        <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" style="fill:var(--gold)" opacity="0.85"/>
       </svg>
 
       <!-- Settings gear (top-right, symmetric to the moon mark) -->
@@ -4604,9 +4620,10 @@
         <div class="site-footer-brand">
           <div class="site-footer-brandline">
             <svg class="site-brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M16 4 A8 8 0 1 0 16 20 A6 6 0 1 1 16 4 Z" style="fill:var(--gold)" opacity="0.85"/>
+              <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" style="fill:var(--gold)" opacity="0.85"/>
             </svg>
             <span class="site-brand-name">Kaawen</span>
+            <span class="site-brand-sub">Astrological<br>Charts</span>
           </div>
           <p class="site-footer-tag">Astrology, slow. Drawn entirely in your browser —
             your birth data never leaves it.</p>
