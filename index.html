@@ -3417,6 +3417,157 @@
       line-height: 1.6;
     }
 
+    /* ==== Credibility strip — exactness, stated simply ==== */
+    .cred {
+      display: grid;
+      gap: 20px;
+      margin: 64px auto 0;
+      max-width: 1020px;
+      text-align: left;
+    }
+    .cred-item { border-top: 1px solid var(--rule); padding-top: 14px; }
+    .cred-head {
+      display: block;
+      font-family: var(--ui);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      margin-bottom: 7px;
+    }
+    .cred-line {
+      display: block;
+      font-family: var(--body);
+      font-size: 15px;
+      color: var(--parchment);
+      line-height: 1.6;
+    }
+
+    /* ==== The planets, right now — live interactive strip ==== */
+    .sky-now { margin-top: 72px; text-align: center; }
+    .sky-now-sub {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 14.5px;
+      color: var(--parchment);
+      margin: 6px 0 22px;
+    }
+    .sky-now-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      max-width: 940px;
+      margin: 0 auto;
+    }
+    .sky-now-cell {
+      background: rgba(var(--gold-rgb), 0.03);
+      border: 1px solid var(--rule-soft);
+      border-radius: 10px;
+      padding: 14px 15px 12px;
+      min-width: 86px;
+      cursor: pointer;
+      transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
+    }
+    .sky-now-cell:hover { border-color: var(--rule); transform: translateY(-2px); }
+    .sky-now-cell.active { border-color: var(--gold-soft); background: rgba(var(--gold-rgb), 0.07); }
+    .sky-now-glyph { display: block; font-size: 23px; color: var(--gold); margin-bottom: 6px; }
+    .sky-now-glyph .whl-planet-rx { color: var(--rx); font-size: 11px; vertical-align: super; }
+    .sky-now-name {
+      display: block;
+      font-family: var(--ui);
+      font-size: 11.5px;
+      color: var(--cream-soft);
+      letter-spacing: 0.06em;
+      margin-bottom: 3px;
+    }
+    .sky-now-pos {
+      display: block;
+      font-family: var(--ui);
+      font-size: 11px;
+      color: var(--parchment);
+      letter-spacing: 0.04em;
+    }
+    .sky-now-detail {
+      font-family: var(--body);
+      font-size: 16px;
+      color: var(--cream-soft);
+      line-height: 1.7;
+      max-width: 540px;
+      margin: 20px auto 0;
+    }
+    .sky-now-detail b { color: var(--gold); font-weight: 500; }
+
+    /* ==== The Guides — the two one-time unlocks ==== */
+    .guide-offer {
+      margin-top: var(--space-section);
+      padding-top: 44px;
+      border-top: 1px solid var(--rule);
+      text-align: center;
+    }
+    .guide-tools { max-width: 660px; margin: 22px auto 6px; text-align: left; }
+    .guide-cards { display: grid; gap: 16px; max-width: 880px; margin: 30px auto 0; }
+    .guide-card {
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      padding: 30px 24px 28px;
+      background: rgba(var(--gold-rgb), 0.03);
+      text-align: center;
+    }
+    .guide-card-primary {
+      border-color: var(--gold-soft);
+      background: rgba(var(--gold-rgb), 0.06);
+    }
+    .guide-card-inline { max-width: 540px; margin: 26px auto 0; }
+    .guide-price {
+      display: block;
+      font-family: var(--display);
+      font-size: 36px;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .guide-name {
+      display: block;
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 23px;
+      color: var(--cream);
+      margin-bottom: 12px;
+    }
+    .guide-desc {
+      font-family: var(--body);
+      font-size: 15.5px;
+      color: var(--cream-soft);
+      line-height: 1.68;
+      max-width: 420px;
+      margin: 0 auto 20px;
+    }
+    .guide-btn {
+      display: inline-block;
+      width: auto;
+      margin-top: 0;
+      padding: 14px 28px;
+      animation: none;
+    }
+    .guide-note {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 13px;
+      color: var(--parchment);
+      opacity: 0.85;
+      margin-top: 18px;
+      line-height: 1.6;
+    }
+
+    /* Lock state: until the Full Guide opens, the reading is one page —
+       the chapter pager and top nav stay hidden; once open, the offer
+       disappears and the chapters return. */
+    body.guide-locked .chapter-nav,
+    body.guide-locked .chapter-topnav { display: none; }
+    body:not(.guide-locked) #guide-offer { display: none; }
+
     /* ============================================================
        DESKTOP — ≥960px. Full-bleed page; content constrained by
        inner max-widths, chrome aligned to a 1200px column via the
@@ -3513,6 +3664,10 @@
       .duo-people-single { grid-template-columns: 1fr; }
       .tool-head { max-width: 620px; }
       .tool-title { font-size: 38px; }
+
+      /* Landing credibility + guides */
+      .cred { grid-template-columns: repeat(3, 1fr); gap: 44px; }
+      .guide-cards { grid-template-columns: 1fr 1.15fr; align-items: stretch; }
     }
 
     /* ============================================================
@@ -3664,11 +3819,11 @@
         <div class="hero-copy">
           <div class="welcome-intro">
             <span class="label">The quiet study of your sky</span>
-            <h1>A reading of your birth chart, made to be sat with.</h1>
+            <h1>Your birth chart, computed exactly — and read in plain words.</h1>
             <p>
-              Astrology, slow. Five chapters built from your sky: the wheel of your birth,
-              the voices that move in you, the inner faculties, the long currents, and what
-              today is asking. Eight minutes the first time you read it. Less, after.
+              Enter a date, a time, and a city. Kaawen calculates the full wheel —
+              every planet, house, and aspect — and reads it for you in clear
+              language. The first reading is free.
             </p>
           </div>
           <div class="welcome-actions">
@@ -3683,38 +3838,28 @@
         </div>
       </div>
 
-      <!-- The five chapters, astro-charts style: numbered cards, each a door -->
-      <div class="chapter-cards">
-        <button type="button" class="chapter-card" data-nav="chapter:ch-shape">
-          <span class="chapter-card-no">n° 01</span>
-          <span class="chapter-card-name">The Wheel</span>
-          <span class="chapter-card-line">Your sky drawn whole — planets, houses, and aspects, live to the touch.</span>
-          <span class="chapter-card-arrow">→</span>
-        </button>
-        <button type="button" class="chapter-card" data-nav="chapter:ch-voices">
-          <span class="chapter-card-no">n° 02</span>
-          <span class="chapter-card-name">The Voices</span>
-          <span class="chapter-card-line">Sun, Moon, and Rising — the three that speak first, and loudest.</span>
-          <span class="chapter-card-arrow">→</span>
-        </button>
-        <button type="button" class="chapter-card" data-nav="chapter:ch-anatomy">
-          <span class="chapter-card-no">n° 03</span>
-          <span class="chapter-card-name">The Anatomy</span>
-          <span class="chapter-card-line">The five quieter faculties — mind, love, will, faith, and weight.</span>
-          <span class="chapter-card-arrow">→</span>
-        </button>
-        <button type="button" class="chapter-card" data-nav="chapter:ch-currents">
-          <span class="chapter-card-no">n° 04</span>
-          <span class="chapter-card-name">The Currents</span>
-          <span class="chapter-card-line">The long weather of your generation, and where it runs through you.</span>
-          <span class="chapter-card-arrow">→</span>
-        </button>
-        <button type="button" class="chapter-card" data-nav="chapter:ch-today">
-          <span class="chapter-card-no">n° 05</span>
-          <span class="chapter-card-name">Today</span>
-          <span class="chapter-card-line">The sky now, read against the sky you were born under.</span>
-          <span class="chapter-card-arrow">→</span>
-        </button>
+      <!-- Credibility — exact calculation, stated simply -->
+      <div class="cred">
+        <div class="cred-item">
+          <span class="cred-head">Exact calculation</span>
+          <span class="cred-line">Planetary positions verified against NASA's reference ephemeris.</span>
+        </div>
+        <div class="cred-item">
+          <span class="cred-head">The right hour</span>
+          <span class="cred-line">A historical time-zone atlas places even older birth times correctly.</span>
+        </div>
+        <div class="cred-item">
+          <span class="cred-head">Private by construction</span>
+          <span class="cred-line">Everything is computed in your browser and stored nowhere.</span>
+        </div>
+      </div>
+
+      <!-- The planets, right now — live positions, tap to open each one -->
+      <div class="sky-now" id="sky-now">
+        <span class="label">The planets, right now</span>
+        <p class="sky-now-sub">Computed live as you read this. Touch one.</p>
+        <div class="sky-now-strip" id="sky-now-strip"></div>
+        <div class="sky-now-detail" id="sky-now-detail" style="display:none;"></div>
       </div>
 
       <!-- The Tools — the chart instruments, under the big charts -->
@@ -4078,6 +4223,61 @@
             <span class="label">The Tensions</span>
             <p class="tensions-prompt">Where your soul does its work.</p>
             <div id="tensions-list"></div>
+          </div>
+
+          <!-- The guides — everything past the free reading. Hidden entirely
+               once the Full Guide (or Companion/trial) is open; the chapter
+               pager returns in its place. -->
+          <div class="guide-offer" id="guide-offer">
+            <span class="label">Go further</span>
+            <p class="report-intro">The free reading ends here. Two guides carry it the rest of the way.</p>
+
+            <div class="guide-tools">
+              <button type="button" class="tool-row" data-nav="tool:syn">
+                <span class="tool-body">
+                  <span class="tool-no">With another chart</span>
+                  <span class="tool-name">Synastry</span>
+                  <span class="tool-line">Two charts laid over each other — where you meet, point by point.</span>
+                </span>
+                <span class="tool-arrow">→</span>
+              </button>
+              <button type="button" class="tool-row" data-nav="tool:comp">
+                <span class="tool-body">
+                  <span class="tool-no">One chart from two</span>
+                  <span class="tool-name">Composite</span>
+                  <span class="tool-line">The chart a bond itself casts, drawn from the midpoints of two skies.</span>
+                </span>
+                <span class="tool-arrow">→</span>
+              </button>
+              <button type="button" class="tool-row" data-nav="tool:transits">
+                <span class="tool-body">
+                  <span class="tool-no">The sky today</span>
+                  <span class="tool-name">Transits</span>
+                  <span class="tool-line">This exact moment, read against the sky you were born under.</span>
+                </span>
+                <span class="tool-arrow">→</span>
+              </button>
+            </div>
+
+            <div class="guide-cards">
+              <div class="guide-card">
+                <span class="guide-price">$9</span>
+                <span class="guide-name">The Charts Guide</span>
+                <p class="guide-desc">The complete written readings for the three charts above —
+                  every synastry contact, every composite placement, every active transit,
+                  interpreted in full. Once, yours for good.</p>
+                <button type="button" class="btn guide-btn" data-guide="charts">Open the Charts Guide — $9</button>
+              </div>
+              <div class="guide-card guide-card-primary">
+                <span class="guide-price">$4</span>
+                <span class="guide-name">The Full Guide</span>
+                <p class="guide-desc">The rest of your reading: the three voices in depth, the five
+                  quieter planets, the long generational currents, today's sky against yours,
+                  and the complete written report. Once, yours for good.</p>
+                <button type="button" class="btn guide-btn" data-guide="birth">Open the Full Guide — $4</button>
+              </div>
+            </div>
+            <p class="guide-note" id="guide-note">Paid once, open forever on this device. Companion and trial readers already have everything.</p>
           </div>
         </div>
 
@@ -7194,34 +7394,45 @@
           overlay: { positions: B.positions, retro: B.retro }
         });
 
+        // Free tier: the wheel and the three tightest contacts.
+        // The Charts Guide opens everything below.
+        const openAll = chartsGuideOpen();
+        const shown = openAll ? aspects : aspects.slice(0, 3);
         let html = `<p class="tool-note">The wheel draws the close contacts; the full list follows, tightest first.</p>`;
         html += `<span class="tool-section-label">The contacts — tightest first</span>`;
-        html += aspects.map(asp => {
+        html += shown.map(asp => {
           const t = synAspectText(asp);
           return toolAspectRow(asp, 'Your', 'their', '', t.text, t.composed);
         }).join('') || '<p class="tool-note">No cross-aspects within orb — these two skies run unusually parallel.</p>';
 
-        // Where the second chart's planets land in the first chart's houses
-        if (A.hasTime && A.rising) {
-          html += `<span class="tool-section-label">Their planets in your houses</span>`;
-          html += Object.entries(B.positions).map(([p, lon]) => {
-            const s = longToSign(lon);
-            const hn = houseOfSign(s.sign, A.rising.sign);
-            return `<div class="tool-place"><span class="tool-place-glyph g-b">${PLANET_GLYPHS[p]}</span>
-              <span><b>Their ${p}</b> falls in your ${ordinal(hn)} house — the room of ${HOUSES[hn].text}. Their ${PLANET_ESSENCE[p]} lives there when you are together.</span></div>`;
-          }).join('');
-        }
-        if (B.hasTime && B.rising) {
-          html += `<span class="tool-section-label">Your planets in their houses</span>`;
-          html += Object.entries(A.positions).map(([p, lon]) => {
-            const s = longToSign(lon);
-            const hn = houseOfSign(s.sign, B.rising.sign);
-            return `<div class="tool-place"><span class="tool-place-glyph">${PLANET_GLYPHS[p]}</span>
-              <span><b>Your ${p}</b> falls in their ${ordinal(hn)} house — the room of ${HOUSES[hn].text}.</span></div>`;
-          }).join('');
-        }
-        if (!A.hasTime && !B.hasTime) {
-          html += '<p class="tool-note">Add a birth time to either chart to see whose planets land in whose houses.</p>';
+        if (!openAll) {
+          if (aspects.length > shown.length) {
+            html += `<p class="tool-note">${aspects.length - shown.length} more contacts — and whose planets land in whose houses — wait in the guide.</p>`;
+          }
+          html += chartsGateHTML('synastry reading');
+        } else {
+          // Where the second chart's planets land in the first chart's houses
+          if (A.hasTime && A.rising) {
+            html += `<span class="tool-section-label">Their planets in your houses</span>`;
+            html += Object.entries(B.positions).map(([p, lon]) => {
+              const s = longToSign(lon);
+              const hn = houseOfSign(s.sign, A.rising.sign);
+              return `<div class="tool-place"><span class="tool-place-glyph g-b">${PLANET_GLYPHS[p]}</span>
+                <span><b>Their ${p}</b> falls in your ${ordinal(hn)} house — the room of ${HOUSES[hn].text}. Their ${PLANET_ESSENCE[p]} lives there when you are together.</span></div>`;
+            }).join('');
+          }
+          if (B.hasTime && B.rising) {
+            html += `<span class="tool-section-label">Your planets in their houses</span>`;
+            html += Object.entries(A.positions).map(([p, lon]) => {
+              const s = longToSign(lon);
+              const hn = houseOfSign(s.sign, B.rising.sign);
+              return `<div class="tool-place"><span class="tool-place-glyph">${PLANET_GLYPHS[p]}</span>
+                <span><b>Your ${p}</b> falls in their ${ordinal(hn)} house — the room of ${HOUSES[hn].text}.</span></div>`;
+            }).join('');
+          }
+          if (!A.hasTime && !B.hasTime) {
+            html += '<p class="tool-note">Add a birth time to either chart to see whose planets land in whose houses.</p>';
+          }
         }
         readEl.innerHTML = html;
       } else {
@@ -7243,24 +7454,31 @@
           idp: 'comp', interactive: false
         });
 
+        const openAll = chartsGuideOpen();
+        const placementOrder = openAll ? NR_PLANET_ORDER : NR_PLANET_ORDER.slice(0, 3);
         let html = `<span class="tool-section-label">The relationship's own placements</span>`;
-        html += NR_PLANET_ORDER.map(p => {
+        html += placementOrder.map(p => {
           const s = longToSign(comp[p]);
           const housePart = compRising ? ` · ${ordinal(houseOfSign(s.sign, compRising.sign))} house` : '';
           return `<div class="tool-place"><span class="tool-place-glyph">${PLANET_GLYPHS[p]}</span>
             <span><b>Composite ${p} in ${s.sign}</b>${housePart} — ${COMPOSITE_ROLE[p]}. ${SIGN_NOTES[s.sign]}</span></div>`;
         }).join('');
 
-        const drawn = aspects.sort((x, y) => x.exactness - y.exactness);
-        if (drawn.length) {
-          html += `<span class="tool-section-label">The relationship's own aspects</span>`;
-          html += drawn.map(asp => toolAspectRow(
-            asp, 'Composite', 'composite', '',
-            COMP_KIND_TEXT[asp.kind](COMPOSITE_ROLE[asp.a], COMPOSITE_ROLE[asp.b]), false
-          )).join('');
-        }
-        if (!bothTimes) {
-          html += '<p class="tool-note">With both birth times, the composite gets its own Ascendant and houses.</p>';
+        if (!openAll) {
+          html += `<p class="tool-note">Seven more placements and the relationship's own aspects wait in the guide.</p>`;
+          html += chartsGateHTML('composite reading');
+        } else {
+          const drawn = aspects.sort((x, y) => x.exactness - y.exactness);
+          if (drawn.length) {
+            html += `<span class="tool-section-label">The relationship's own aspects</span>`;
+            html += drawn.map(asp => toolAspectRow(
+              asp, 'Composite', 'composite', '',
+              COMP_KIND_TEXT[asp.kind](COMPOSITE_ROLE[asp.a], COMPOSITE_ROLE[asp.b]), false
+            )).join('');
+          }
+          if (!bothTimes) {
+            html += '<p class="tool-note">With both birth times, the composite gets its own Ascendant and houses.</p>';
+          }
         }
         readEl.innerHTML = html;
       }
@@ -7297,19 +7515,53 @@
       });
 
       const ANGLE = { conjunction: 0, sextile: 60, square: 90, trine: 120, opposition: 180 };
+      const openAll = chartsGuideOpen();
+      const shown = openAll ? aspects : aspects.slice(0, 3);
       let html = `<span class="tool-section-label">Active transits — tightest first</span>`;
-      html += aspects.map(asp => {
+      html += shown.map(asp => {
         const phase = transitPhase(N.positions[asp.a], asp.b, jdNow, ANGLE[asp.aspect]);
         const phaseChip = ` · <span class="${phase === 'applying' ? 'ta-applying' : ''}">${phase}</span>`;
         const text = `${TRANSIT_BRINGS[asp.b].charAt(0).toUpperCase() + TRANSIT_BRINGS[asp.b].slice(1)} your ${PLANET_ESSENCE[asp.a]}. ${TRANSIT_KIND_TEXT[asp.kind]}`;
         return toolAspectRow({ a: asp.a, b: asp.b, aspect: asp.aspect, exactness: asp.exactness },
                              'Natal', 'transiting', phaseChip, text, false);
       }).join('') || '<p class="tool-note">No tight transits at this hour — the sky is leaving your chart alone today.</p>';
+      if (!openAll && aspects.length > shown.length) {
+        html += `<p class="tool-note">${aspects.length - shown.length} more active transits wait in the guide.</p>`;
+        html += chartsGateHTML('transit reading');
+      }
       html += `<p class="tool-note">Moon contacts pass within hours; Mercury, Venus, and Sun within days; Mars in a week or two; the rest are seasons, not moments. Applying contacts are still building; separating ones are already told.</p>`;
       const mnNow = MANSIONS[lunarMansion(sky.Moon)];
       html += `<p class="tool-note">And in the mansion reckoning: the Moon crosses <b>${mnNow.name}</b> — ${mnNow.meaning}. ${mnNow.today}</p>`;
       document.getElementById('tr-reading').innerHTML = html;
       document.getElementById('tr-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // "The planets, right now" — the landing's live strip. Tapping a
+    // planet opens one plain line: what it is, where it stands.
+    function renderSkyNow() {
+      const strip = document.getElementById('sky-now-strip');
+      if (!strip) return;
+      try {
+        const now = new Date();
+        const jd = julianDay(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(),
+                             now.getUTCHours(), now.getUTCMinutes());
+        const pos = { Sun: sunLongitude(jd), Moon: moonLongitude(jd) };
+        ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'].forEach(p => {
+          pos[p] = planetLongitude(p, jd);
+        });
+        pos.Pluto = plutoLongitude(jd);
+        window.__skyNow = pos;
+        strip.innerHTML = NR_PLANET_ORDER.map(p => {
+          const s = longToSign(pos[p]);
+          const rx = (p !== 'Sun' && p !== 'Moon' && isRetrograde(p, jd))
+            ? '<span class="whl-planet-rx">℞</span>' : '';
+          return `<button type="button" class="sky-now-cell" data-sky-planet="${p}">
+            <span class="sky-now-glyph">${PLANET_GLYPHS[p]}${rx}</span>
+            <span class="sky-now-name">${p}</span>
+            <span class="sky-now-pos">${s.sign} ${s.degree.toFixed(0)}°</span>
+          </button>`;
+        }).join('');
+      } catch (e) { strip.innerHTML = ''; }
     }
 
     // The landing hero draws the sky as it stands at this very moment —
@@ -8043,6 +8295,16 @@
       }
 
       idx = Math.max(0, Math.min(CHAPTERS.length - 1, idx));
+
+      // The free reading is one page. Until the Full Guide opens, the
+      // deeper chapters route to the offer instead.
+      if (idx > 0 && !birthGuideOpen()) {
+        track('guide_gate_hit');
+        const offer = document.getElementById('guide-offer');
+        if (offer) offer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
       currentChapter = idx;
 
       // Show only the active chapter
@@ -8453,6 +8715,39 @@
 
       // The landing hero draws the current sky
       renderHeroWheel();
+
+      // Landing: the live planet strip — tap a planet for its line
+      renderSkyNow();
+      const skyStrip = document.getElementById('sky-now-strip');
+      if (skyStrip) skyStrip.addEventListener('click', (e) => {
+        const cell = e.target.closest('[data-sky-planet]');
+        if (!cell) return;
+        const p = cell.dataset.skyPlanet;
+        const detail = document.getElementById('sky-now-detail');
+        const wasActive = cell.classList.contains('active');
+        skyStrip.querySelectorAll('.sky-now-cell').forEach(c => c.classList.remove('active'));
+        if (wasActive) { detail.style.display = 'none'; return; }
+        cell.classList.add('active');
+        const s = longToSign(window.__skyNow[p]);
+        detail.innerHTML = `<b>${PLANET_GLYPHS[p]} ${p}</b> — the ${PLANET_ESSENCE[p]} — stands at ${s.degree.toFixed(1)}° ${s.sign} right now. ${SIGN_NOTES[s.sign]}`;
+        detail.style.display = '';
+        track('sky_now_tap');
+      });
+
+      // Guide buttons — the offer section and the inline tool gates.
+      // With no checkout URL wired yet, the button says so instead of failing.
+      document.addEventListener('click', (e) => {
+        const g = e.target.closest('[data-guide]');
+        if (!g) return;
+        if (!kaawnGuides.open(g.dataset.guide)) {
+          g.disabled = true;
+          const original = g.textContent;
+          g.textContent = 'Checkout opens in the next few days';
+          setTimeout(() => { g.disabled = false; g.textContent = original; }, 4000);
+        }
+      });
+      document.addEventListener('kaawn-plan-changed', applyGuideLock);
+      applyGuideLock();
     }
 
     // ============================================================
@@ -9596,6 +9891,65 @@
     //           service role. The client can only ever read it.
     // The devotion and daily practice are free forever, in every state.
     // ============================================================
+    // ── The Guides — one-time unlocks ─────────────────────────────
+    // $4 Full Guide (the deep birth reading: Voices, Anatomy, Currents,
+    // Today, Full Report) and $9 Charts Guide (the complete synastry,
+    // composite, and transits readings). Stripe Payment Links; their
+    // success URLs must return to https://kaawen.com/?guide=birth and
+    // ?guide=charts respectively. Empty URL = checkout not yet created;
+    // the button explains instead of failing.
+    const KAAWN_GUIDE_BIRTH_URL  = ''; // TODO: Stripe Payment Link — $4 Full Guide
+    const KAAWN_GUIDE_CHARTS_URL = ''; // TODO: Stripe Payment Link — $9 Charts Guide
+    const kaawnGuides = (() => {
+      const KEY = 'kaawn_guides';
+      let state = {};
+      try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+      function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+      // Returning from checkout: ?guide=birth or ?guide=charts
+      try {
+        const q = new URLSearchParams(location.search).get('guide');
+        if (q === 'birth' || q === 'charts') {
+          state[q] = Date.now();
+          save();
+          track('guide_unlocked_' + q);
+          try { history.replaceState(null, '', location.pathname); } catch (e) {}
+        }
+      } catch (e) {}
+      function birthOpen()  { return !!state.birth; }
+      function chartsOpen() { return !!state.charts; }
+      // Returns false when no checkout URL is wired yet
+      function open(which) {
+        const url = which === 'birth' ? KAAWN_GUIDE_BIRTH_URL : KAAWN_GUIDE_CHARTS_URL;
+        track('guide_checkout_' + which);
+        if (!url) return false;
+        location.href = url;
+        return true;
+      }
+      return { birthOpen, chartsOpen, open };
+    })();
+
+    // Guide access — a one-time guide, an active trial, or the Companion
+    // all open the same doors.
+    function birthGuideOpen() {
+      return kaawnGuides.birthOpen() || kaawnPlan.companionActive() || kaawnPlan.trialActive();
+    }
+    function chartsGuideOpen() {
+      return kaawnGuides.chartsOpen() || kaawnPlan.companionActive() || kaawnPlan.trialActive();
+    }
+    function applyGuideLock() {
+      document.body.classList.toggle('guide-locked', !birthGuideOpen());
+    }
+    function chartsGateHTML(context) {
+      return `<div class="guide-card guide-card-inline">
+        <span class="guide-price">$9</span>
+        <span class="guide-name">The Charts Guide</span>
+        <p class="guide-desc">This is the opening of the ${context}. The Charts Guide opens the complete
+          readings for all three charts — every contact, every placement, every transit,
+          interpreted in full. Once, yours for good.</p>
+        <button type="button" class="btn guide-btn" data-guide="charts">Open the Charts Guide — $9</button>
+      </div>`;
+    }
+
     const KAAWN_CHECKOUT_URL = 'https://buy.stripe.com/7sY8wR2Fd4aj9692dm1kA00?locale=en'; // Stripe Payment Link (live, checkout forced to English)
     const kaawnPlan = (() => {
       const TASTE_KEY  = 'kaawn_taste';
@@ -9622,10 +9976,10 @@
       function trialDaysLeft() { return Math.max(0, Math.ceil((trialEnd() - Date.now()) / 86400000)); }
 
       // Depth layer (Today's Depth, Personal Sky, Full register):
-      // open for companion, trial, or on the one taste day.
-      function depthOpen()  { return companionActive() || trialActive() || lsGet(TASTE_KEY) === todayStr(); }
-      // Full Report: trial or companion only.
-      function reportOpen() { return companionActive() || trialActive(); }
+      // open for companion, trial, the Full Guide, or on the one taste day.
+      function depthOpen()  { return companionActive() || trialActive() || kaawnGuides.birthOpen() || lsGet(TASTE_KEY) === todayStr(); }
+      // Full Report: companion, trial, or the Full Guide.
+      function reportOpen() { return companionActive() || trialActive() || kaawnGuides.birthOpen(); }
       function tasteAvailable() { return !lsGet(TASTE_KEY) && !trialUsed() && !companionActive(); }
       function claimTaste() { lsSet(TASTE_KEY, todayStr()); track('taste_opened'); openFull(); }
 
