@@ -27,10 +27,14 @@ const PRICES: Record<string, string> = {
 
 const SITE = 'https://kaawen.com/';
 
+// The browser's preflight asks for every header the client sends —
+// supabase-js and our fetch both add `apikey` (and x-client-info), so
+// omitting them here makes the preflight fail and the POST never runs.
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
+  'Access-Control-Allow-Headers': 'authorization, content-type, apikey, x-client-info',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 function json(body: unknown, status = 200): Response {
