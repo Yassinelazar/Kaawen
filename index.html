@@ -8798,15 +8798,18 @@
 
       // Guide buttons — the offer section and the inline tool gates.
       // With no checkout URL wired yet, the button says so instead of failing.
-      document.addEventListener('click', (e) => {
+      document.addEventListener('click', async (e) => {
         const g = e.target.closest('[data-guide]');
-        if (!g) return;
-        if (!kaawnGuides.open(g.dataset.guide)) {
-          g.disabled = true;
-          const original = g.textContent;
+        if (!g || g.disabled) return;
+        const original = g.textContent;
+        g.disabled = true;
+        g.textContent = 'Opening…';
+        const opened = await kaawnGuides.open(g.dataset.guide);
+        if (!opened) {
           g.textContent = 'Checkout opens in the next few days';
           setTimeout(() => { g.disabled = false; g.textContent = original; }, 4000);
         }
+        // On success the browser is already navigating to Stripe.
       });
       document.addEventListener('kaawn-plan-changed', applyGuideLock);
       applyGuideLock();
@@ -9979,24 +9982,43 @@
       } catch (e) {}
       function birthOpen()  { return !!state.birth; }
       function chartsOpen() { return !!state.charts; }
-      // Returns false when no checkout URL is wired yet
-      function open(which) {
+      // Mirror a server-side purchase down to this device, so the guide
+      // keeps working offline and on the next visit.
+      function remember(which) {
+        if (state[which]) return;
+        state[which] = Date.now();
+        save();
+      }
+      // Returns false when no checkout URL is wired yet.
+      // Tags the session as "<uid>__birth" / "<uid>__charts" so the
+      // webhook can attribute the payment and the guide follows the
+      // account across devices; without sync it still unlocks here via
+      // the ?guide= return parameter.
+      async function open(which) {
         const url = which === 'birth' ? KAAWN_GUIDE_BIRTH_URL : KAAWN_GUIDE_CHARTS_URL;
         track('guide_checkout_' + which);
         if (!url) return false;
-        location.href = url;
+        let dest = url;
+        try {
+          const s = await kaawnSync.ensureSession();
+          const sep = url.indexOf('?') === -1 ? '?' : '&';
+          dest = url + sep + 'client_reference_id=' + encodeURIComponent(s.user.id + '__' + which);
+        } catch (e) { /* offline or sync unconfigured — device unlock still applies */ }
+        location.href = dest;
         return true;
       }
-      return { birthOpen, chartsOpen, open };
+      return { birthOpen, chartsOpen, remember, open };
     })();
 
-    // Guide access — a one-time guide, an active trial, or the Companion
-    // all open the same doors.
+    // Guide access — a one-time guide (on this device or on the account),
+    // an active trial, or the Companion all open the same doors.
     function birthGuideOpen() {
-      return kaawnGuides.birthOpen() || kaawnPlan.companionActive() || kaawnPlan.trialActive();
+      return kaawnGuides.birthOpen() || kaawnPlan.guideBirth() ||
+             kaawnPlan.companionActive() || kaawnPlan.trialActive();
     }
     function chartsGuideOpen() {
-      return kaawnGuides.chartsOpen() || kaawnPlan.companionActive() || kaawnPlan.trialActive();
+      return kaawnGuides.chartsOpen() || kaawnPlan.guideCharts() ||
+             kaawnPlan.companionActive() || kaawnPlan.trialActive();
     }
     function applyGuideLock() {
       document.body.classList.toggle('guide-locked', !birthGuideOpen());
@@ -10027,21 +10049,31 @@
 
       let row = null; // cached entitlements row — refreshed from the server when a session exists
       try { row = JSON.parse(lsGet(CACHE_KEY) || 'null'); } catch (e) { row = null; }
+      // A guide recorded on the account is also remembered on this device.
+      try {
+        if (row && row.guide_birth)  kaawnGuides.remember('birth');
+        if (row && row.guide_charts) kaawnGuides.remember('charts');
+      } catch (e) {}
 
       function companionActive() {
         return !!(row && row.plan === 'companion' &&
           (!row.plan_expires_at || new Date(row.plan_expires_at) > new Date()));
       }
+      // One-time guides, as recorded on the account by the webhook.
+      function guideBirth()  { return !!(row && row.guide_birth); }
+      function guideCharts() { return !!(row && row.guide_charts); }
       function trialEnd() { return row && row.trial_started_at ? new Date(row.trial_started_at).getTime() + TRIAL_DAYS * 86400000 : 0; }
       function trialActive() { return !companionActive() && Date.now() < trialEnd(); }
       function trialUsed()   { return !!(row && row.trial_started_at); }
       function trialDaysLeft() { return Math.max(0, Math.ceil((trialEnd() - Date.now()) / 86400000)); }
 
+      // The Full Guide, bought on this device or recorded on the account.
+      function fullGuide()  { return kaawnGuides.birthOpen() || guideBirth(); }
       // Depth layer (Today's Depth, Personal Sky, Full register):
       // open for companion, trial, the Full Guide, or on the one taste day.
-      function depthOpen()  { return companionActive() || trialActive() || kaawnGuides.birthOpen() || lsGet(TASTE_KEY) === todayStr(); }
+      function depthOpen()  { return companionActive() || trialActive() || fullGuide() || lsGet(TASTE_KEY) === todayStr(); }
       // Full Report: companion, trial, or the Full Guide.
-      function reportOpen() { return companionActive() || trialActive() || kaawnGuides.birthOpen(); }
+      function reportOpen() { return companionActive() || trialActive() || fullGuide(); }
       function tasteAvailable() { return !lsGet(TASTE_KEY) && !trialUsed() && !companionActive(); }
       function claimTaste() { lsSet(TASTE_KEY, todayStr()); track('taste_opened'); openFull(); }
 
@@ -10063,7 +10095,15 @@
         } catch (e) { /* renderers not ready — the next render reads the register */ }
       }
 
-      function cacheRow(r) { row = r; lsSet(CACHE_KEY, JSON.stringify(r)); }
+      function cacheRow(r) {
+        row = r;
+        lsSet(CACHE_KEY, JSON.stringify(r));
+        // A guide bought on another device arrives here: mirror it down
+        // and let the UI re-evaluate what is open.
+        if (r && r.guide_birth)  kaawnGuides.remember('birth');
+        if (r && r.guide_charts) kaawnGuides.remember('charts');
+        try { document.dispatchEvent(new CustomEvent('kaawn-plan-changed')); } catch (e) {}
+      }
 
       async function refresh() {
         if (typeof kaawnSync === 'undefined' || !kaawnSync.enabled()) return;
@@ -10165,7 +10205,7 @@
       }
 
       return { depthOpen, reportOpen, tasteAvailable, claimTaste, openFull,
-               trialActive, trialUsed, companionActive,
+               trialActive, trialUsed, companionActive, guideBirth, guideCharts,
                startTrial, statusLine, gate, refresh };
     })();
 

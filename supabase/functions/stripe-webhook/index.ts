@@ -7,12 +7,20 @@
 //   STRIPE_WEBHOOK_SECRET = whsec_...   (from the Stripe webhook endpoint)
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically.
 //
-// This is the ONLY writer of plan='companion' — clients are barred by
-// RLS (see entitlements-setup.sql). Events handled:
-//   checkout.session.completed          → plan=companion (row found via
-//                                         client_reference_id = auth user id)
+// This is the ONLY writer of plan='companion' and of the one-time guide
+// flags — clients are barred by RLS (see entitlements-setup.sql).
+// Events handled:
+//   checkout.session.completed (subscription) → plan=companion (row found
+//                                         via client_reference_id = auth user id)
+//   checkout.session.completed (payment)      → guide_birth / guide_charts,
+//                                         which guide read from the
+//                                         "<uid>__birth" / "<uid>__charts"
+//                                         client_reference_id the site sends
 //   customer.subscription.updated       → refresh plan_expires_at
 //   customer.subscription.deleted       → let the plan lapse at period end
+//
+// One-time guides never touch `plan`: buying the $4 Full Guide must not
+// confer the Companion subscription (and vice versa).
 //
 // Expiry model: while the subscription is healthy, plan_expires_at is
 // kept at current_period_end + 3 days of grace (so one missed webhook
@@ -76,14 +84,36 @@ Deno.serve(async (req: Request) => {
 
   try {
     if (event.type === 'checkout.session.completed' && obj.client_reference_id) {
-      // Upsert: trial users already have a row; direct buyers may not.
-      await db('entitlements?on_conflict=user_id', 'POST', [{
-        user_id: obj.client_reference_id,
-        plan: 'companion',
-        plan_expires_at: null, // subscription events set the real horizon
-        stripe_customer_id: obj.customer,
-        stripe_subscription_id: obj.subscription,
-      }]);
+      // The site tags one-time guide checkouts as "<uid>__birth" /
+      // "<uid>__charts"; a bare uid is the Companion subscription.
+      const ref = String(obj.client_reference_id);
+      const sep = ref.lastIndexOf('__');
+      const userId = sep === -1 ? ref : ref.slice(0, sep);
+      const guide  = sep === -1 ? '' : ref.slice(sep + 2);
+      const isGuide = guide === 'birth' || guide === 'charts';
+
+      // Only pay out what was actually paid for: a one-time payment must
+      // never grant the subscription, and a subscription must never be
+      // inferred from a guide purchase.
+      if (isGuide && obj.mode !== 'subscription') {
+        const column = guide === 'birth' ? 'guide_birth' : 'guide_charts';
+        // Only the guide flag is written. stripe_customer_id is included
+        // solely when Stripe actually made a customer — a one-time
+        // Payment Link often does not, and writing null over a
+        // subscriber's id would orphan their subscription events.
+        const patch: Record<string, unknown> = { user_id: userId, [column]: true };
+        if (obj.customer) patch.stripe_customer_id = obj.customer;
+        await db('entitlements?on_conflict=user_id', 'POST', [patch]);
+      } else if (!isGuide && obj.mode !== 'payment') {
+        // Upsert: trial users already have a row; direct buyers may not.
+        await db('entitlements?on_conflict=user_id', 'POST', [{
+          user_id: userId,
+          plan: 'companion',
+          plan_expires_at: null, // subscription events set the real horizon
+          stripe_customer_id: obj.customer,
+          stripe_subscription_id: obj.subscription,
+        }]);
+      }
     } else if (
       (event.type === 'customer.subscription.updated' ||
        event.type === 'customer.subscription.deleted') && obj.customer
