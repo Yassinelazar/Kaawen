@@ -10,12 +10,10 @@
 // This is the ONLY writer of plan='companion' and of the one-time guide
 // flags — clients are barred by RLS (see entitlements-setup.sql).
 // Events handled:
-//   checkout.session.completed (subscription) → plan=companion (row found
-//                                         via client_reference_id = auth user id)
-//   checkout.session.completed (payment)      → guide_birth / guide_charts,
-//                                         which guide read from the
-//                                         "<uid>__birth" / "<uid>__charts"
-//                                         client_reference_id the site sends
+//   checkout.session.completed, reference "<uid>__birth"/"<uid>__charts"
+//                                       → that guide flag, and nothing else
+//   checkout.session.completed, bare "<uid>", not a one-time payment
+//                                       → plan=companion
 //   customer.subscription.updated       → refresh plan_expires_at
 //   customer.subscription.deleted       → let the plan lapse at period end
 //
@@ -92,10 +90,14 @@ Deno.serve(async (req: Request) => {
       const guide  = sep === -1 ? '' : ref.slice(sep + 2);
       const isGuide = guide === 'birth' || guide === 'charts';
 
-      // Only pay out what was actually paid for: a one-time payment must
-      // never grant the subscription, and a subscription must never be
-      // inferred from a guide purchase.
-      if (isGuide && obj.mode !== 'subscription') {
+      // Only pay out what was actually paid for. The guide tag decides:
+      // a guide-tagged session NEVER grants the Companion plan, whatever
+      // its mode. (Mode is deliberately not consulted here — if a guide
+      // is ever sold as a recurring price rather than a one-time charge,
+      // the buyer must still receive what they paid for.) Only an
+      // untagged reference can confer the subscription, and never from a
+      // one-time payment.
+      if (isGuide) {
         const column = guide === 'birth' ? 'guide_birth' : 'guide_charts';
         // Only the guide flag is written. stripe_customer_id is included
         // solely when Stripe actually made a customer — a one-time
