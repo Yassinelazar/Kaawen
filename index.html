@@ -9989,14 +9989,30 @@
         state[which] = Date.now();
         save();
       }
-      // Returns false when no checkout URL is wired yet.
-      // Tags the session as "<uid>__birth" / "<uid>__charts" so the
-      // webhook can attribute the payment and the guide follows the
-      // account across devices; without sync it still unlocks here via
-      // the ?guide= return parameter.
+      // Opens checkout. Preferred path: the create-checkout edge
+      // function mints a Stripe session from the guide's price and binds
+      // it to the buyer's account, so the purchase is recorded server
+      // side and follows them to any device. Falls back to a plain
+      // Payment Link if one is configured. Returns false when neither
+      // is available, so the button can say so honestly.
       async function open(which) {
-        const url = which === 'birth' ? KAAWN_GUIDE_BIRTH_URL : KAAWN_GUIDE_CHARTS_URL;
         track('guide_checkout_' + which);
+        try {
+          const s = await kaawnSync.ensureSession();
+          const res = await fetch(KAAWN_SYNC.url + '/functions/v1/create-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: KAAWN_SYNC.anonKey,
+              Authorization: 'Bearer ' + s.access_token,
+            },
+            body: JSON.stringify({ guide: which }),
+          });
+          const data = await res.json().catch(() => null);
+          if (res.ok && data && data.url) { location.href = data.url; return true; }
+        } catch (e) { /* fall through to the Payment Link path */ }
+
+        const url = which === 'birth' ? KAAWN_GUIDE_BIRTH_URL : KAAWN_GUIDE_CHARTS_URL;
         if (!url) return false;
         let dest = url;
         try {
