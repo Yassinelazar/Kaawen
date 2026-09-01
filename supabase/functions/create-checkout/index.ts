@@ -20,9 +20,12 @@
 // prices can be switched between the two in the Stripe dashboard
 // without touching this function.
 
-const PRICES: Record<string, string> = {
-  birth:  'price_1UAltkJNs5MmrjR4urUi32lE', // Full Guide   — prod_VB8AX723ufbkeq
-  charts: 'price_1UAllTJNs5MmrjR45nU87Yqi', // Charts Guide — prod_VB81JI9IqU4Tk8
+// Products, not prices: the active price is resolved at request time, so
+// changing what a guide costs is a dashboard edit with no redeploy. The
+// resolved product's name is returned to the caller for verification.
+const PRODUCTS: Record<string, string> = {
+  birth:  'prod_VB8XkBUl0ZkRfL',
+  charts: 'prod_VB8XiLHGwgbvaN',
 };
 
 const SITE = 'https://kaawen.com/';
@@ -68,8 +71,8 @@ Deno.serve(async (req: Request) => {
 
   let guide = '';
   try { guide = String((await req.json())?.guide || ''); } catch { /* fall through */ }
-  const price = PRICES[guide];
-  if (!price) return json({ error: 'unknown guide' }, 400);
+  const product = PRODUCTS[guide];
+  if (!product) return json({ error: 'unknown guide' }, 400);
 
   // Identify the buyer from their Supabase session.
   const auth = req.headers.get('Authorization') || '';
@@ -81,21 +84,31 @@ Deno.serve(async (req: Request) => {
   if (!user?.id) return json({ error: 'not signed in' }, 401);
 
   try {
-    // Let the price decide the mode, so switching a guide between
-    // one-time and recurring in the dashboard needs no redeploy.
-    const priceObj = await stripe(`prices/${price}`, key);
-    const mode = priceObj?.recurring ? 'subscription' : 'payment';
+    // The product's current active price, and its shape decides the mode:
+    // a recurring price opens a subscription checkout, a one-time price a
+    // payment checkout — so either pricing model works untouched.
+    const list = await stripe(`prices?product=${product}&active=true&limit=1`, key);
+    const priceObj = list?.data?.[0];
+    if (!priceObj) return json({ error: `no active price on ${product}` }, 500);
+    const mode = priceObj.recurring ? 'subscription' : 'payment';
 
     const session = await stripe('checkout/sessions', key, {
       mode,
-      'line_items[0][price]': price,
+      'line_items[0][price]': priceObj.id,
       'line_items[0][quantity]': '1',
       client_reference_id: `${user.id}__${guide}`,
       success_url: `${SITE}?guide=${guide}`,
       cancel_url: SITE,
       allow_promotion_codes: 'true',
     });
-    return json({ url: session.url });
+    // amount/livemode echoed back so the wiring can be verified from the
+    // client without opening the Stripe dashboard.
+    return json({
+      url: session.url,
+      amount: priceObj.unit_amount,
+      recurring: !!priceObj.recurring,
+      livemode: !!session.livemode,
+    });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
