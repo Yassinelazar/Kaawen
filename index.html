@@ -7545,13 +7545,54 @@
     const SKY_R_ZODIAC = 196;
 
     let sky3d = null;      // live scene state once built
+    let skyGL = null;      // the renderer + post chain — created once, outlives every chart
     let skyLoading = false;
+
+    // ── Quality ───────────────────────────────────────────────────
+    // One place decides how hard the GPU is asked to work. A tier is
+    // chosen once from the device's shape; on top of it a short ladder
+    // of degradations answers *measured* frame pressure — render scale
+    // first, then bloom, then star density. The bodies themselves and
+    // the reading are never touched.
+    const SKY_QUALITY_PROFILES = {
+      ULTRA:  { maxDPR: 2.5,  stars: 1400, texSize: 1024, seg: [64, 48], bloom: true },
+      HIGH:   { maxDPR: 2,    stars: 1400, texSize: 1024, seg: [64, 48], bloom: true },
+      MEDIUM: { maxDPR: 1.5,  stars: 1000, texSize: 512,  seg: [48, 32], bloom: true },
+      LOW:    { maxDPR: 1.25, stars: 700,  texSize: 512,  seg: [48, 32], bloom: false },
+      MOBILE: { maxDPR: 1.5,  stars: 600,  texSize: 512,  seg: [48, 32], bloom: false }
+    };
+    function skyQualityTier() {
+      const coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+      const small = Math.min(screen.width || 1e4, screen.height || 1e4) < 820;
+      if (coarse && small) return 'MOBILE';
+      const mem = navigator.deviceMemory || 8;   // Chrome-only hint; others assume ample
+      const cores = navigator.hardwareConcurrency || 8;
+      if (mem <= 2 || cores <= 2) return 'LOW';
+      if (mem <= 4 || cores <= 4) return 'MEDIUM';
+      return (window.devicePixelRatio || 1) >= 2 ? 'ULTRA' : 'HIGH';
+    }
+    // The pressure ladder, applied on top of the tier — resolution and
+    // glow are traded away long before anything structural.
+    const SKY_PRESSURE = [
+      { scale: 1.0,  bloom: true,  stars: 1.0 },
+      { scale: 0.85, bloom: true,  stars: 1.0 },
+      { scale: 0.7,  bloom: true,  stars: 1.0 },
+      { scale: 0.7,  bloom: false, stars: 1.0 },
+      { scale: 0.55, bloom: false, stars: 0.5 }
+    ];
+    const SKY_DEV = /[?&]dev=1/.test(location.search);
+    const skyReducedMotion = () => !!(window.matchMedia
+      && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
     // ── Planet surfaces ───────────────────────────────────────────
     // Procedural, so no image is ever fetched. Multi-octave value noise
     // gives each body real high-frequency detail — up close they read as
     // surfaces rather than flat discs — and the gas giants get banding.
-    // Generated once per planet at 512², then cached.
+    // The maths lives in one pure function so the Worker can run the
+    // identical code: the main thread paints a small instant preview,
+    // the full surface is computed off-thread and arrives as raw pixels,
+    // and each body sharpens in place. Cached across rebuilds — there
+    // are only ever ten.
     const SKY_TEX_CACHE = {};
     const SKY_SURFACE = {
       Sun:     { bands: 0, grain: 0.10, contrast: 0.20 },
@@ -7566,15 +7607,10 @@
       Pluto:   { bands: 0, grain: 0.60, contrast: 0.50 }
     };
 
-    function planetTexture(THREE, planet, hex) {
-      if (SKY_TEX_CACHE[planet]) return SKY_TEX_CACHE[planet];
-      const S = 1024;   // enough detail to hold up when a body fills the frame
-      const cv = document.createElement('canvas');
-      cv.width = cv.height = S;
-      const g = cv.getContext('2d');
-      const cfg = SKY_SURFACE[planet] || { bands: 0, grain: 0.4, contrast: 0.35 };
+    // Pure pixels in, pixels out — no DOM, no THREE — so the exact same
+    // function body can be serialised into the Worker.
+    function SKY_TEX_GEN(planet, hex, cfg, S) {
       const r = (hex >> 16) & 255, gg = (hex >> 8) & 255, bb = hex & 255;
-
       // Deterministic value noise, so a body looks the same every visit
       let seed = 0;
       for (let i = 0; i < planet.length; i++) seed = (seed * 31 + planet.charCodeAt(i)) & 0xffff;
@@ -7588,9 +7624,7 @@
         return rand(xi, yi) * (1 - u) * (1 - v) + rand(xi + 1, yi) * u * (1 - v)
              + rand(xi, yi + 1) * (1 - u) * v + rand(xi + 1, yi + 1) * u * v;
       };
-
-      const img = g.createImageData(S, S);
-      const d = img.data;
+      const d = new Uint8Array(S * S * 4);
       for (let y = 0; y < S; y++) {
         for (let x = 0; x < S; x++) {
           // six octaves — the last ones carry the fine grain that keeps
@@ -7610,12 +7644,77 @@
           d[i + 3] = 255;
         }
       }
-      g.putImageData(img, 0, 0);
-      const tex = new THREE.CanvasTexture(cv);
-      tex.anisotropy = 16;
+      return d;
+    }
+
+    let skyTexTHREE = null;     // pinned by the first build; the module never unloads
+    let skyTexWorker;           // undefined = untried, false = unavailable
+    const skyTexPending = {};
+    let skyTexFallbackAt = 0;
+    function skyTexWorkerGet() {
+      if (skyTexWorker !== undefined) return skyTexWorker;
+      try {
+        const src = 'const gen = ' + SKY_TEX_GEN.toString() + ';' +
+          'onmessage = e => { const j = e.data;' +
+          ' const d = gen(j.planet, j.hex, j.cfg, j.S);' +
+          ' postMessage({ planet: j.planet, S: j.S, d: d }, [d.buffer]); };';
+        skyTexWorker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+        skyTexWorker.onmessage = e => skyTexArrived(e.data.planet, e.data.d, e.data.S);
+        skyTexWorker.onerror = () => {
+          skyTexWorker = false;
+          Object.keys(skyTexPending).forEach(k => delete skyTexPending[k]);
+        };
+      } catch (e) { skyTexWorker = false; }
+      return skyTexWorker;
+    }
+    function skyTexMake(THREE, data, S) {
+      const tex = new THREE.DataTexture(data, S, S, THREE.RGBAFormat);
+      tex.flipY = true;
       tex.colorSpace = THREE.SRGBColorSpace;
-      SKY_TEX_CACHE[planet] = tex;
+      tex.generateMipmaps = true;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.anisotropy = 16;
+      tex.needsUpdate = true;
       return tex;
+    }
+    function skyTexArrived(planet, data, S) {
+      delete skyTexPending[planet];
+      if (!skyTexTHREE) return;
+      const old = SKY_TEX_CACHE[planet];
+      const tex = skyTexMake(skyTexTHREE, data, S);
+      SKY_TEX_CACHE[planet] = { tex, size: S };
+      if (sky3d) sky3d.applyTexture(planet, tex);
+      if (old && old.preview) old.tex.dispose();
+    }
+    function skyTexRequest(planet, hex, cfg, size) {
+      if (skyTexPending[planet]) return;
+      skyTexPending[planet] = true;
+      const w = skyTexWorkerGet();
+      if (w) {
+        w.postMessage({ planet, hex, cfg, S: size });
+      } else {
+        // No Worker here: generate at a friendlier size, one body per
+        // timeout, so the cost is spread instead of one long freeze.
+        const S = Math.min(size, 512);
+        const now = performance.now();
+        skyTexFallbackAt = Math.max(now, skyTexFallbackAt) + 260;
+        setTimeout(() => skyTexArrived(planet, SKY_TEX_GEN(planet, hex, cfg, S), S),
+                   skyTexFallbackAt - now);
+      }
+    }
+    function planetTexture(THREE, planet, hex, size) {
+      const hit = SKY_TEX_CACHE[planet];
+      if (hit && hit.size >= size) return hit.tex;
+      const cfg = SKY_SURFACE[planet] || { bands: 0, grain: 0.4, contrast: 0.35 };
+      if (!hit) {
+        // ~3ms preview so the sky appears at once; the real surface follows
+        const PS = 128;
+        SKY_TEX_CACHE[planet] = { tex: skyTexMake(THREE, SKY_TEX_GEN(planet, hex, cfg, PS), PS),
+                                  size: PS, preview: true };
+      }
+      skyTexRequest(planet, hex, cfg, size);
+      return SKY_TEX_CACHE[planet].tex;
     }
 
     // Radial falloff used for the body glows — one texture, tinted per
@@ -7685,41 +7784,66 @@
         return new THREE.Vector3(Math.cos(a) * r, y || 0, Math.sin(a) * r);
       };
 
+      skyTexTHREE = THREE;
+      const TIER = skyQualityTier();
+      const Q = SKY_QUALITY_PROFILES[TIER];
+
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(42, 1, 1, 3000);
-      // preserveDrawingBuffer lets the export read the rendered frame back.
-      const renderer = new THREE.WebGLRenderer({
-        canvas, antialias: true, alpha: true, preserveDrawingBuffer: true,
-        powerPreference: 'high-performance'
-      });
-      // Render at the display's true density (up to 3×) and film-map the
-      // result, so highlights roll off instead of clipping to flat white.
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 3));
-      renderer.setClearColor(0x000000, 0);
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.15;
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      const baseDPR = Math.min(window.devicePixelRatio || 1, Q.maxDPR);
 
-      // Bloom gives the bodies real light falloff rather than flat discs.
-      // Optional by design: if the addon modules can't be fetched the
-      // scene simply renders without it.
-      let composer = null, bloomPass = null;
-      try {
-        const [{ EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
-          import('three/addons/postprocessing/EffectComposer.js'),
-          import('three/addons/postprocessing/RenderPass.js'),
-          import('three/addons/postprocessing/UnrealBloomPass.js'),
-          import('three/addons/postprocessing/OutputPass.js')
-        ]);
-        composer = new EffectComposer(renderer);
-        composer.addPass(new RenderPass(scene, camera));
-        // strength, radius, threshold — the threshold is deliberately high
-        // so only the bodies themselves bloom. Lower values smear the
-        // starfield and the sign labels into haze.
-        bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.55, 0.32, 0.62);
-        composer.addPass(bloomPass);
-        composer.addPass(new OutputPass());
-      } catch (e) { composer = null; }
+      // The renderer, the post chain and their GL context are created
+      // once and outlive every chart: a fresh renderer on the same canvas
+      // would strand the previous context's copies of the cached planet
+      // surfaces (the old renderer's bookkeeping dies with it) and upload
+      // them all over again. Rebuilding a chart only swaps the scene.
+      let renderer, composer = null, bloomPass = null;
+      if (skyGL) {
+        ({ renderer, composer, bloomPass } = skyGL);
+        if (skyGL.renderPass) { skyGL.renderPass.scene = scene; skyGL.renderPass.camera = camera; }
+        renderer.setPixelRatio(baseDPR);          // shed any old governor pressure
+        if (composer) { composer.setPixelRatio(baseDPR); bloomPass.enabled = true; }
+      } else {
+        // The drawing buffer is NOT preserved: the export re-renders its
+        // frame and reads it back in the same task instead, so every
+        // ordinary frame keeps the fast swap path.
+        renderer = new THREE.WebGLRenderer({
+          canvas, antialias: true, alpha: true,
+          powerPreference: 'high-performance'
+        });
+        // Density comes from the quality tier, and the frame governor may
+        // pull it down further under measured pressure. Film-mapped so
+        // highlights roll off instead of clipping to flat white.
+        renderer.setPixelRatio(baseDPR);
+        if (SKY_DEV) renderer.info.autoReset = false;
+        renderer.setClearColor(0x000000, 0);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.15;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        // Bloom gives the bodies real light falloff rather than flat discs.
+        // Optional by design: the lower quality tiers skip it, and if the
+        // addon modules can't be fetched the scene simply renders without it.
+        let renderPass = null;
+        if (Q.bloom) try {
+          const [{ EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
+            import('three/addons/postprocessing/EffectComposer.js'),
+            import('three/addons/postprocessing/RenderPass.js'),
+            import('three/addons/postprocessing/UnrealBloomPass.js'),
+            import('three/addons/postprocessing/OutputPass.js')
+          ]);
+          composer = new EffectComposer(renderer);
+          renderPass = new RenderPass(scene, camera);
+          composer.addPass(renderPass);
+          // strength, radius, threshold — the threshold is deliberately high
+          // so only the bodies themselves bloom. Lower values smear the
+          // starfield and the sign labels into haze.
+          bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.55, 0.32, 0.62);
+          composer.addPass(bloomPass);
+          composer.addPass(new OutputPass());
+        } catch (e) { composer = null; bloomPass = null; renderPass = null; }
+        skyGL = { renderer, composer, bloomPass, renderPass };
+      }
 
       const groups = {
         orbits:  new THREE.Group(),
@@ -7732,8 +7856,9 @@
 
       // ── Stars ──────────────────────────────────────────────────
       const starGeo = new THREE.BufferGeometry();
+      const starCount = Q.stars;
       const starPos = [];
-      for (let i = 0; i < 1400; i++) {
+      for (let i = 0; i < starCount; i++) {
         const th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1), R = 700 + Math.random() * 500;
         starPos.push(R * Math.sin(ph) * Math.cos(th), R * Math.cos(ph), R * Math.sin(ph) * Math.sin(th));
       }
@@ -7789,7 +7914,7 @@
         const pos = at(ctx.positions[p], r);
         // The Sun is its own light source, so it stays unshaded; every
         // other body is lit by it and carries a textured surface.
-        const tex = planetTexture(THREE, p, SKY_COLOR[p]);
+        const tex = planetTexture(THREE, p, SKY_COLOR[p], Q.texSize);
         const mat = (p === 'Sun')
           ? new THREE.MeshBasicMaterial({ map: tex, color: SKY_COLOR[p] })
           : new THREE.MeshStandardMaterial({
@@ -7799,9 +7924,9 @@
               bumpMap: tex, bumpScale: (SKY_SURFACE[p] || {}).bands ? 0.4 : 0.9,
               emissive: SKY_COLOR[p], emissiveMap: tex, emissiveIntensity: 0.4
             });
-        const mesh = new THREE.Mesh(new THREE.SphereGeometry(SKY_SIZE[p], 64, 48), mat);
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(SKY_SIZE[p], Q.seg[0], Q.seg[1]), mat);
         mesh.rotation.z = 0.22;           // a little axial tilt
-        mesh.userData.spin = 0.0012 + Math.random() * 0.0016;
+        mesh.userData.spin = 0.072 + Math.random() * 0.096;   // rad/s
         mesh.position.copy(pos);
         mesh.userData.planet = p;
         scene.add(mesh);
@@ -7898,12 +8023,25 @@
       // The camera orbits a target that can move: at rest it is the
       // observer at the centre, and when a body is chosen it travels to
       // that body, so choosing a planet flies the sky to it.
+      // Motion is expressed in rates per second and applied through
+      // 1 − e^(−rate·dt), so a flight covers the same ground in the same
+      // time at 30, 60 or 120Hz. The rates match the feel the old
+      // per-frame constants had at 60fps.
+      const REDUCED = skyReducedMotion();
+      const MOTION = {
+        rest: 0.72,                              // settle rate between flights, 1/s
+        flight: 5.7,                             // full flight rate, 1/s
+        zoom: 9,                                 // wheel response, 1/s
+        spool: 18,                               // how fast a flight gathers, 1/s²
+        scale: 7.7,                              // selection swell rate, 1/s
+        drift: REDUCED ? 0 : 0.036               // idle turn, rad/s
+      };
       const cam = {
         theta: Math.PI * 0.5, phi: 0.88, radius: 620,
         target: new THREE.Vector3(0, 0, 0),
         wantTarget: new THREE.Vector3(0, 0, 0),
         wantRadius: 620,
-        ease: 0.012
+        rate: MOTION.rest
       };
       function placeCamera() {
         camera.position.set(
@@ -7923,12 +8061,13 @@
         // Frame the body itself: small bodies are approached closer, so
         // Pluto and the Sun both fill a comparable part of the view.
         cam.wantRadius = Math.max(58, (SKY_SIZE[name] || 5) * 15);
-        cam.ease = 0.012;
+        // Reduced motion asks for arrival, not a voyage
+        cam.rate = REDUCED ? 12 : MOTION.rest;
       }
       function releaseFocus() {
         cam.wantTarget.set(0, 0, 0);
         cam.wantRadius = 620;
-        cam.ease = 0.012;
+        cam.rate = REDUCED ? 12 : MOTION.rest;
       }
 
       function resize() {
@@ -7993,7 +8132,7 @@
       const onWheel = e => {
         const step = cam.wantRadius * (e.deltaY > 0 ? 0.12 : -0.12);
         cam.wantRadius = Math.max(26, Math.min(1400, cam.wantRadius + step));
-        cam.ease = 0.14;                     // respond promptly to the hand
+        cam.rate = Math.max(cam.rate, MOTION.zoom);  // respond promptly to the hand
         if (e.cancelable) e.preventDefault();
       };
       canvas.addEventListener('mousedown', onDown);
@@ -8007,7 +8146,7 @@
       // Tap a planet — same selection pipeline as everywhere else
       const ray = new THREE.Raycaster();
       const ndc = new THREE.Vector2();
-      canvas.addEventListener('click', e => {
+      const onTap = e => {
         if (moved > 8) return; // that was a drag, not a tap
         const r = canvas.getBoundingClientRect();
         ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
@@ -8015,54 +8154,185 @@
         ray.setFromCamera(ndc, camera);
         const hit = ray.intersectObjects(pickable, false)[0];
         if (hit) selectWheel('planet', hit.object.userData.planet);
-      });
+      };
+      canvas.addEventListener('click', onTap);
 
-      let raf = 0;
-      function loop() {
-        raf = requestAnimationFrame(loop);
-        // A slow drift keeps the scene alive when untouched
+      // ── The loop: one, and alive only while the sky is watched ──
+      let raf = 0, running = false, lastT = 0, ema = 0;
+      // Governor state — degrade under sustained pressure, recover only
+      // after a long calm, and back off if a recovery didn't hold.
+      let pressure = 0, lastShift = 0, calmSince = 0, lastUp = -1, upBackoff = 6000;
+
+      function applyPressure() {
+        const st = SKY_PRESSURE[pressure];
+        const eff = baseDPR * st.scale;
+        renderer.setPixelRatio(eff);
+        if (composer) {
+          composer.setPixelRatio(eff);
+          bloomPass.enabled = st.bloom;
+        }
+        starGeo.setDrawRange(0, Math.floor(starCount * st.stars));
+      }
+
+      function govern(now, gap) {
+        if (gap > 250) return;                    // a pause, not a slow frame
+        ema = ema ? ema * 0.92 + gap * 0.08 : gap;
+        if (ema >= 17.5) calmSince = now;         // any strain resets the calm clock
+        if (now - lastShift < 1600) return;       // let the last change settle
+        if (ema > 22 && pressure < SKY_PRESSURE.length - 1) {
+          pressure++;
+          lastShift = now;
+          // A recovery that immediately re-degraded earns a longer wait
+          if (lastUp >= 0 && now - lastUp < 12000) upBackoff = Math.min(48000, upBackoff * 2);
+          applyPressure();
+        } else if (pressure > 0 && now - calmSince > upBackoff) {
+          pressure--;
+          lastShift = now; lastUp = now; calmSince = now;
+          applyPressure();
+        }
+      }
+
+      // Development-only diagnostics: ?dev=1
+      let devEl = null, devAt = 0;
+      function devPanel(now) {
+        if (now - devAt < 250) return;
+        devAt = now;
+        if (!devEl) {
+          devEl = document.createElement('div');
+          devEl.style.cssText = 'position:absolute;left:10px;top:10px;z-index:60;' +
+            'font:10px/1.5 ui-monospace,monospace;color:#D4A655;background:rgba(10,9,7,0.72);' +
+            'padding:6px 9px;border:1px solid rgba(212,166,85,0.3);border-radius:6px;' +
+            'pointer-events:none;white-space:pre;';
+          host.appendChild(devEl);
+        }
+        const i = renderer.info;
+        devEl.textContent =
+          'webgl2 · ' + TIER + ' · step ' + pressure +
+          '\nfps ' + (ema ? (1000 / ema).toFixed(0) : '—') + ' · ' + ema.toFixed(1) + 'ms' +
+          '\ndpr ' + renderer.getPixelRatio().toFixed(2) + ' / base ' + baseDPR.toFixed(2) +
+          '\ncalls ' + i.render.calls + ' · tris ' + i.render.triangles +
+          '\ngeo ' + i.memory.geometries + ' · tex ' + i.memory.textures;
+      }
+
+      function loop(now) {
+        raf = running ? requestAnimationFrame(loop) : 0;
+        const gap = lastT ? now - lastT : 8;
+        lastT = now;
+        const dt = Math.min(0.05, Math.max(0.0001, gap / 1000));
+
         // Ease toward whatever the camera has been asked to look at.
-        // The rate itself eases in and out, so a flight starts gently,
-        // gathers, and settles rather than snapping to a stop.
+        // The rate itself spools up and settles, so a flight starts
+        // gently, gathers, and lands rather than snapping.
         const dist = cam.target.distanceTo(cam.wantTarget);
         const dr = Math.abs(cam.radius - cam.wantRadius);
-        const moving = dist > 0.12 || dr > 0.4;
-        if (moving) {
-          cam.ease = Math.min(0.09, cam.ease + 0.005);    // spool up
-          cam.target.lerp(cam.wantTarget, cam.ease);
-          cam.radius += (cam.wantRadius - cam.radius) * cam.ease;
+        if (dist > 0.12 || dr > 0.4) {
+          cam.rate = REDUCED ? 12 : Math.min(MOTION.flight, cam.rate + MOTION.spool * dt);
+          const k = 1 - Math.exp(-cam.rate * dt);
+          cam.target.lerp(cam.wantTarget, k);
+          cam.radius += (cam.wantRadius - cam.radius) * k;
         } else {
-          cam.ease = 0.012;                                // ready for the next
+          cam.rate = MOTION.rest;                          // ready for the next
           cam.target.copy(cam.wantTarget);
         }
         // Bodies turn slowly on their own axis — the surface detail moves,
         // which is what sells them as spheres rather than discs — and the
         // selected one grows into its emphasis instead of snapping.
+        const sk = 1 - Math.exp(-MOTION.scale * dt);
         for (const p in planetMeshes) {
           const m = planetMeshes[p];
-          m.rotation.y += m.userData.spin || 0.0012;
+          if (!REDUCED) m.rotation.y += (m.userData.spin || 0.072) * dt;
           const want = m.userData.wantScale === undefined ? 1 : m.userData.wantScale;
           const cur = m.scale.x;
-          if (Math.abs(cur - want) > 0.004) m.scale.setScalar(cur + (want - cur) * 0.12);
+          if (Math.abs(cur - want) > 0.004) m.scale.setScalar(cur + (want - cur) * sk);
         }
-        if (!drag) { cam.theta += 0.0006; }
+        if (!drag) { cam.theta += MOTION.drift * dt; }
         placeCamera();
+        if (SKY_DEV) renderer.info.reset();
         draw();
+        govern(now, gap);
+        if (SKY_DEV) devPanel(now);
       }
-      loop();
+
+      function startLoop() {
+        if (running) return;                     // exactly one loop, ever
+        running = true;
+        lastT = 0; ema = 0;
+        raf = requestAnimationFrame(loop);
+      }
+      function stopLoop() {
+        running = false;
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
+      // The loop runs only when all three are true: the 3D view is the
+      // active mode, the tab is visible, and the canvas is on screen.
+      let modeActive = true, onScreen = true;
+      function updateRun() {
+        (modeActive && !document.hidden && onScreen) ? startLoop() : stopLoop();
+      }
+      function setActive(on) { modeActive = !!on; updateRun(); }
+      const onVis = () => updateRun();
+      document.addEventListener('visibilitychange', onVis);
+      const io = ('IntersectionObserver' in window)
+        ? new IntersectionObserver(es => {
+            onScreen = !!(es[0] && es[0].isIntersecting);
+            updateRun();
+          })
+        : null;
+      if (io) io.observe(canvas);
 
       const ro = new ResizeObserver(resize);
       ro.observe(canvas);
 
+      // Fresh full-resolution surfaces swap in as the Worker delivers them
+      function applyTexture(planet, tex) {
+        const m = planetMeshes[planet];
+        if (!m) return;
+        const mat = m.material;
+        mat.map = tex;
+        if (mat.bumpMap) mat.bumpMap = tex;
+        if (mat.emissiveMap) mat.emissiveMap = tex;
+      }
+
+      function disposeAll() {
+        stopLoop();
+        document.removeEventListener('visibilitychange', onVis);
+        if (io) io.disconnect();
+        ro.disconnect();
+        canvas.removeEventListener('mousedown', onDown);
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+        canvas.removeEventListener('touchstart', onDown);
+        canvas.removeEventListener('touchmove', onMove);
+        canvas.removeEventListener('touchend', onUp);
+        canvas.removeEventListener('wheel', onWheel);
+        canvas.removeEventListener('click', onTap);
+        if (devEl) devEl.remove();
+        // Everything this chart created goes back to the GPU — except the
+        // planet surfaces and the shared glow, kept for the next sky
+        // (they are the expensive part, and there are only ever ten), and
+        // except the renderer/post chain, which persist by design.
+        const keep = new Set([SKY_GLOW_TEX]);
+        Object.values(SKY_TEX_CACHE).forEach(c => keep.add(c.tex));
+        scene.traverse(o => {
+          if (o.geometry && !o.isSprite) o.geometry.dispose();   // sprites share one geometry
+          const mats = Array.isArray(o.material) ? o.material : (o.material ? [o.material] : []);
+          mats.forEach(m => {
+            ['map', 'bumpMap', 'emissiveMap', 'alphaMap'].forEach(slot => {
+              if (m[slot] && !keep.has(m[slot])) m[slot].dispose();
+            });
+            m.dispose();
+          });
+        });
+      }
+
+      updateRun();
+
       sky3d = { THREE, scene, camera, renderer, groups, planetMeshes, sizes: SKY_SIZE,
-                composer, exportSky, focusBody, releaseFocus,
-                stop: () => {
-                  cancelAnimationFrame(raf);
-                  ro.disconnect();
-                  window.removeEventListener('mousemove', onMove);
-                  window.removeEventListener('mouseup', onUp);
-                  renderer.dispose();
-                } };
+                composer, exportSky, focusBody, releaseFocus, applyTexture,
+                setActive, pause: () => setActive(false), resume: () => setActive(true),
+                tier: TIER,
+                stop: disposeAll };
       document.getElementById('sky3d-loading').style.display = 'none';
       skyLoading = false;
       syncSky3DSelection();
@@ -8270,9 +8540,12 @@
         // Choosing the sky takes you into it. Leaving the immersive view
         // drops back to the panel here, still in 3D.
         buildSky3D();
+        if (sky3d) sky3d.resume();
         setSkyImmersive(true);
       } else {
         setSkyImmersive(false);
+        // The engine sleeps the moment the sky is out of sight
+        if (sky3d) sky3d.pause();
       }
     }
 
