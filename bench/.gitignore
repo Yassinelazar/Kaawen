@@ -3,3 +3,5 @@ shots/*
 !shots/baseline-2a/
 !shots/baseline-r185/
 !shots/baseline-webgpu/
+!shots/baseline-jupiter/
+!shots/tranche1-before/

@@ -40,6 +40,14 @@ const SKY_R_ZODIAC = 196;
 
 let current = null;    // the live sky handle, for Worker deliveries
 
+// The scene and camera objects persist like the renderer: a rebuilt
+// chart empties and repopulates them rather than replacing them. The
+// WebGPU post chain caches render contexts by scene/camera identity,
+// and swapping objects strands those caches on disposed resources —
+// stable identities keep every cache honest.
+let skyScene = null;
+let skyCamera = null;
+
 // ── Planet surfaces ───────────────────────────────────────────
 // Procedural, so no image is ever fetched. Multi-octave value noise
 // gives each body real high-frequency detail — up close they read as
@@ -56,7 +64,16 @@ const SKY_SURFACE = {
   Mercury: { bands: 0, grain: 0.58, contrast: 0.46 },
   Venus:   { bands: 3, grain: 0.30, contrast: 0.24 },  // thick cloud
   Mars:    { bands: 0, grain: 0.55, contrast: 0.44 },
-  Jupiter: { bands: 9, grain: 0.26, contrast: 0.40 },  // banded
+  // Jupiter is the Phase 3 showcase: domain-warped two-tone banding
+  // from the worker, 2048² on capable tiers, and the TSL
+  // PlanetMaterial on the WebGPU path (see js/sky-materials.js).
+  Jupiter: { bands: 9, grain: 0.26, contrast: 0.40, warp: 1.2, tone: 0.5,
+             texSize: 2048, material: 'planet', detail: 0.09, detailScale: 10,
+             // NASA/JPL-Caltech PIA07782 — Cassini's cylindrical map of
+             // Jupiter (Dec 2000 flyby), public domain, resized to 2048².
+             // Albedo only; relief stays procedural. Loads progressively —
+             // the worker surface shows until the survey arrives.
+             mapUrl: 'assets/jupiter-cassini.jpg' },
   Saturn:  { bands: 7, grain: 0.22, contrast: 0.34 },
   Uranus:  { bands: 4, grain: 0.16, contrast: 0.20 },
   Neptune: { bands: 5, grain: 0.20, contrast: 0.26 },
@@ -135,6 +152,20 @@ function planetTexture(THREE, planet, hex, size) {
   return SKY_TEX_CACHE[planet].tex;
 }
 
+// Real survey maps (per-planet, from authoritative sources), kept
+// across rebuilds like the procedural cache — decoded once per session.
+const SKY_MAP_CACHE = {};
+function loadRealMap(THREE, planet, url, onReady) {
+  const hit = SKY_MAP_CACHE[planet];
+  if (hit) { onReady(hit); return; }
+  new THREE.TextureLoader().load(url, t => {
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 16;
+    SKY_MAP_CACHE[planet] = t;
+    onReady(t);
+  }, undefined, () => { /* offline — the procedural surface stands */ });
+}
+
 // Radial falloff used for the body glows — one texture, tinted per
 // planet, always facing the camera so it never shows an edge.
 let SKY_GLOW_TEX = null;
@@ -206,11 +237,25 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     return new THREE.Vector3(Math.cos(a) * r, y || 0, Math.sin(a) * r);
   };
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, 1, 1, 3000);
+  if (!skyScene) {
+    skyScene = new THREE.Scene();
+    skyCamera = new THREE.PerspectiveCamera(42, 1, 1, 3000);
+  }
+  const scene = skyScene;
+  const camera = skyCamera;
   await rm.attach(scene, camera);
   rm.setPixelRatio(baseDPR);        // shed any old governor pressure
   rm.setBloom(true);
+
+  // The node-based PlanetMaterial exists only on the WebGPU path; the
+  // WebGL2 fallback keeps the proven Phase 2 material untouched.
+  let MATS = null;
+  if (rm.getBackend() === 'webgpu') {
+    try {
+      MATS = await import('./sky-materials.js');
+      await MATS.loadTSL();
+    } catch (e) { MATS = null; }
+  }
 
   const groups = {
     orbits:  new THREE.Group(),
@@ -284,16 +329,26 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     const pos = at(ctx.positions[p], r);
     // The Sun is its own light source, so it stays unshaded; every
     // other body is lit by it and carries a textured surface.
-    const tex = planetTexture(THREE, p, SKY_COLOR[p], Q.texSize);
+    const cfg = SKY_SURFACE[p] || {};
+    // A body may ask for a larger surface than the tier default, but
+    // only on tiers that already carry full-size textures.
+    const texSize = (cfg.texSize && Q.texSize >= 1024) ? cfg.texSize : Q.texSize;
+    const tex = planetTexture(THREE, p, SKY_COLOR[p], texSize);
     const mat = (p === 'Sun')
       ? new THREE.MeshBasicMaterial({ map: tex, color: SKY_COLOR[p] })
-      : new THREE.MeshStandardMaterial({
-          map: tex, roughness: 0.92, metalness: 0.02,
-          // the same noise drives relief, so the terminator breaks up
-          // along real surface rather than a clean arc
-          bumpMap: tex, bumpScale: (SKY_SURFACE[p] || {}).bands ? 0.4 : 0.9,
-          emissive: SKY_COLOR[p], emissiveMap: tex, emissiveIntensity: 0.4
-        });
+      : (MATS && cfg.material === 'planet')
+        ? MATS.createPlanetMaterial(THREE, {
+            map: tex, color: SKY_COLOR[p],
+            bumpScale: cfg.bands ? 0.4 : 0.9,
+            radius: SKY_SIZE[p], detail: cfg.detail, detailScale: cfg.detailScale
+          })
+        : new THREE.MeshStandardMaterial({
+            map: tex, roughness: 0.92, metalness: 0.02,
+            // the same noise drives relief, so the terminator breaks up
+            // along real surface rather than a clean arc
+            bumpMap: tex, bumpScale: cfg.bands ? 0.4 : 0.9,
+            emissive: SKY_COLOR[p], emissiveMap: tex, emissiveIntensity: 0.4
+          });
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(SKY_SIZE[p], Q.seg[0], Q.seg[1]), mat);
     mesh.rotation.z = 0.22;           // a little axial tilt
     mesh.userData.spin = 0.072 + Math.random() * 0.096;   // rad/s
@@ -302,6 +357,17 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     scene.add(mesh);
     pickable.push(mesh);
     planetMeshes[p] = mesh;
+
+    // Bodies with a real survey map upgrade their albedo when it lands;
+    // the worker's procedural surface remains the relief and the
+    // instant fallback. PlanetMaterial path only.
+    if (MATS && cfg.material === 'planet' && cfg.mapUrl && Q.texSize >= 1024) {
+      loadRealMap(THREE, p, cfg.mapUrl, t => {
+        mesh.material.userData.texNode.value = t;
+        mesh.material.emissiveMap = t;
+        mesh.material.needsUpdate = true;
+      });
+    }
 
     // A soft halo so each body reads against the black. A billboard
     // with a radial falloff rather than a low-poly sphere — the old
@@ -561,6 +627,7 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
   }
 
   function govern(now, gap) {
+    if (SKY_DEV && window.__skyDev && window.__skyDev.freezeGovernor) return;
     if (gap > 250) return;                    // a pause, not a slow frame
     ema = ema ? ema * 0.92 + gap * 0.08 : gap;
     if (ema >= 17.5) calmSince = now;         // any strain resets the calm clock
@@ -592,7 +659,8 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
       host.appendChild(devEl);
     }
     const i = rm.renderer.info;
-    const calls = (i.render.calls !== undefined) ? i.render.calls : i.render.drawCalls;
+    // WebGPU's `calls` is cumulative; `drawCalls` is the per-frame figure
+    const calls = (i.render.drawCalls !== undefined) ? i.render.drawCalls : i.render.calls;
     devEl.textContent =
       rm.getBackend() + ' · ' + TIER + ' · step ' + pressure +
       '\nfps ' + (ema ? (1000 / ema).toFixed(0) : '—') + ' · ' + ema.toFixed(1) + 'ms' +
@@ -697,9 +765,14 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     const m = planetMeshes[planet];
     if (!m) return;
     const mat = m.material;
+    // A landed survey map owns the albedo/emissive; the worker refine
+    // then only sharpens the relief beneath it.
+    const real = SKY_MAP_CACHE[planet];
     mat.map = tex;
     if (mat.bumpMap) mat.bumpMap = tex;
-    if (mat.emissiveMap) mat.emissiveMap = tex;
+    if (mat.emissiveMap) mat.emissiveMap = real || tex;
+    // PlanetMaterial reads albedo through its own texture node
+    if (mat.userData.texNode) mat.userData.texNode.value = real || tex;
     // Node materials (WebGPU) bind textures into their graph at build
     // time, so a swapped surface must ask for a rebuild; on WebGL this
     // is a one-time no-op re-evaluation.
@@ -727,6 +800,7 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     // except the RendererManager's chain, which persists by design.
     const keep = new Set([SKY_GLOW_TEX]);
     Object.values(SKY_TEX_CACHE).forEach(c => keep.add(c.tex));
+    Object.values(SKY_MAP_CACHE).forEach(t => keep.add(t));
     scene.traverse(o => {
       if (o.geometry && !o.isSprite) o.geometry.dispose();   // sprites share one geometry
       const mats = Array.isArray(o.material) ? o.material : (o.material ? [o.material] : []);
@@ -737,9 +811,21 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
         m.dispose();
       });
     });
+    scene.clear();   // the scene object itself lives on for the next chart
   }
 
   updateRun();
+
+  // Profiling hooks, dev builds only — the governor can be frozen so a
+  // measurement sweep isn't fought, and the manager is reachable for
+  // pixel-ratio / bloom toggles and timestamp resolution.
+  if (SKY_DEV) {
+    window.__skyDev = {
+      rm,
+      freezeGovernor: false,
+      stats: () => ({ ema, pressure, dpr: rm.renderer.getPixelRatio() })
+    };
+  }
 
   current = { THREE, scene, camera, renderer: rm.renderer, groups, planetMeshes,
               sizes: SKY_SIZE, composer: rm.composer,

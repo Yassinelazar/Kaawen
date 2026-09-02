@@ -30,6 +30,7 @@ export class RendererManager {
     // webgpu chain
     this.post = null;
     this.sceneNode = null;
+    this.bloomNode = null;
     this.withBloom = null;
     this.scene = null;
     this.camera = null;
@@ -54,7 +55,9 @@ export class RendererManager {
         const THREE = await import('three/webgpu');
         const renderer = new THREE.WebGPURenderer({
           canvas, antialias: true, alpha: true,
-          powerPreference: 'high-performance'
+          powerPreference: 'high-performance',
+          // GPU timestamp queries for the ?dev=1 profiler only
+          trackTimestamp: !!opts.dev
         });
         await renderer.init();
         this.THREE = THREE;
@@ -117,18 +120,30 @@ export class RendererManager {
     this.camera = camera;
     if (this.renderPass) { this.renderPass.scene = scene; this.renderPass.camera = camera; }
     if (this.backend === 'webgpu' && this.wantBloom) try {
-      const [{ pass }, { bloom }] = await Promise.all([
-        import('three/tsl'),
-        import('three/addons/tsl/display/BloomNode.js')
-      ]);
-      if (this.post && this.post.dispose) this.post.dispose();
-      this.post = new this.THREE.PostProcessing(this.renderer);
-      const scenePass = pass(scene, camera);
-      // Same voicing as the classic chain: strength, radius, threshold.
-      this.withBloom = scenePass.add(bloom(scenePass, 0.55, 0.32, 0.62));
-      this.sceneNode = scenePass;
-      this.post.outputNode = this.withBloom;
-    } catch (e) { this.post = null; this.sceneNode = null; this.withBloom = null; }
+      if (this.sceneNode) {
+        // The graph persists like the classic chain: a rebuilt chart
+        // only retargets the scene pass. Recreating the graph per chart
+        // would leak its render targets — pipeline dispose does not
+        // reach them. The pass caches its render context by version,
+        // so the retarget must announce itself or the pass keeps
+        // drawing the disposed scene.
+        this.sceneNode.scene = scene;
+        this.sceneNode.camera = camera;
+      } else {
+        const [{ pass }, { bloom }] = await Promise.all([
+          import('three/tsl'),
+          import('three/addons/tsl/display/BloomNode.js')
+        ]);
+        const Pipeline = this.THREE.RenderPipeline || this.THREE.PostProcessing;
+        this.post = new Pipeline(this.renderer);
+        const scenePass = pass(scene, camera);
+        // Same voicing as the classic chain: strength, radius, threshold.
+        this.bloomNode = bloom(scenePass, 0.55, 0.32, 0.62);
+        this.withBloom = scenePass.add(this.bloomNode);
+        this.sceneNode = scenePass;
+        this.post.outputNode = this.withBloom;
+      }
+    } catch (e) { this.post = null; this.sceneNode = null; this.withBloom = null; this.bloomNode = null; }
   }
 
   render() {
@@ -167,8 +182,14 @@ export class RendererManager {
     let lit = false;
     if (this.bloomPass) { this.bloomPass.enabled = on; lit = on; }
     if (this.post && this.withBloom) {
-      this.post.outputNode = on ? this.withBloom : this.sceneNode;
-      this.post.needsUpdate = true;
+      // A pipeline rebuild (needsUpdate) re-resolves cached bindings,
+      // and after a canvas resize that path can resurrect the disposed
+      // pre-resize pass target (r185). Rebuild only on a real change.
+      const want = on ? this.withBloom : this.sceneNode;
+      if (this.post.outputNode !== want) {
+        this.post.outputNode = want;
+        this.post.needsUpdate = true;
+      }
       lit = on;
     }
     // Up to r160 the bloom chain incidentally rendered an opaque black

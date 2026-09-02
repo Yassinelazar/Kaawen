@@ -96,6 +96,21 @@ const PORT = 8917;
     await page.waitForTimeout(2500);
     await shot('sky-focus-jupiter.png');
 
+    // 5b. Jupiter filling the frame — the zoom test for surface detail
+    await page.evaluate(() => {
+      const cv = document.getElementById('sky3d-canvas');
+      for (let i = 0; i < 6; i++)
+        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: -1, cancelable: true, bubbles: true }));
+    });
+    await page.waitForTimeout(1800);
+    await shot('jupiter-detail.png');
+    await page.evaluate(() => {
+      const cv = document.getElementById('sky3d-canvas');
+      for (let i = 0; i < 6; i++)
+        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: 1, cancelable: true, bubbles: true }));
+    });
+    await page.waitForTimeout(1200);
+
     // 6. Sun selected — aspect lines lit/dimmed correctly
     await page.evaluate(() => selectWheel('planet', 'Sun'));
     await page.waitForTimeout(2500);
