@@ -109,6 +109,10 @@
   <!-- Resolves three's bare specifiers so the 3D sky can pull its
        post-processing passes. Import maps fetch nothing on their own —
        this costs the page no bytes unless the 3D view is opened. -->
+  <!-- Lenis (MIT, vendored) — smooth scrolling for the long reading.
+       Deferred, ~18KB; the immersive sky pauses it and reduced-motion
+       readers never start it. -->
+  <script src="assets/vendor/lenis.min.js" defer></script>
   <script type="importmap">
   {
     "imports": {
@@ -4709,7 +4713,7 @@
 
             <div class="wheel-visual" id="wheel-visual"></div>
 
-            <div class="sky3d" id="sky3d" style="display:none;">
+            <div class="sky3d" id="sky3d" style="display:none;" data-lenis-prevent>
               <canvas id="sky3d-canvas"></canvas>
               <div class="sky3d-loading" id="sky3d-loading">Building your sky…</div>
               <div class="sky3d-layers" id="sky3d-layers">
@@ -7732,6 +7736,8 @@
       if (!host) return;
       host.classList.toggle('immersive', on);
       document.body.classList.toggle('sky-immersive', on);
+      // page scrolling sleeps while the sky is the interface
+      if (window.__lenis) { on ? window.__lenis.stop() : window.__lenis.start(); }
       const hint = document.getElementById('sky3d-hint');
       if (hint) hint.style.display = on ? 'none' : '';
       if (on) {
@@ -9448,10 +9454,23 @@
       });
 
       // Form submit
-      document.getElementById('bp-form').addEventListener('submit', (e) => {
+      document.getElementById('bp-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        runBlueprint();
+        // The sky is the doorway: a freshly computed chart opens inside
+        // the immersive 3D sky, and leaving it lands on the written
+        // reading. Only a chart that actually computed opens the door.
+        const prev = window.__wheelCtx;
+        await runBlueprint();
+        if (window.__wheelCtx && window.__wheelCtx !== prev) setWheelMode('3d');
       });
+
+      // Lenis smooth scrolling — the long reading glides instead of
+      // stepping. Skipped for reduced-motion readers, and parked while
+      // the immersive sky owns the viewport (there, the wheel means
+      // flight, not scroll). Vendored at assets/vendor/lenis.min.js.
+      if (window.Lenis && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        try { window.__lenis = new Lenis({ autoRaf: true }); } catch (err) { window.__lenis = null; }
+      }
 
       // Clear field errors as the user corrects them — both 'input' (for
       // text/date typing) and 'change' (for select dropdowns) so the error

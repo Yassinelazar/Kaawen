@@ -64,10 +64,15 @@ const PORT = 8917;
       s => [...s.options].find(o => o.textContent.includes('New York')).value);
     await page.selectOption('#city', ny);
     await page.click('#bp-form button[type="submit"]');
-    await page.waitForSelector('#wheel-visual svg', { timeout: 15000 });
+    // the flow now lands inside the sky, so the wheel exists but is hidden
+    await page.waitForSelector('#wheel-visual svg', { state: 'attached', timeout: 15000 });
     await page.waitForTimeout(800);
 
     const shot = (file, target) => (target || page).screenshot({ path: path.join(OUT, file) });
+
+    // A fresh chart now opens inside the sky; step out to shoot the wheel
+    await page.evaluate(() => setWheelMode('2d'));
+    await page.waitForTimeout(800);
 
     // 1. The flat wheel — untouched by any renderer work, must never drift
     await shot('wheel-2d.png', page.locator('#wheel-visual'));
