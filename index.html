@@ -106,6 +106,17 @@
        which only reads at that larger size. -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20fill%3D%22%230E0F1A%22%2F%3E%3Cpath%20d%3D%22M21%207%20A9%209%200%201%200%2021%2025%20A7%207%200%201%201%2021%207%20Z%22%20fill%3D%22%23D4A655%22%2F%3E%3C%2Fsvg%3E">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <!-- Resolves three's bare specifiers so the 3D sky can pull its
+       post-processing passes. Import maps fetch nothing on their own —
+       this costs the page no bytes unless the 3D view is opened. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
@@ -3543,6 +3554,12 @@
       backdrop-filter: blur(6px);
     }
     .sky3d-layer.on { color: #D4A655; border-color: rgba(212, 166, 85, 0.55); }
+    .sky3d-save {
+      margin-top: 6px;
+      color: #F4EBD6;
+      border-color: rgba(244, 235, 214, 0.35);
+    }
+    .sky3d-save:hover { border-color: rgba(244, 235, 214, 0.7); }
     .sky3d-hint {
       position: absolute;
       bottom: 8px;
@@ -4342,6 +4359,7 @@
                 <button type="button" class="sky3d-layer on" data-layer="zodiac">Zodiac</button>
                 <button type="button" class="sky3d-layer on" data-layer="houses">Houses</button>
                 <button type="button" class="sky3d-layer on" data-layer="stars">Stars</button>
+                <button type="button" class="sky3d-layer sky3d-save" id="sky3d-save">Save image</button>
               </div>
               <div class="sky3d-hint">Drag to turn · scroll to zoom · touch a planet</div>
             </div>
@@ -7218,9 +7236,33 @@
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(42, 1, 1, 3000);
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      // preserveDrawingBuffer lets the export read the rendered frame back.
+      const renderer = new THREE.WebGLRenderer({
+        canvas, antialias: true, alpha: true, preserveDrawingBuffer: true
+      });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setClearColor(0x000000, 0);
+
+      // Bloom gives the bodies real light falloff rather than flat discs.
+      // Optional by design: if the addon modules can't be fetched the
+      // scene simply renders without it.
+      let composer = null, bloomPass = null;
+      try {
+        const [{ EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
+          import('three/addons/postprocessing/EffectComposer.js'),
+          import('three/addons/postprocessing/RenderPass.js'),
+          import('three/addons/postprocessing/UnrealBloomPass.js'),
+          import('three/addons/postprocessing/OutputPass.js')
+        ]);
+        composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+        // strength, radius, threshold — the threshold is deliberately high
+        // so only the bodies themselves bloom. Lower values smear the
+        // starfield and the sign labels into haze.
+        bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.55, 0.32, 0.62);
+        composer.addPass(bloomPass);
+        composer.addPass(new OutputPass());
+      } catch (e) { composer = null; }
 
       const groups = {
         orbits:  new THREE.Group(),
@@ -7357,10 +7399,34 @@
         const w = canvas.clientWidth, h = canvas.clientHeight;
         if (!w || !h) return;
         renderer.setSize(w, h, false);
+        if (composer) composer.setSize(w, h);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
       }
       resize();
+
+      const draw = () => composer ? composer.render() : renderer.render(scene, camera);
+
+      // Save the sky at print resolution: the frame is re-rendered at a
+      // multiple of the display size, so the download is far sharper than
+      // what is on screen rather than an upscale of it.
+      function exportSky(scale) {
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        const prevRatio = renderer.getPixelRatio();
+        renderer.setPixelRatio(scale);
+        renderer.setSize(w, h, false);
+        if (composer) composer.setSize(w, h);
+        draw();
+        const url = renderer.domElement.toDataURL('image/png');
+        renderer.setPixelRatio(prevRatio);
+        resize();
+        draw();
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'kaawen-sky.png';
+        a.click();
+        track('sky3d_export');
+      }
 
       let drag = null, moved = 0;
       const pointerPos = e => {
@@ -7411,7 +7477,7 @@
         raf = requestAnimationFrame(loop);
         // A slow drift keeps the scene alive when untouched
         if (!drag) { cam.theta += 0.0006; placeCamera(); }
-        renderer.render(scene, camera);
+        draw();
       }
       loop();
 
@@ -7419,6 +7485,7 @@
       ro.observe(canvas);
 
       sky3d = { THREE, scene, camera, renderer, groups, planetMeshes, sizes: SKY_SIZE,
+                composer, exportSky,
                 stop: () => {
                   cancelAnimationFrame(raf);
                   ro.disconnect();
@@ -8245,6 +8312,15 @@
       document.getElementById('sky3d-layers').addEventListener('click', e => {
         const btn = e.target.closest('.sky3d-layer');
         if (!btn || !sky3d) return;
+        if (btn.id === 'sky3d-save') {   // export, not a layer
+          const label = btn.textContent;
+          btn.textContent = 'Rendering…';
+          setTimeout(() => {
+            try { sky3d.exportSky(3); } catch (err) {}
+            btn.textContent = label;
+          }, 30);
+          return;
+        }
         const on = btn.classList.toggle('on');
         const group = sky3d.groups[btn.dataset.layer];
         if (group) group.visible = on;
