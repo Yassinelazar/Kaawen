@@ -3462,6 +3462,107 @@
       line-height: 1.6;
     }
 
+    /* ==== The Sky — 3D chart view ==== */
+    .wheel-modes {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 auto 18px;
+    }
+    .wheel-mode-btn {
+      background: none;
+      border: 1px solid var(--rule);
+      border-radius: 100px;
+      color: var(--parchment);
+      font-family: var(--ui);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .wheel-mode-btn.active {
+      color: var(--gold);
+      border-color: var(--gold);
+      background: rgba(var(--gold-rgb), 0.07);
+    }
+    .sky3d {
+      position: relative;
+      max-width: 620px;
+      margin: 0 auto;
+      border: 1px solid var(--rule-soft);
+      border-radius: 12px;
+      overflow: hidden;
+      /* The sky is always night, whichever edition the page is in —
+         a black ground is what makes the planets read. */
+      background: radial-gradient(ellipse at 50% 40%, #1a1c2e 0%, #0b0c14 70%);
+    }
+    .sky3d canvas {
+      display: block;
+      width: 100%;
+      height: 460px;
+      touch-action: none; /* we handle drag ourselves */
+      cursor: grab;
+    }
+    .sky3d canvas:active { cursor: grabbing; }
+    .sky3d-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 15px;
+      color: #AC9F87;
+      pointer-events: none;
+    }
+    .sky3d-layers {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: flex-start;
+    }
+    .sky3d-layer {
+      background: rgba(10, 11, 20, 0.55);
+      border: 1px solid rgba(212, 166, 85, 0.22);
+      border-radius: 100px;
+      color: rgba(172, 159, 135, 0.75);
+      font-family: var(--ui);
+      font-size: 9.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 5px 11px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+    }
+    .sky3d-layer.on { color: #D4A655; border-color: rgba(212, 166, 85, 0.55); }
+    .sky3d-hint {
+      position: absolute;
+      bottom: 8px;
+      /* sits on its own bar so house numbers never collide with it */
+      padding: 6px 0;
+      background: linear-gradient(180deg, rgba(11,12,20,0) 0%, rgba(11,12,20,0.75) 55%);
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: var(--ui);
+      font-size: 9.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(172, 159, 135, 0.6);
+      pointer-events: none;
+    }
+    @media (min-width: 960px) {
+      .sky3d canvas { height: 560px; }
+    }
+
     /* ==== Credibility strip — exactness, stated simply ==== */
     .cred {
       display: grid;
@@ -4222,7 +4323,29 @@
           <div class="wheel-block">
             <span class="label">The Wheel</span>
             <p class="wheel-intro" id="wheel-intro">Your sky, drawn whole. Touch a planet, a house, or a sign on the rim — the wheel answers.</p>
+
+            <!-- Two readings of one chart: the flat instrument, and the
+                 sky as it actually stood. Both drive the same card. -->
+            <div class="wheel-modes" role="tablist" aria-label="Chart view">
+              <button type="button" class="wheel-mode-btn active" data-wheel-mode="2d">The Wheel</button>
+              <button type="button" class="wheel-mode-btn" data-wheel-mode="3d">The Sky · 3D</button>
+            </div>
+
             <div class="wheel-visual" id="wheel-visual"></div>
+
+            <div class="sky3d" id="sky3d" style="display:none;">
+              <canvas id="sky3d-canvas"></canvas>
+              <div class="sky3d-loading" id="sky3d-loading">Building your sky…</div>
+              <div class="sky3d-layers" id="sky3d-layers">
+                <button type="button" class="sky3d-layer on" data-layer="orbits">Orbits</button>
+                <button type="button" class="sky3d-layer on" data-layer="aspects">Aspects</button>
+                <button type="button" class="sky3d-layer on" data-layer="zodiac">Zodiac</button>
+                <button type="button" class="sky3d-layer on" data-layer="houses">Houses</button>
+                <button type="button" class="sky3d-layer on" data-layer="stars">Stars</button>
+              </div>
+              <div class="sky3d-hint">Drag to turn · scroll to zoom · touch a planet</div>
+            </div>
+
             <div class="wheel-card" id="wheel-card"></div>
           </div>
 
@@ -7005,6 +7128,336 @@
       renderWheelCard(null, null);
       renderWheelIndex();
       bindWheelInteractions();
+
+      // A freshly drawn chart invalidates any standing 3D scene; rebuild
+      // it if the reader is currently looking at the sky.
+      if (sky3d) { sky3d.stop(); sky3d = null; }
+      const skyHost = document.getElementById('sky3d');
+      const skyLoad = document.getElementById('sky3d-loading');
+      if (skyLoad) { skyLoad.style.display = ''; skyLoad.textContent = 'Building your sky…'; }
+      if (skyHost && skyHost.style.display !== 'none') buildSky3D();
+    }
+
+    // ============================================================
+    // THE SKY — the chart as a 3D scene
+    // ============================================================
+    // The same computed longitudes the flat wheel draws, placed around
+    // the ecliptic plane in the old geocentric order (Moon nearest,
+    // Pluto furthest — the seven heavens, extended). Three.js is
+    // imported only when this view is first opened, so the landing page
+    // never pays for it. Picking a planet runs the ordinary selection
+    // pipeline, so the detail card, the index cells and the flat wheel
+    // all stay in step with the 3D view.
+    const SKY_RADII = {
+      Moon: 34, Mercury: 46, Venus: 58, Sun: 70, Mars: 84,
+      Jupiter: 100, Saturn: 116, Uranus: 132, Neptune: 146, Pluto: 160
+    };
+    const SKY_SIZE = {
+      Sun: 7, Moon: 6, Mercury: 4.2, Venus: 4.8, Mars: 4.4,
+      Jupiter: 5.6, Saturn: 5.2, Uranus: 4, Neptune: 4, Pluto: 3.6
+    };
+    const SKY_COLOR = {
+      Sun: 0xF2C97A, Moon: 0xF4EBD6, Mercury: 0xD4A655, Venus: 0xE0B978,
+      Mars: 0xD89580, Jupiter: 0xD4A655, Saturn: 0xC49A55,
+      Uranus: 0xAC9F87, Neptune: 0x9FA8B5, Pluto: 0x9A8E78
+    };
+    const SKY_ASPECT_COLOR = {
+      fusion: 0xD4A655, flow: 0x8C6F3A, friction: 0xD89580, mirror: 0xAC9F87
+    };
+    const SKY_R_ZODIAC = 196;
+
+    let sky3d = null;      // live scene state once built
+    let skyLoading = false;
+
+    // Text as a sprite — canvas texture keeps glyphs crisp at any zoom.
+    function skyLabel(THREE, text, px, color, weight) {
+      const pad = 8, size = px * 3;               // 3× for retina crispness
+      const c = document.createElement('canvas');
+      const g = c.getContext('2d');
+      g.font = `${weight || 400} ${size}px Manrope, sans-serif`;
+      c.width = Math.ceil(g.measureText(text).width) + pad * 2;
+      c.height = size + pad * 2;
+      const g2 = c.getContext('2d');
+      g2.font = `${weight || 400} ${size}px Manrope, sans-serif`;
+      g2.fillStyle = color;
+      g2.textAlign = 'center';
+      g2.textBaseline = 'middle';
+      g2.fillText(text, c.width / 2, c.height / 2);
+      const tex = new THREE.CanvasTexture(c);
+      tex.anisotropy = 4;
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: tex, transparent: true, depthWrite: false
+      }));
+      sp.scale.set(c.width / 3 * 0.55, c.height / 3 * 0.55, 1);
+      return sp;
+    }
+
+    async function buildSky3D() {
+      const ctx = window.__wheelCtx;
+      const host = document.getElementById('sky3d');
+      const canvas = document.getElementById('sky3d-canvas');
+      if (!ctx || !host || !canvas || sky3d || skyLoading) return;
+      skyLoading = true;
+      let THREE;
+      try {
+        THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+      } catch (e) {
+        document.getElementById('sky3d-loading').textContent =
+          'The 3D sky needs a connection. The wheel above holds the same chart.';
+        skyLoading = false;
+        return;
+      }
+
+      const rot = (ctx.hasTime && ctx.rising) ? ctx.rising.longitude : 0;
+      // Ascendant to the left, longitudes running counterclockwise —
+      // the same sense as the flat wheel.
+      const at = (lon, r, y) => {
+        const a = Math.PI - (lon - rot) * Math.PI / 180;
+        return new THREE.Vector3(Math.cos(a) * r, y || 0, Math.sin(a) * r);
+      };
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(42, 1, 1, 3000);
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setClearColor(0x000000, 0);
+
+      const groups = {
+        orbits:  new THREE.Group(),
+        aspects: new THREE.Group(),
+        zodiac:  new THREE.Group(),
+        houses:  new THREE.Group(),
+        stars:   new THREE.Group()
+      };
+      Object.values(groups).forEach(g => scene.add(g));
+
+      // ── Stars ──────────────────────────────────────────────────
+      const starGeo = new THREE.BufferGeometry();
+      const starPos = [];
+      for (let i = 0; i < 1400; i++) {
+        const th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1), R = 700 + Math.random() * 500;
+        starPos.push(R * Math.sin(ph) * Math.cos(th), R * Math.cos(ph), R * Math.sin(ph) * Math.sin(th));
+      }
+      starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+      groups.stars.add(new THREE.Points(starGeo, new THREE.PointsMaterial({
+        color: 0xF4EBD6, size: 2.2, sizeAttenuation: false, transparent: true, opacity: 0.55
+      })));
+
+      // ── Zodiac band: 12 divisions with their names ─────────────
+      for (let i = 0; i < 12; i++) {
+        const lon = i * 30;
+        const div = [at(lon, SKY_R_ZODIAC - 14), at(lon, SKY_R_ZODIAC + 14)];
+        groups.zodiac.add(new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints(div),
+          new THREE.LineBasicMaterial({ color: 0x8C6F3A, transparent: true, opacity: 0.5 })));
+        const label = skyLabel(THREE, SIGNS[i].toUpperCase(), 11, 'rgba(212,166,85,0.85)', 500);
+        label.position.copy(at(lon + 15, SKY_R_ZODIAC + 30, 0));
+        groups.zodiac.add(label);
+      }
+      // The ecliptic ring itself
+      const ring = [];
+      for (let d = 0; d <= 360; d += 2) ring.push(at(d, SKY_R_ZODIAC));
+      groups.zodiac.add(new THREE.LineLoop(
+        new THREE.BufferGeometry().setFromPoints(ring),
+        new THREE.LineBasicMaterial({ color: 0xD4A655, transparent: true, opacity: 0.35 })));
+
+      // ── Houses: spokes from the centre, numbered (needs a birth time) ──
+      if (ctx.hasTime && ctx.rising) {
+        const risingIdx = SIGNS.indexOf(ctx.rising.sign);
+        for (let n = 1; n <= 12; n++) {
+          const lon = ((risingIdx + n - 1) % 12) * 30;
+          groups.houses.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([at(lon, 16), at(lon, SKY_R_ZODIAC - 16)]),
+            new THREE.LineDashedMaterial({ color: 0xAC9F87, transparent: true, opacity: 0.22,
+                                           dashSize: 4, gapSize: 7 })).computeLineDistances());
+          const num = skyLabel(THREE, String(n), 10, 'rgba(172,159,135,0.75)', 400);
+          num.position.copy(at(lon + 15, 176, 0));
+          groups.houses.add(num);
+        }
+      }
+
+      // ── Orbit rings + the planets themselves ───────────────────
+      const pickable = [];
+      const planetMeshes = {};
+      NR_PLANET_ORDER.forEach(p => {
+        const r = SKY_RADII[p];
+        const circle = [];
+        for (let d = 0; d <= 360; d += 3) circle.push(at(d, r));
+        groups.orbits.add(new THREE.LineLoop(
+          new THREE.BufferGeometry().setFromPoints(circle),
+          new THREE.LineBasicMaterial({ color: 0x8C6F3A, transparent: true, opacity: 0.16 })));
+
+        const pos = at(ctx.positions[p], r);
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(SKY_SIZE[p], 32, 32),
+          new THREE.MeshBasicMaterial({ color: SKY_COLOR[p] })
+        );
+        mesh.position.copy(pos);
+        mesh.userData.planet = p;
+        scene.add(mesh);
+        pickable.push(mesh);
+        planetMeshes[p] = mesh;
+
+        // A soft halo so each body reads against the black
+        const halo = new THREE.Mesh(
+          new THREE.SphereGeometry(SKY_SIZE[p] * 2.1, 16, 16),
+          new THREE.MeshBasicMaterial({ color: SKY_COLOR[p], transparent: true, opacity: 0.1 })
+        );
+        halo.position.copy(pos);
+        scene.add(halo);
+
+        // Glyph floating just above the body
+        const glyph = skyLabel(THREE, PLANET_GLYPHS[p] + (ctx.wheelPlacements[p].retro ? ' ℞' : ''),
+                               13, '#F4EBD6', 400);
+        glyph.position.copy(pos).add(new THREE.Vector3(0, SKY_SIZE[p] + 9, 0));
+        scene.add(glyph);
+
+        // A dropped line to the ecliptic plane keeps depth legible
+        groups.orbits.add(new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints([at(ctx.positions[p], r - 6), at(ctx.positions[p], r + 6)]),
+          new THREE.LineBasicMaterial({ color: SKY_COLOR[p], transparent: true, opacity: 0.5 })));
+      });
+
+      // ── Aspect lines, drawn body to body ───────────────────────
+      ctx.aspects.forEach(a => {
+        const g = new THREE.BufferGeometry().setFromPoints([
+          at(ctx.positions[a.a], SKY_RADII[a.a]),
+          at(ctx.positions[a.b], SKY_RADII[a.b])
+        ]);
+        const line = new THREE.Line(g, new THREE.LineBasicMaterial({
+          color: SKY_ASPECT_COLOR[a.kind] || 0xAC9F87,
+          transparent: true,
+          opacity: 0.25 + a.strength * 0.5
+        }));
+        line.userData.pair = [a.a, a.b];
+        groups.aspects.add(line);
+      });
+
+      // Earth at the centre — the observer
+      scene.add(new THREE.Mesh(
+        new THREE.SphereGeometry(6, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0x5A4A8C })));
+
+      // ── Camera + hand-rolled orbit controls ────────────────────
+      // Framed so the whole zodiac ring and its names sit inside the
+      // canvas at rest: at a 42° field of view, the ring's outer edge
+      // (~230 units with labels) needs roughly 620 units of distance.
+      const cam = { theta: Math.PI * 0.5, phi: 0.88, radius: 620 };
+      function placeCamera() {
+        camera.position.set(
+          cam.radius * Math.sin(cam.phi) * Math.cos(cam.theta),
+          cam.radius * Math.cos(cam.phi),
+          cam.radius * Math.sin(cam.phi) * Math.sin(cam.theta)
+        );
+        camera.lookAt(0, 0, 0);
+      }
+      placeCamera();
+
+      function resize() {
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        if (!w || !h) return;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      }
+      resize();
+
+      let drag = null, moved = 0;
+      const pointerPos = e => {
+        const t = e.touches ? e.touches[0] : e;
+        return { x: t.clientX, y: t.clientY };
+      };
+      const onDown = e => { drag = pointerPos(e); moved = 0; };
+      const onMove = e => {
+        if (!drag) return;
+        const p = pointerPos(e);
+        const dx = p.x - drag.x, dy = p.y - drag.y;
+        moved += Math.abs(dx) + Math.abs(dy);
+        cam.theta -= dx * 0.006;
+        cam.phi = Math.max(0.12, Math.min(Math.PI - 0.12, cam.phi - dy * 0.006));
+        drag = p;
+        placeCamera();
+        if (e.cancelable) e.preventDefault();
+      };
+      const onUp = () => { drag = null; };
+      const onWheel = e => {
+        cam.radius = Math.max(140, Math.min(1300, cam.radius + e.deltaY * 0.8));
+        placeCamera();
+        if (e.cancelable) e.preventDefault();
+      };
+      canvas.addEventListener('mousedown', onDown);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+      canvas.addEventListener('touchstart', onDown, { passive: true });
+      canvas.addEventListener('touchmove', onMove, { passive: false });
+      canvas.addEventListener('touchend', onUp);
+      canvas.addEventListener('wheel', onWheel, { passive: false });
+
+      // Tap a planet — same selection pipeline as everywhere else
+      const ray = new THREE.Raycaster();
+      const ndc = new THREE.Vector2();
+      canvas.addEventListener('click', e => {
+        if (moved > 8) return; // that was a drag, not a tap
+        const r = canvas.getBoundingClientRect();
+        ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+        ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+        ray.setFromCamera(ndc, camera);
+        const hit = ray.intersectObjects(pickable, false)[0];
+        if (hit) selectWheel('planet', hit.object.userData.planet);
+      });
+
+      let raf = 0;
+      function loop() {
+        raf = requestAnimationFrame(loop);
+        // A slow drift keeps the scene alive when untouched
+        if (!drag) { cam.theta += 0.0006; placeCamera(); }
+        renderer.render(scene, camera);
+      }
+      loop();
+
+      const ro = new ResizeObserver(resize);
+      ro.observe(canvas);
+
+      sky3d = { THREE, scene, camera, renderer, groups, planetMeshes, sizes: SKY_SIZE,
+                stop: () => {
+                  cancelAnimationFrame(raf);
+                  ro.disconnect();
+                  window.removeEventListener('mousemove', onMove);
+                  window.removeEventListener('mouseup', onUp);
+                  renderer.dispose();
+                } };
+      document.getElementById('sky3d-loading').style.display = 'none';
+      skyLoading = false;
+      syncSky3DSelection();
+      track('sky3d_opened');
+    }
+
+    // Selected planet swells and brightens; its aspect lines stay lit
+    // while the rest dim — the 3D echo of what the flat wheel does.
+    function syncSky3DSelection() {
+      if (!sky3d) return;
+      const sel = (wheelSel && wheelSel.type === 'planet') ? wheelSel.key : null;
+      Object.entries(sky3d.planetMeshes).forEach(([p, mesh]) => {
+        const on = !sel || p === sel;
+        mesh.material.opacity = on ? 1 : 0.25;
+        mesh.material.transparent = !on;
+        const s = (sel && p === sel) ? 1.6 : 1;
+        mesh.scale.setScalar(s);
+      });
+      sky3d.groups.aspects.children.forEach(line => {
+        const pair = line.userData.pair || [];
+        const on = !sel || pair.indexOf(sel) !== -1;
+        line.material.opacity = on ? (sel ? 0.85 : line.material.opacity) : 0.05;
+      });
+    }
+
+    function setWheelMode(mode) {
+      const is3d = mode === '3d';
+      document.querySelectorAll('.wheel-mode-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.wheelMode === mode));
+      document.getElementById('wheel-visual').style.display = is3d ? 'none' : '';
+      document.getElementById('sky3d').style.display = is3d ? '' : 'none';
+      if (is3d) buildSky3D();
     }
 
     // The index beneath the wheel — twelve houses, ten planets, each a
@@ -7653,7 +8106,7 @@
       const svg = document.querySelector('#wheel-visual svg');
       if (!svg) return;
       if (wheelSel && wheelSel.type === type && String(wheelSel.key) === String(key)) {
-        wheelSel = null; clearWheelSelClasses(); syncWheelCells(); renderWheelCard(null, null);
+        wheelSel = null; clearWheelSelClasses(); syncWheelCells(); syncSky3DSelection(); renderWheelCard(null, null);
         return;
       }
       wheelSel = { type, key };
@@ -7672,6 +8125,7 @@
         if (w) w.classList.add('sel');
       }
       syncWheelCells();
+      syncSky3DSelection();
       renderWheelCard(type, key);
       track('wheel_tap_' + type);
     }
@@ -7783,6 +8237,17 @@
       document.getElementById('moon-strip').addEventListener('click', e => {
         const item = e.target.closest('.moon-strip-item');
         if (item) renderMoonPanel(parseInt(item.dataset.phase, 10));
+      });
+      // Flat wheel ↔ 3D sky
+      document.querySelectorAll('.wheel-mode-btn').forEach(b =>
+        b.addEventListener('click', () => setWheelMode(b.dataset.wheelMode)));
+      // Layer toggles inside the 3D view
+      document.getElementById('sky3d-layers').addEventListener('click', e => {
+        const btn = e.target.closest('.sky3d-layer');
+        if (!btn || !sky3d) return;
+        const on = btn.classList.toggle('on');
+        const group = sky3d.groups[btn.dataset.layer];
+        if (group) group.visible = on;
       });
     }
 
