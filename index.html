@@ -3127,6 +3127,15 @@
     }
     .sky3d.immersive .sky3d-reading { display: block; }
     .sky3d-reading:hover { border-color: rgba(212, 166, 85, 0.8); }
+    /* The veil: a breath of black that carries the eye from the page
+       into the sky, so the instrument reveals rather than switches. */
+    #sky-veil {
+      position: fixed; inset: 0; z-index: 260; background: #060505;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+    #sky-veil.on { opacity: 1; visibility: visible; pointer-events: auto; }
+    #sky-veil.half { opacity: 0.55; visibility: visible; pointer-events: none; }
     /* Demonstration-sky banner: the invitation, not a tutorial */
     .sky-demo-banner {
       display: none; position: absolute; top: 16px; left: 50%;
@@ -4749,6 +4758,7 @@
 
             <div class="wheel-visual" id="wheel-visual"></div>
 
+            <div id="sky-veil" aria-hidden="true"></div>
             <div class="sky3d" id="sky3d" style="display:none;" data-lenis-prevent>
               <canvas id="sky3d-canvas"></canvas>
               <div class="sky3d-loading" id="sky3d-loading">Building your sky…</div>
@@ -7789,6 +7799,7 @@
         // Show whatever is already selected, or invite a choice
         if (wheelSel && wheelSel.type === 'planet') renderSkyDossier(wheelSel.key);
       } else {
+        if (typeof veilAbort === 'function') veilAbort();
         renderSkyDossier(null);
         if (sky3d) sky3d.releaseFocus();
       }
@@ -9502,6 +9513,8 @@
         // the immersive 3D sky, and leaving it lands on the written
         // reading. Only a chart that actually computed opens the door.
         const prev = window.__wheelCtx;
+        const wasImmersive = document.body.classList.contains('sky-immersive');
+        if (wasImmersive) veilPulseStart();   // mask the re-gathering
         await runBlueprint();
         if (window.__wheelCtx && window.__wheelCtx !== prev) {
           skyDemoMode = false;
@@ -9511,9 +9524,75 @@
             localStorage.setItem('kaawn_last_birth',
               JSON.stringify({ dob: f.dob.value, tob: f.tob.value, city: f.city.value }));
           } catch (err) { /* private mode — the sky still opens */ }
-          setWheelMode('3d');
-        }
+          if (wasImmersive) {
+            await awaitSkyReady();
+            veilPulseEnd();
+          } else {
+            await cinematicEnter(() => setWheelMode('3d'));
+          }
+        } else if (wasImmersive) veilPulseEnd();
       });
+
+      // ── Cinematic entry ───────────────────────────────────────
+      // GSAP is vendored but loaded only when a transition is about to
+      // happen; reduced-motion readers get the instant path, and any
+      // exit mid-transition aborts the veil at once. The engine, camera
+      // and renderer are never touched — this is page choreography.
+      let gsapLoading = null;
+      function loadGSAP() {
+        if (window.gsap) return Promise.resolve(true);
+        if (gsapLoading) return gsapLoading;
+        gsapLoading = new Promise(res => {
+          const sc = document.createElement('script');
+          sc.src = 'assets/vendor/gsap.min.js';
+          sc.onload = () => res(true);
+          sc.onerror = () => res(false);
+          document.head.appendChild(sc);
+        });
+        return gsapLoading;
+      }
+      const skyVeil = () => document.getElementById('sky-veil');
+      const pageReduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function veilAbort() {
+        const v = skyVeil();
+        if (window.gsap) { gsap.killTweensOf(v); gsap.killTweensOf('#sky3d'); }
+        v.classList.remove('on', 'half');
+        v.style.opacity = '';
+        const host = document.getElementById('sky3d');
+        host.style.opacity = ''; host.style.transform = '';
+      }
+      function awaitSkyReady(cap) {
+        return new Promise(res => {
+          const t0 = performance.now();
+          const tick = () => {
+            const ld = document.getElementById('sky3d-loading');
+            if ((sky3d && ld.style.display === 'none') || performance.now() - t0 > (cap || 15000)) return res();
+            requestAnimationFrame(tick);
+          };
+          tick();
+        });
+      }
+      async function cinematicEnter(enterFn) {
+        if (pageReduced()) { await enterFn(); return; }
+        const gsapReady = loadGSAP();          // races the sky build
+        const v = skyVeil();
+        v.classList.add('on');
+        await new Promise(r => setTimeout(r, 300));   // veil settles over the page
+        await enterFn();
+        await awaitSkyReady();
+        const ok = await gsapReady;
+        if (ok && window.gsap) {
+          gsap.fromTo('#sky3d', { opacity: 0.55, scale: 1.028 },
+            { opacity: 1, scale: 1, duration: 1.15, ease: 'power2.out',
+              clearProps: 'opacity,transform' });
+          gsap.to(v, { opacity: 0, duration: 1.0, ease: 'power2.inOut',
+            onComplete: () => { v.classList.remove('on'); v.style.opacity = ''; } });
+        } else {
+          v.classList.remove('on');
+        }
+      }
+      function veilPulseStart() { if (!pageReduced()) skyVeil().classList.add('half'); }
+      function veilPulseEnd() { skyVeil().classList.remove('half'); }
 
       // ── The demonstration sky ─────────────────────────────────
       // The real engine, a fixed sky: the first noon of the millennium
@@ -9548,9 +9627,11 @@
         // values must never masquerade as their data
         if (keep) fillBirth(keep); else fillBirth({ dob: '', tob: '', city: undefined });
         if (window.__wheelCtx) {
-          skyDemoMode = true;
-          document.getElementById('sky3d').classList.add('demo');
-          setWheelMode('3d');
+          await cinematicEnter(() => {
+            skyDemoMode = true;
+            document.getElementById('sky3d').classList.add('demo');
+            setWheelMode('3d');
+          });
         }
       }
       document.getElementById('demo-reveal').addEventListener('click', () => {
