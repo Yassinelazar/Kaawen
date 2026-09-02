@@ -569,10 +569,30 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     groups.aspects.add(line);
   });
 
-  // Earth at the centre — the observer
-  scene.add(new THREE.Mesh(
-    new THREE.SphereGeometry(6, 32, 32),
-    new THREE.MeshBasicMaterial({ color: 0x5A4A8C })));
+  // Earth at the centre — the observer, not an eleventh planet. It
+  // stays out of planetMeshes: never pickable, no glyph, no dossier,
+  // no place in the astrology. But it is home, so it deserves to be
+  // real: NASA's Blue Marble (land_shallow_topo_2048, Visible Earth,
+  // public domain), lit by the chart's actual Sun so the terminator
+  // shows where day and night truly fall for this sky, tilted to
+  // Earth's real 23.4° obliquity. The plain violet sphere remains the
+  // instant (and offline) identity until the survey arrives; the night
+  // side stays honestly dark.
+  const earthMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(6, 48, 32),
+    new THREE.MeshBasicMaterial({ color: 0x5A4A8C }));
+  earthMesh.rotation.z = 0.409;
+  scene.add(earthMesh);
+  loadRealMap(THREE, 'Earth', 'assets/earth-bluemarble.jpg', t => {
+    const lit = new THREE.MeshStandardMaterial({
+      map: t, roughness: 0.86, metalness: 0,
+      bumpMap: t, bumpScale: 0.5,
+      emissive: 0xffffff, emissiveMap: t, emissiveIntensity: 0.07
+    });
+    const old = earthMesh.material;
+    earthMesh.material = lit;
+    old.dispose();
+  });
 
   // The Sun in the chart actually lights the other bodies, so their
   // near sides brighten and their far sides fall into shadow.
@@ -809,6 +829,8 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
       const cur = m.scale.x;
       if (Math.abs(cur - want) > 0.004) m.scale.setScalar(cur + (want - cur) * sk);
     }
+    // home turns too, slowly
+    if (!REDUCED) earthMesh.rotation.y += 0.02 * dt;
     if (!drag) { cam.theta += MOTION.drift * dt; }
     placeCamera();
     if (SKY_DEV && rm.renderer.info.reset) rm.renderer.info.reset();

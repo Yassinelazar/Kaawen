@@ -131,6 +131,23 @@ const PORT = 8917;
     await page.mouse.up();
     await page.waitForTimeout(800);
 
+    // 5e. The observer at the centre, up close
+    await page.evaluate(() => releaseSkyView());
+    await page.waitForTimeout(2000);
+    await page.evaluate(() => {
+      const cv = document.getElementById('sky3d-canvas');
+      for (let i = 0; i < 24; i++)
+        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: -1, cancelable: true, bubbles: true }));
+    });
+    await page.waitForTimeout(2200);
+    await shot('earth-center.png');
+    await page.evaluate(() => {
+      const cv = document.getElementById('sky3d-canvas');
+      for (let i = 0; i < 24; i++)
+        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: 1, cancelable: true, bubbles: true }));
+    });
+    await page.waitForTimeout(1500);
+
     // 6. Sun selected — aspect lines lit/dimmed correctly
     await page.evaluate(() => selectWheel('planet', 'Sun'));
     await page.waitForTimeout(2500);
