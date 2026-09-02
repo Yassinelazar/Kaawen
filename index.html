@@ -3746,6 +3746,24 @@
         padding: 34px 30px 120px;
       }
     }
+    .sky-dossier-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px solid rgba(212, 166, 85, 0.3);
+      border-radius: 100px;
+      color: #AC9F87;
+      font-family: var(--ui);
+      font-size: 9.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 7px 14px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: color 0.25s ease, border-color 0.25s ease;
+    }
+    .sky-dossier-back:hover { color: #D4A655; border-color: rgba(212, 166, 85, 0.7); }
     .sky-dossier-glyph { font-size: 34px; color: #D4A655; line-height: 1; }
     .sky-dossier-name {
       font-family: var(--display);
@@ -7481,7 +7499,7 @@
 
     function planetTexture(THREE, planet, hex) {
       if (SKY_TEX_CACHE[planet]) return SKY_TEX_CACHE[planet];
-      const S = 512;
+      const S = 1024;   // enough detail to hold up when a body fills the frame
       const cv = document.createElement('canvas');
       cv.width = cv.height = S;
       const g = cv.getContext('2d');
@@ -7506,11 +7524,12 @@
       const d = img.data;
       for (let y = 0; y < S; y++) {
         for (let x = 0; x < S; x++) {
-          // four octaves — the last ones carry the fine grain
+          // six octaves — the last ones carry the fine grain that keeps
+          // the surface convincing at close range
           let n = 0, amp = 0.5, freq = 4;
-          for (let o = 0; o < 5; o++) {
+          for (let o = 0; o < 6; o++) {
             n += smooth(x / S * freq, y / S * freq) * amp;
-            amp *= 0.5; freq *= 2.4;
+            amp *= 0.5; freq *= 2.35;
           }
           n = (n - 0.5) * cfg.contrast;
           if (cfg.bands) n += Math.sin(y / S * Math.PI * cfg.bands * 2) * cfg.grain * 0.30;
@@ -7524,10 +7543,30 @@
       }
       g.putImageData(img, 0, 0);
       const tex = new THREE.CanvasTexture(cv);
-      tex.anisotropy = 8;
+      tex.anisotropy = 16;
       tex.colorSpace = THREE.SRGBColorSpace;
       SKY_TEX_CACHE[planet] = tex;
       return tex;
+    }
+
+    // Radial falloff used for the body glows — one texture, tinted per
+    // planet, always facing the camera so it never shows an edge.
+    let SKY_GLOW_TEX = null;
+    function glowTexture(THREE) {
+      if (SKY_GLOW_TEX) return SKY_GLOW_TEX;
+      const S = 256;
+      const c = document.createElement('canvas');
+      c.width = c.height = S;
+      const g = c.getContext('2d');
+      const grd = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+      grd.addColorStop(0.00, 'rgba(255,255,255,0.60)');
+      grd.addColorStop(0.18, 'rgba(255,255,255,0.26)');
+      grd.addColorStop(0.45, 'rgba(255,255,255,0.07)');
+      grd.addColorStop(1.00, 'rgba(255,255,255,0)');
+      g.fillStyle = grd;
+      g.fillRect(0, 0, S, S);
+      SKY_GLOW_TEX = new THREE.CanvasTexture(c);
+      return SKY_GLOW_TEX;
     }
 
     // Text as a sprite — canvas texture keeps glyphs crisp at any zoom.
@@ -7581,10 +7620,16 @@
       const camera = new THREE.PerspectiveCamera(42, 1, 1, 3000);
       // preserveDrawingBuffer lets the export read the rendered frame back.
       const renderer = new THREE.WebGLRenderer({
-        canvas, antialias: true, alpha: true, preserveDrawingBuffer: true
+        canvas, antialias: true, alpha: true, preserveDrawingBuffer: true,
+        powerPreference: 'high-performance'
       });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      // Render at the display's true density (up to 3×) and film-map the
+      // result, so highlights roll off instead of clipping to flat white.
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 3));
       renderer.setClearColor(0x000000, 0);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
 
       // Bloom gives the bodies real light falloff rather than flat discs.
       // Optional by design: if the addon modules can't be fetched the
@@ -7680,7 +7725,10 @@
           ? new THREE.MeshBasicMaterial({ map: tex, color: SKY_COLOR[p] })
           : new THREE.MeshStandardMaterial({
               map: tex, roughness: 0.92, metalness: 0.02,
-              emissive: SKY_COLOR[p], emissiveMap: tex, emissiveIntensity: 0.42
+              // the same noise drives relief, so the terminator breaks up
+              // along real surface rather than a clean arc
+              bumpMap: tex, bumpScale: (SKY_SURFACE[p] || {}).bands ? 0.4 : 0.9,
+              emissive: SKY_COLOR[p], emissiveMap: tex, emissiveIntensity: 0.4
             });
         const mesh = new THREE.Mesh(new THREE.SphereGeometry(SKY_SIZE[p], 64, 48), mat);
         mesh.rotation.z = 0.22;           // a little axial tilt
@@ -7691,11 +7739,18 @@
         pickable.push(mesh);
         planetMeshes[p] = mesh;
 
-        // A soft halo so each body reads against the black
-        const halo = new THREE.Mesh(
-          new THREE.SphereGeometry(SKY_SIZE[p] * 2.1, 16, 16),
-          new THREE.MeshBasicMaterial({ color: SKY_COLOR[p], transparent: true, opacity: 0.1 })
-        );
+        // A soft halo so each body reads against the black. A billboard
+        // with a radial falloff rather than a low-poly sphere — the old
+        // mesh showed its facets as a hard-edged disc once you flew in.
+        const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: glowTexture(THREE),
+          color: SKY_COLOR[p],
+          transparent: true,
+          opacity: 0.5,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        }));
+        halo.scale.setScalar(SKY_SIZE[p] * 7.5);
         halo.position.copy(pos);
         scene.add(halo);
 
@@ -7712,17 +7767,46 @@
       });
 
       // ── Aspect lines, drawn body to body ───────────────────────
-      ctx.aspects.forEach(a => {
-        const g = new THREE.BufferGeometry().setFromPoints([
-          at(ctx.positions[a.a], SKY_RADII[a.a]),
-          at(ctx.positions[a.b], SKY_RADII[a.b])
+      // THREE.Line is clamped to one pixel on almost every platform, so
+      // the connections looked thin and aliased. Line2 builds them as
+      // geometry: real width, properly anti-aliased, and the tighter the
+      // aspect the heavier its thread.
+      const lineMats = [];
+      let L2 = null;
+      try {
+        const [a1, a2, a3] = await Promise.all([
+          import('three/addons/lines/Line2.js'),
+          import('three/addons/lines/LineMaterial.js'),
+          import('three/addons/lines/LineGeometry.js')
         ]);
-        const line = new THREE.Line(g, new THREE.LineBasicMaterial({
-          color: SKY_ASPECT_COLOR[a.kind] || 0xAC9F87,
-          transparent: true,
-          opacity: 0.25 + a.strength * 0.5
-        }));
+        L2 = { Line2: a1.Line2, LineMaterial: a2.LineMaterial, LineGeometry: a3.LineGeometry };
+      } catch (e) { L2 = null; }
+
+      ctx.aspects.forEach(a => {
+        const p1 = at(ctx.positions[a.a], SKY_RADII[a.a]);
+        const p2 = at(ctx.positions[a.b], SKY_RADII[a.b]);
+        const color = SKY_ASPECT_COLOR[a.kind] || 0xAC9F87;
+        const opacity = 0.28 + a.strength * 0.5;
+        let line;
+        if (L2) {
+          const geo = new L2.LineGeometry();
+          geo.setPositions([p1.x, p1.y, p1.z, p2.x, p2.y, p2.z]);
+          const mat = new L2.LineMaterial({
+            color, transparent: true, opacity,
+            linewidth: 1.1 + a.strength * 2.4,   // device pixels
+            dashed: false, alphaToCoverage: true
+          });
+          mat.resolution.set(canvas.clientWidth || 1, canvas.clientHeight || 1);
+          lineMats.push(mat);
+          line = new L2.Line2(geo, mat);
+          line.computeLineDistances();
+        } else {
+          line = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([p1, p2]),
+            new THREE.LineBasicMaterial({ color, transparent: true, opacity }));
+        }
         line.userData.pair = [a.a, a.b];
+        line.userData.baseOpacity = opacity;
         groups.aspects.add(line);
       });
 
@@ -7783,6 +7867,8 @@
         if (!w || !h) return;
         renderer.setSize(w, h, false);
         if (composer) composer.setSize(w, h);
+        // Line2 widths are in screen space, so they need the live size
+        lineMats.forEach(m => m.resolution.set(w, h));
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
       }
@@ -7829,9 +7915,16 @@
         if (e.cancelable) e.preventDefault();
       };
       const onUp = () => { drag = null; };
+      // Zoom moves the *desired* radius; the easing in the render loop
+      // carries the camera there. (Writing cam.radius directly here is
+      // what broke zoom: the loop resets radius to wantRadius each frame
+      // once the camera has settled, so a direct write was overwritten
+      // before it was ever drawn.) Proportional steps keep the feel even
+      // whether you are beside a planet or out at the zodiac.
       const onWheel = e => {
-        cam.radius = Math.max(140, Math.min(1300, cam.radius + e.deltaY * 0.8));
-        placeCamera();
+        const step = cam.wantRadius * (e.deltaY > 0 ? 0.12 : -0.12);
+        cam.wantRadius = Math.max(26, Math.min(1400, cam.wantRadius + step));
+        cam.ease = 0.14;                     // respond promptly to the hand
         if (e.cancelable) e.preventDefault();
       };
       canvas.addEventListener('mousedown', onDown);
@@ -7866,18 +7959,22 @@
         const dr = Math.abs(cam.radius - cam.wantRadius);
         const moving = dist > 0.12 || dr > 0.4;
         if (moving) {
-          cam.ease = Math.min(0.075, cam.ease + 0.004);   // spool up
+          cam.ease = Math.min(0.09, cam.ease + 0.005);    // spool up
           cam.target.lerp(cam.wantTarget, cam.ease);
           cam.radius += (cam.wantRadius - cam.radius) * cam.ease;
         } else {
           cam.ease = 0.012;                                // ready for the next
           cam.target.copy(cam.wantTarget);
-          cam.radius = cam.wantRadius;
         }
         // Bodies turn slowly on their own axis — the surface detail moves,
-        // which is what sells them as spheres rather than discs.
+        // which is what sells them as spheres rather than discs — and the
+        // selected one grows into its emphasis instead of snapping.
         for (const p in planetMeshes) {
-          planetMeshes[p].rotation.y += planetMeshes[p].userData.spin || 0.0012;
+          const m = planetMeshes[p];
+          m.rotation.y += m.userData.spin || 0.0012;
+          const want = m.userData.wantScale === undefined ? 1 : m.userData.wantScale;
+          const cur = m.scale.x;
+          if (Math.abs(cur - want) > 0.004) m.scale.setScalar(cur + (want - cur) * 0.12);
         }
         if (!drag) { cam.theta += 0.0006; }
         placeCamera();
@@ -7922,13 +8019,16 @@
         const on = !sel || p === sel;
         mesh.material.opacity = on ? 1 : 0.25;
         mesh.material.transparent = !on;
-        const s = (sel && p === sel) ? 1.6 : 1;
-        mesh.scale.setScalar(s);
+        // eased in the render loop rather than snapped
+        mesh.userData.wantScale = (sel && p === sel) ? 1.45 : 1;
       });
       sky3d.groups.aspects.children.forEach(line => {
         const pair = line.userData.pair || [];
+        const base = line.userData.baseOpacity === undefined ? 0.5 : line.userData.baseOpacity;
         const on = !sel || pair.indexOf(sel) !== -1;
-        line.material.opacity = on ? (sel ? 0.85 : line.material.opacity) : 0.05;
+        // restore to the line's own weight rather than whatever it was
+        // last dimmed to, so releasing a body returns the true picture
+        line.material.opacity = !sel ? base : (on ? Math.min(1, base + 0.35) : 0.045);
       });
     }
 
@@ -8021,6 +8121,7 @@
         }).join('');
 
       let html = `
+        <button type="button" class="sky-dossier-back" data-sky-release>← All ten bodies</button>
         <div class="sky-dossier-glyph">${PLANET_GLYPHS[planet]}</div>
         <div class="sky-dossier-name">${planet}</div>
         <div class="sky-dossier-pos">in ${pl.sign} · ${pl.degree.toFixed(1)}°${
@@ -8898,6 +8999,7 @@
       });
       // The rail and the dossier's aspect rows both navigate by planet
       document.getElementById('sky3d').addEventListener('click', e => {
+        if (e.target.closest('[data-sky-release]')) { releaseSkyView(); return; }
         const btn = e.target.closest('[data-sky-planet]');
         if (!btn) return;
         const name = btn.dataset.skyPlanet;
