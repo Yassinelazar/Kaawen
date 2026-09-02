@@ -3539,7 +3539,8 @@
       align-items: flex-start;
     }
     .sky3d-layer {
-      background: rgba(10, 11, 20, 0.55);
+      /* opaque enough to stay readable when a bright body drifts behind */
+      background: rgba(10, 11, 20, 0.78);
       border: 1px solid rgba(212, 166, 85, 0.22);
       border-radius: 100px;
       color: rgba(172, 159, 135, 0.75);
@@ -3602,6 +3603,39 @@
     }
     .sky3d-expand:hover, .sky3d-close:hover { border-color: rgba(212, 166, 85, 0.75); }
     .sky3d-close { display: none; font-size: 13px; padding: 4px 11px; }
+
+    /* Return from a body to the whole chart — only while one is focused */
+    .sky-back {
+      display: none;
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 11, 20, 0.72);
+      border: 1px solid rgba(212, 166, 85, 0.4);
+      border-radius: 100px;
+      color: #D4A655;
+      font-family: var(--ui);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      cursor: pointer;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      z-index: 6;
+      transition: border-color 0.25s ease, background 0.25s ease;
+      animation: skyBackIn 0.35s ease;
+    }
+    .sky-back:hover { border-color: #D4A655; background: rgba(212, 166, 85, 0.16); }
+    .sky3d.immersive.has-dossier .sky-back { display: block; }
+    @keyframes skyBackIn {
+      from { opacity: 0; transform: translate(-50%, -8px); }
+      to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    @media (min-width: 820px) {
+      .sky3d.immersive.has-dossier .sky-back { left: calc(50% - 210px); }
+    }
 
     .sky3d.immersive {
       position: fixed;
@@ -3755,11 +3789,29 @@
     .sky-sec:first-of-type { border-top: none; padding-top: 0; }
     .sky-body {
       font-family: var(--body);
-      font-size: 15.5px;
-      line-height: 1.72;
-      color: #D9CEB5;
+      font-size: 16px;
+      line-height: 1.78;
+      color: #DCD2BC;
+      max-width: 40ch;          /* a comfortable measure, even on wide screens */
+      text-align: left;
+      hyphens: none;
     }
-    .sky-body + .sky-body { margin-top: 12px; }
+    .sky-body + .sky-body { margin-top: 13px; }
+    /* The dossier arrives rather than appearing */
+    .sky3d.immersive .sky-dossier.open { animation: skyDossierIn 0.42s cubic-bezier(.22,.61,.36,1); }
+    @keyframes skyDossierIn {
+      from { opacity: 0; transform: translateX(26px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @media (max-width: 819px) {
+      @keyframes skyDossierIn {
+        from { opacity: 0; transform: translateY(26px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .sky-body { max-width: none; }
+    }
+    /* Header block reads as one unit */
+    .sky-dossier-glyph, .sky-dossier-name, .sky-dossier-pos { text-align: left; }
     .sky-asp {
       display: flex;
       align-items: baseline;
@@ -4576,6 +4628,7 @@
               </div>
               <button type="button" class="sky3d-expand" id="sky3d-expand" aria-label="Enter the sky">⤢ Enter the sky</button>
               <button type="button" class="sky3d-close" id="sky3d-close" aria-label="Leave the sky">✕</button>
+              <button type="button" class="sky-back" id="sky-back">↺ Back to the whole sky</button>
               <div class="sky3d-hint" id="sky3d-hint">Drag to turn · scroll to zoom · touch a planet</div>
 
               <!-- Immersive mode: a rail of the ten bodies, and the
@@ -7407,6 +7460,76 @@
     let sky3d = null;      // live scene state once built
     let skyLoading = false;
 
+    // ── Planet surfaces ───────────────────────────────────────────
+    // Procedural, so no image is ever fetched. Multi-octave value noise
+    // gives each body real high-frequency detail — up close they read as
+    // surfaces rather than flat discs — and the gas giants get banding.
+    // Generated once per planet at 512², then cached.
+    const SKY_TEX_CACHE = {};
+    const SKY_SURFACE = {
+      Sun:     { bands: 0, grain: 0.10, contrast: 0.20 },
+      Moon:    { bands: 0, grain: 0.62, contrast: 0.52 },  // cratered
+      Mercury: { bands: 0, grain: 0.58, contrast: 0.46 },
+      Venus:   { bands: 3, grain: 0.30, contrast: 0.24 },  // thick cloud
+      Mars:    { bands: 0, grain: 0.55, contrast: 0.44 },
+      Jupiter: { bands: 9, grain: 0.26, contrast: 0.40 },  // banded
+      Saturn:  { bands: 7, grain: 0.22, contrast: 0.34 },
+      Uranus:  { bands: 4, grain: 0.16, contrast: 0.20 },
+      Neptune: { bands: 5, grain: 0.20, contrast: 0.26 },
+      Pluto:   { bands: 0, grain: 0.60, contrast: 0.50 }
+    };
+
+    function planetTexture(THREE, planet, hex) {
+      if (SKY_TEX_CACHE[planet]) return SKY_TEX_CACHE[planet];
+      const S = 512;
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = S;
+      const g = cv.getContext('2d');
+      const cfg = SKY_SURFACE[planet] || { bands: 0, grain: 0.4, contrast: 0.35 };
+      const r = (hex >> 16) & 255, gg = (hex >> 8) & 255, bb = hex & 255;
+
+      // Deterministic value noise, so a body looks the same every visit
+      let seed = 0;
+      for (let i = 0; i < planet.length; i++) seed = (seed * 31 + planet.charCodeAt(i)) & 0xffff;
+      const rand = (x, y) => {
+        const n = Math.sin(x * 127.1 + y * 311.7 + seed) * 43758.5453;
+        return n - Math.floor(n);
+      };
+      const smooth = (x, y) => {
+        const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+        const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+        return rand(xi, yi) * (1 - u) * (1 - v) + rand(xi + 1, yi) * u * (1 - v)
+             + rand(xi, yi + 1) * (1 - u) * v + rand(xi + 1, yi + 1) * u * v;
+      };
+
+      const img = g.createImageData(S, S);
+      const d = img.data;
+      for (let y = 0; y < S; y++) {
+        for (let x = 0; x < S; x++) {
+          // four octaves — the last ones carry the fine grain
+          let n = 0, amp = 0.5, freq = 4;
+          for (let o = 0; o < 5; o++) {
+            n += smooth(x / S * freq, y / S * freq) * amp;
+            amp *= 0.5; freq *= 2.4;
+          }
+          n = (n - 0.5) * cfg.contrast;
+          if (cfg.bands) n += Math.sin(y / S * Math.PI * cfg.bands * 2) * cfg.grain * 0.30;
+          const k = 1 + n;
+          const i = (y * S + x) * 4;
+          d[i]     = Math.max(0, Math.min(255, r * k));
+          d[i + 1] = Math.max(0, Math.min(255, gg * k));
+          d[i + 2] = Math.max(0, Math.min(255, bb * k));
+          d[i + 3] = 255;
+        }
+      }
+      g.putImageData(img, 0, 0);
+      const tex = new THREE.CanvasTexture(cv);
+      tex.anisotropy = 8;
+      tex.colorSpace = THREE.SRGBColorSpace;
+      SKY_TEX_CACHE[planet] = tex;
+      return tex;
+    }
+
     // Text as a sprite — canvas texture keeps glyphs crisp at any zoom.
     function skyLabel(THREE, text, px, color, weight) {
       const pad = 8, size = px * 3;               // 3× for retina crispness
@@ -7550,10 +7673,18 @@
           new THREE.LineBasicMaterial({ color: 0x8C6F3A, transparent: true, opacity: 0.16 })));
 
         const pos = at(ctx.positions[p], r);
-        const mesh = new THREE.Mesh(
-          new THREE.SphereGeometry(SKY_SIZE[p], 32, 32),
-          new THREE.MeshBasicMaterial({ color: SKY_COLOR[p] })
-        );
+        // The Sun is its own light source, so it stays unshaded; every
+        // other body is lit by it and carries a textured surface.
+        const tex = planetTexture(THREE, p, SKY_COLOR[p]);
+        const mat = (p === 'Sun')
+          ? new THREE.MeshBasicMaterial({ map: tex, color: SKY_COLOR[p] })
+          : new THREE.MeshStandardMaterial({
+              map: tex, roughness: 0.92, metalness: 0.02,
+              emissive: SKY_COLOR[p], emissiveMap: tex, emissiveIntensity: 0.42
+            });
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(SKY_SIZE[p], 64, 48), mat);
+        mesh.rotation.z = 0.22;           // a little axial tilt
+        mesh.userData.spin = 0.0012 + Math.random() * 0.0016;
         mesh.position.copy(pos);
         mesh.userData.planet = p;
         scene.add(mesh);
@@ -7597,8 +7728,15 @@
 
       // Earth at the centre — the observer
       scene.add(new THREE.Mesh(
-        new THREE.SphereGeometry(6, 24, 24),
+        new THREE.SphereGeometry(6, 32, 32),
         new THREE.MeshBasicMaterial({ color: 0x5A4A8C })));
+
+      // The Sun in the chart actually lights the other bodies, so their
+      // near sides brighten and their far sides fall into shadow.
+      scene.add(new THREE.AmbientLight(0xF4EBD6, 0.5));
+      const sunLight = new THREE.PointLight(0xFFE9BE, 2.6, 0, 0);
+      sunLight.position.copy(at(ctx.positions.Sun, SKY_RADII.Sun));
+      scene.add(sunLight);
 
       // ── Camera + hand-rolled orbit controls ────────────────────
       // Framed so the whole zodiac ring and its names sit inside the
@@ -7611,7 +7749,8 @@
         theta: Math.PI * 0.5, phi: 0.88, radius: 620,
         target: new THREE.Vector3(0, 0, 0),
         wantTarget: new THREE.Vector3(0, 0, 0),
-        wantRadius: 620
+        wantRadius: 620,
+        ease: 0.012
       };
       function placeCamera() {
         camera.position.set(
@@ -7628,11 +7767,15 @@
         const m = planetMeshes[name];
         if (!m) return;
         cam.wantTarget.copy(m.position);
-        cam.wantRadius = 108;
+        // Frame the body itself: small bodies are approached closer, so
+        // Pluto and the Sun both fill a comparable part of the view.
+        cam.wantRadius = Math.max(58, (SKY_SIZE[name] || 5) * 15);
+        cam.ease = 0.012;
       }
       function releaseFocus() {
         cam.wantTarget.set(0, 0, 0);
         cam.wantRadius = 620;
+        cam.ease = 0.012;
       }
 
       function resize() {
@@ -7717,14 +7860,27 @@
         raf = requestAnimationFrame(loop);
         // A slow drift keeps the scene alive when untouched
         // Ease toward whatever the camera has been asked to look at.
-        const moving = cam.target.distanceToSquared(cam.wantTarget) > 0.02 ||
-                       Math.abs(cam.radius - cam.wantRadius) > 0.2;
+        // The rate itself eases in and out, so a flight starts gently,
+        // gathers, and settles rather than snapping to a stop.
+        const dist = cam.target.distanceTo(cam.wantTarget);
+        const dr = Math.abs(cam.radius - cam.wantRadius);
+        const moving = dist > 0.12 || dr > 0.4;
         if (moving) {
-          cam.target.lerp(cam.wantTarget, 0.07);
-          cam.radius += (cam.wantRadius - cam.radius) * 0.07;
+          cam.ease = Math.min(0.075, cam.ease + 0.004);   // spool up
+          cam.target.lerp(cam.wantTarget, cam.ease);
+          cam.radius += (cam.wantRadius - cam.radius) * cam.ease;
+        } else {
+          cam.ease = 0.012;                                // ready for the next
+          cam.target.copy(cam.wantTarget);
+          cam.radius = cam.wantRadius;
+        }
+        // Bodies turn slowly on their own axis — the surface detail moves,
+        // which is what sells them as spheres rather than discs.
+        for (const p in planetMeshes) {
+          planetMeshes[p].rotation.y += planetMeshes[p].userData.spin || 0.0012;
         }
         if (!drag) { cam.theta += 0.0006; }
-        if (!drag || moving) placeCamera();
+        placeCamera();
         draw();
       }
       loop();
@@ -7901,6 +8057,17 @@
       el.innerHTML = html;
       el.classList.add('open');
       el.scrollTop = 0;
+    }
+
+    // Let go of the focused body and pull the camera back to the whole
+    // chart, without leaving the immersive view.
+    function releaseSkyView() {
+      wheelSel = null;
+      clearWheelSelClasses();
+      syncWheelCells();
+      syncSky3DSelection();
+      renderWheelCard(null, null);
+      track('sky_release');
     }
 
     function setSkyImmersive(on) {
@@ -8737,6 +8904,8 @@
         if (wheelSel && wheelSel.type === 'planet' && wheelSel.key === name) return; // already there
         selectWheel('planet', name);
       });
+      // Pull back out to the whole chart without leaving the sky
+      document.getElementById('sky-back').addEventListener('click', releaseSkyView);
       // Layer toggles inside the 3D view
       document.getElementById('sky3d-layers').addEventListener('click', e => {
         const btn = e.target.closest('.sky3d-layer');
