@@ -3580,6 +3580,219 @@
       .sky3d canvas { height: 560px; }
     }
 
+    /* ==== Immersive sky: the whole window becomes the chart ==== */
+    .sky3d-expand, .sky3d-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(10, 11, 20, 0.55);
+      border: 1px solid rgba(212, 166, 85, 0.3);
+      border-radius: 100px;
+      color: #D4A655;
+      font-family: var(--ui);
+      font-size: 9.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 6px 13px;
+      cursor: pointer;
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      transition: border-color 0.25s ease;
+      z-index: 3;
+    }
+    .sky3d-expand:hover, .sky3d-close:hover { border-color: rgba(212, 166, 85, 0.75); }
+    .sky3d-close { display: none; font-size: 13px; padding: 4px 11px; }
+
+    .sky3d.immersive {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      max-width: none;
+      margin: 0;
+      border: none;
+      border-radius: 0;
+    }
+    .sky3d.immersive canvas { height: 100vh; height: 100dvh; }
+    /* An ancestor with will-change/transform becomes the containing block
+       for position:fixed, which would pin the immersive sky to the chapter
+       instead of the window. Neutralise those while it is open — and let
+       the page surface stop clipping. */
+    body.sky-immersive .chapter { will-change: auto; animation: none; }
+    body.sky-immersive #app { overflow: visible; }
+    .sky3d.immersive .sky3d-close { display: block; }
+    .sky3d.immersive .sky3d-expand { display: none; }
+    .sky3d.immersive .sky-rail { display: flex; }
+    body.sky-immersive { overflow: hidden; }
+
+    /* The rail — every body one press away */
+    .sky-rail {
+      display: none;
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 0;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 14px 12px max(18px, env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, rgba(11,12,20,0) 0%, rgba(11,12,20,0.92) 45%);
+      /* above the dossier: on phones the sheet scrolls beneath the rail
+         (its bottom padding keeps the last lines clear of it) */
+      z-index: 5;
+    }
+    /* on wide screens the dossier takes the right column, so the rail
+       centres in what is left rather than running underneath it */
+    @media (min-width: 820px) {
+      .sky3d.immersive.has-dossier .sky-rail { right: 420px; }
+    }
+    /* on phones the rail floats over the sheet, so it needs its own
+       ground or the reading shows through between the buttons */
+    @media (max-width: 819px) {
+      .sky3d.immersive.has-dossier .sky-rail {
+        background: rgba(11, 12, 20, 0.97);
+        border-top: 1px solid rgba(212, 166, 85, 0.18);
+      }
+    }
+    .sky-rail-btn {
+      background: rgba(10, 11, 20, 0.6);
+      border: 1px solid rgba(212, 166, 85, 0.22);
+      border-radius: 10px;
+      color: rgba(244, 235, 214, 0.8);
+      cursor: pointer;
+      padding: 7px 10px 6px;
+      min-width: 54px;
+      text-align: center;
+      transition: all 0.25s ease;
+    }
+    .sky-rail-btn:hover { border-color: rgba(212, 166, 85, 0.6); }
+    .sky-rail-btn.on {
+      border-color: #D4A655;
+      background: rgba(212, 166, 85, 0.14);
+      color: #F4EBD6;
+    }
+    .sky-rail-glyph { display: block; font-size: 17px; line-height: 1.1; color: #D4A655; }
+    .sky-rail-btn.on .sky-rail-glyph { color: #F4EBD6; }
+    .sky-rail-name {
+      display: block;
+      font-family: var(--ui);
+      font-size: 8.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 3px;
+      opacity: 0.75;
+    }
+
+    /* The dossier — the chosen body, in full */
+    .sky-dossier {
+      display: none;
+      position: absolute;
+      z-index: 4;
+      background: rgba(10, 11, 20, 0.9);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(212, 166, 85, 0.25);
+      color: #D9CEB5;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sky3d.immersive .sky-dossier.open { display: block; }
+    @media (max-width: 819px) {
+      .sky-dossier {
+        left: 0; right: 0; bottom: 0;
+        max-height: 62vh;
+        border-radius: 16px 16px 0 0;
+        padding: 20px 20px 120px;
+      }
+    }
+    @media (min-width: 820px) {
+      .sky-dossier {
+        top: 0; right: 0; bottom: 0;
+        width: 420px;
+        border-radius: 0;
+        border-width: 0 0 0 1px;
+        padding: 34px 30px 120px;
+      }
+    }
+    .sky-dossier-glyph { font-size: 34px; color: #D4A655; line-height: 1; }
+    .sky-dossier-name {
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 32px;
+      color: #F4EBD6;
+      margin: 6px 0 4px;
+    }
+    .sky-dossier-pos {
+      font-family: var(--ui);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: #AC9F87;
+      margin-bottom: 4px;
+    }
+    .sky-dossier-pos .rx { color: #D89580; }
+    .sky-dossier-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 20px; }
+    .sky-tag {
+      font-family: var(--ui);
+      font-size: 9.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #AC9F87;
+      border: 1px solid rgba(212, 166, 85, 0.28);
+      border-radius: 100px;
+      padding: 4px 10px;
+    }
+    .sky-tag.strong { color: #14151F; background: #D4A655; border-color: #D4A655; }
+    .sky-tag.weak { color: #D89580; border-color: rgba(216, 149, 128, 0.5); }
+    .sky-sec {
+      font-family: var(--ui);
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #8C6F3A;
+      margin: 26px 0 10px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(212, 166, 85, 0.16);
+    }
+    .sky-sec:first-of-type { border-top: none; padding-top: 0; }
+    .sky-body {
+      font-family: var(--body);
+      font-size: 15.5px;
+      line-height: 1.72;
+      color: #D9CEB5;
+    }
+    .sky-body + .sky-body { margin-top: 12px; }
+    .sky-asp {
+      display: flex;
+      align-items: baseline;
+      gap: 9px;
+      width: 100%;
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(212, 166, 85, 0.12);
+      padding: 10px 0;
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--ui);
+      font-size: 12.5px;
+      color: #D9CEB5;
+      transition: color 0.2s ease;
+    }
+    .sky-asp:hover { color: #D4A655; }
+    .sky-asp-glyph { color: #D4A655; font-size: 14px; width: 42px; flex-shrink: 0; }
+    .sky-asp-orb { margin-left: auto; color: #AC9F87; font-size: 11.5px; }
+    .sky-asp-orb.friction { color: #D89580; }
+    .sky-locked {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 14px;
+      color: #AC9F87;
+      line-height: 1.6;
+      border: 1px solid rgba(212, 166, 85, 0.25);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 8px;
+    }
+    .sky-locked b { color: #D4A655; font-style: normal; font-weight: 500; }
+
     /* ==== Credibility strip — exactness, stated simply ==== */
     .cred {
       display: grid;
@@ -4361,7 +4574,14 @@
                 <button type="button" class="sky3d-layer on" data-layer="stars">Stars</button>
                 <button type="button" class="sky3d-layer sky3d-save" id="sky3d-save">Save image</button>
               </div>
-              <div class="sky3d-hint">Drag to turn · scroll to zoom · touch a planet</div>
+              <button type="button" class="sky3d-expand" id="sky3d-expand" aria-label="Enter the sky">⤢ Enter the sky</button>
+              <button type="button" class="sky3d-close" id="sky3d-close" aria-label="Leave the sky">✕</button>
+              <div class="sky3d-hint" id="sky3d-hint">Drag to turn · scroll to zoom · touch a planet</div>
+
+              <!-- Immersive mode: a rail of the ten bodies, and the
+                   dossier that opens for whichever one is chosen. -->
+              <div class="sky-rail" id="sky-rail"></div>
+              <aside class="sky-dossier" id="sky-dossier" aria-live="polite"></aside>
             </div>
 
             <div class="wheel-card" id="wheel-card"></div>
@@ -7384,16 +7604,36 @@
       // Framed so the whole zodiac ring and its names sit inside the
       // canvas at rest: at a 42° field of view, the ring's outer edge
       // (~230 units with labels) needs roughly 620 units of distance.
-      const cam = { theta: Math.PI * 0.5, phi: 0.88, radius: 620 };
+      // The camera orbits a target that can move: at rest it is the
+      // observer at the centre, and when a body is chosen it travels to
+      // that body, so choosing a planet flies the sky to it.
+      const cam = {
+        theta: Math.PI * 0.5, phi: 0.88, radius: 620,
+        target: new THREE.Vector3(0, 0, 0),
+        wantTarget: new THREE.Vector3(0, 0, 0),
+        wantRadius: 620
+      };
       function placeCamera() {
         camera.position.set(
-          cam.radius * Math.sin(cam.phi) * Math.cos(cam.theta),
-          cam.radius * Math.cos(cam.phi),
-          cam.radius * Math.sin(cam.phi) * Math.sin(cam.theta)
+          cam.target.x + cam.radius * Math.sin(cam.phi) * Math.cos(cam.theta),
+          cam.target.y + cam.radius * Math.cos(cam.phi),
+          cam.target.z + cam.radius * Math.sin(cam.phi) * Math.sin(cam.theta)
         );
-        camera.lookAt(0, 0, 0);
+        camera.lookAt(cam.target);
       }
       placeCamera();
+
+      // Called from the rail and from any planet selection
+      function focusBody(name) {
+        const m = planetMeshes[name];
+        if (!m) return;
+        cam.wantTarget.copy(m.position);
+        cam.wantRadius = 108;
+      }
+      function releaseFocus() {
+        cam.wantTarget.set(0, 0, 0);
+        cam.wantRadius = 620;
+      }
 
       function resize() {
         const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -7476,7 +7716,15 @@
       function loop() {
         raf = requestAnimationFrame(loop);
         // A slow drift keeps the scene alive when untouched
-        if (!drag) { cam.theta += 0.0006; placeCamera(); }
+        // Ease toward whatever the camera has been asked to look at.
+        const moving = cam.target.distanceToSquared(cam.wantTarget) > 0.02 ||
+                       Math.abs(cam.radius - cam.wantRadius) > 0.2;
+        if (moving) {
+          cam.target.lerp(cam.wantTarget, 0.07);
+          cam.radius += (cam.wantRadius - cam.radius) * 0.07;
+        }
+        if (!drag) { cam.theta += 0.0006; }
+        if (!drag || moving) placeCamera();
         draw();
       }
       loop();
@@ -7485,7 +7733,7 @@
       ro.observe(canvas);
 
       sky3d = { THREE, scene, camera, renderer, groups, planetMeshes, sizes: SKY_SIZE,
-                composer, exportSky,
+                composer, exportSky, focusBody, releaseFocus,
                 stop: () => {
                   cancelAnimationFrame(raf);
                   ro.disconnect();
@@ -7502,8 +7750,18 @@
     // Selected planet swells and brightens; its aspect lines stay lit
     // while the rest dim — the 3D echo of what the flat wheel does.
     function syncSky3DSelection() {
-      if (!sky3d) return;
       const sel = (wheelSel && wheelSel.type === 'planet') ? wheelSel.key : null;
+
+      // The rail and the dossier follow the selection wherever it was made
+      document.querySelectorAll('.sky-rail-btn').forEach(b =>
+        b.classList.toggle('on', b.dataset.skyPlanet === sel));
+      const immersive = document.getElementById('sky3d');
+      if (immersive && immersive.classList.contains('immersive')) {
+        renderSkyDossier(sel);
+        if (sky3d) { sel ? sky3d.focusBody(sel) : sky3d.releaseFocus(); }
+      }
+
+      if (!sky3d) return;
       Object.entries(sky3d.planetMeshes).forEach(([p, mesh]) => {
         const on = !sel || p === sel;
         mesh.material.opacity = on ? 1 : 0.25;
@@ -7516,6 +7774,153 @@
         const on = !sel || pair.indexOf(sel) !== -1;
         line.material.opacity = on ? (sel ? 0.85 : line.material.opacity) : 0.05;
       });
+    }
+
+    // ── Essential dignity — the traditional scheme ────────────────
+    // A planet in its own sign acts freely; in the opposite sign it
+    // works against its own grain. Standard classical assignments.
+    const DIGNITY = {
+      Sun:     { domicile: ['Leo'],                exalt: ['Aries'],     detriment: ['Aquarius'],          fall: ['Libra'] },
+      Moon:    { domicile: ['Cancer'],             exalt: ['Taurus'],    detriment: ['Capricorn'],         fall: ['Scorpio'] },
+      Mercury: { domicile: ['Gemini', 'Virgo'],    exalt: ['Virgo'],     detriment: ['Sagittarius', 'Pisces'], fall: ['Pisces'] },
+      Venus:   { domicile: ['Taurus', 'Libra'],    exalt: ['Pisces'],    detriment: ['Aries', 'Scorpio'],  fall: ['Virgo'] },
+      Mars:    { domicile: ['Aries', 'Scorpio'],   exalt: ['Capricorn'], detriment: ['Libra', 'Taurus'],   fall: ['Cancer'] },
+      Jupiter: { domicile: ['Sagittarius', 'Pisces'], exalt: ['Cancer'], detriment: ['Gemini', 'Virgo'],   fall: ['Capricorn'] },
+      Saturn:  { domicile: ['Capricorn', 'Aquarius'], exalt: ['Libra'],  detriment: ['Cancer', 'Leo'],     fall: ['Aries'] }
+    };
+    const DIGNITY_NOTE = {
+      domicile:  'At home — this planet rules the sign it stands in, and acts on its own authority.',
+      exalt:     'Exalted — the sign lifts this planet above its ordinary strength, and it is honoured here.',
+      detriment: 'In detriment — the sign opposes what this planet is for, so it must work against its own grain.',
+      fall:      'In fall — the sign gives this planet little support, and what it does here it does the hard way.'
+    };
+    function skyDignity(planet, sign) {
+      const d = DIGNITY[planet];
+      if (!d) return null;
+      for (const k of ['domicile', 'exalt', 'detriment', 'fall']) {
+        if (d[k].indexOf(sign) !== -1) {
+          return { key: k, label: k === 'exalt' ? 'exalted' : k,
+                   cls: (k === 'domicile' || k === 'exalt') ? 'strong' : 'weak',
+                   note: DIGNITY_NOTE[k] };
+        }
+      }
+      return null;
+    }
+
+    // ── The rail: every body one press away ───────────────────────
+    function renderSkyRail() {
+      const rail = document.getElementById('sky-rail');
+      const c = window.__wheelCtx;
+      if (!rail || !c) return;
+      rail.innerHTML = NR_PLANET_ORDER.map(p =>
+        `<button type="button" class="sky-rail-btn" data-sky-planet="${p}">
+          <span class="sky-rail-glyph">${PLANET_GLYPHS[p]}</span>
+          <span class="sky-rail-name">${p}</span>
+        </button>`).join('');
+    }
+
+    // ── The dossier: one body, everything the chart knows of it ────
+    function renderSkyDossier(planet) {
+      const el = document.getElementById('sky-dossier');
+      const c = window.__wheelCtx;
+      if (!el || !c) return;
+      const host = document.getElementById('sky3d');
+      if (!planet) {
+        el.classList.remove('open');
+        el.innerHTML = '';
+        if (host) host.classList.remove('has-dossier');
+        return;
+      }
+      if (host) host.classList.add('has-dossier');
+
+      const pl = c.wheelPlacements[planet];
+      const pIdx = NR_PLANET_INDEX[planet];
+      const sIdx = SIGNS.indexOf(pl.sign);
+      const deep = birthGuideOpen();          // the Full Guide opens the long readings
+      const signEntry = (NATAL_PLANET_IN_SIGN[pIdx] || [])[sIdx];
+      const houseEntry = pl.house ? (NATAL_PLANET_IN_HOUSE[pIdx] || [])[pl.house - 1] : null;
+      const heaven = SEVEN_HEAVENS[planet];
+      const dig = skyDignity(planet, pl.sign);
+      const ASP_G = { conjunction: '☌', sextile: '⚹', square: '□', trine: '△', opposition: '☍' };
+
+      const tags = [
+        `<span class="sky-tag">${ELEMENTS[pl.sign]}</span>`,
+        `<span class="sky-tag">${MODALITY[pl.sign]}</span>`,
+        dig ? `<span class="sky-tag ${dig.cls}">${dig.label}</span>` : '',
+        pl.retro ? `<span class="sky-tag weak">retrograde</span>` : '',
+        pl.house ? `<span class="sky-tag">${HOUSES[pl.house].name}</span>` : ''
+      ].join('');
+
+      const aspects = c.aspects
+        .filter(a => a.a === planet || a.b === planet)
+        .sort((a, b) => a.exactness - b.exactness)
+        .map(a => {
+          const other = a.a === planet ? a.b : a.a;
+          const label = a.aspect.charAt(0).toUpperCase() + a.aspect.slice(1);
+          return `<button type="button" class="sky-asp" data-sky-planet="${other}">
+            <span class="sky-asp-glyph">${ASP_G[a.aspect]} ${PLANET_GLYPHS[other]}</span>
+            <span>${label} ${other}</span>
+            <span class="sky-asp-orb${a.kind === 'friction' ? ' friction' : ''}">${a.exactness.toFixed(1)}°</span>
+          </button>`;
+        }).join('');
+
+      let html = `
+        <div class="sky-dossier-glyph">${PLANET_GLYPHS[planet]}</div>
+        <div class="sky-dossier-name">${planet}</div>
+        <div class="sky-dossier-pos">in ${pl.sign} · ${pl.degree.toFixed(1)}°${
+          pl.house ? ' · ' + ordinal(pl.house) + ' house' : ''}${
+          pl.retro ? ' · <span class="rx">℞</span>' : ''}</div>
+        <div class="sky-dossier-tags">${tags}</div>
+        <p class="sky-body">${PLANET_DOMAIN[pIdx] ? PLANET_DOMAIN[pIdx].frame : ''}</p>`;
+
+      if (dig) html += `<p class="sky-body">${dig.note}</p>`;
+
+      if (signEntry) {
+        html += `<div class="sky-sec">In ${pl.sign}</div>
+                 <p class="sky-body">${deep ? signEntry.full : signEntry.light}</p>`;
+      }
+      if (houseEntry) {
+        html += `<div class="sky-sec">In the ${ordinal(pl.house)} house — ${HOUSES[pl.house].name}</div>
+                 <p class="sky-body">${houseEntry.text}</p>`;
+      } else if (!pl.house) {
+        html += `<div class="sky-sec">Houses</div>
+                 <p class="sky-body">Add a birth time and this body takes its place in one of the twelve rooms.</p>`;
+      }
+      if (heaven) {
+        html += `<div class="sky-sec">${heaven.heaven} · ${heaven.divine}</div>
+                 <p class="sky-body">${heaven.text}</p>`;
+      }
+      if (aspects) {
+        html += `<div class="sky-sec">What it speaks to</div>${aspects}`;
+      }
+      if (!deep) {
+        html += `<div class="sky-locked">This is the short reading. <b>The Full Guide</b> opens the long
+                 delineation for every body, its houses in depth, and the complete written report.</div>`;
+      }
+
+      el.innerHTML = html;
+      el.classList.add('open');
+      el.scrollTop = 0;
+    }
+
+    function setSkyImmersive(on) {
+      const host = document.getElementById('sky3d');
+      if (!host) return;
+      host.classList.toggle('immersive', on);
+      document.body.classList.toggle('sky-immersive', on);
+      const hint = document.getElementById('sky3d-hint');
+      if (hint) hint.style.display = on ? 'none' : '';
+      if (on) {
+        renderSkyRail();
+        buildSky3D();
+        track('sky_immersive');
+        // Show whatever is already selected, or invite a choice
+        if (wheelSel && wheelSel.type === 'planet') renderSkyDossier(wheelSel.key);
+      } else {
+        renderSkyDossier(null);
+        if (sky3d) sky3d.releaseFocus();
+      }
+      setTimeout(() => { if (sky3d) window.dispatchEvent(new Event('resize')); }, 60);
     }
 
     function setWheelMode(mode) {
@@ -8308,6 +8713,30 @@
       // Flat wheel ↔ 3D sky
       document.querySelectorAll('.wheel-mode-btn').forEach(b =>
         b.addEventListener('click', () => setWheelMode(b.dataset.wheelMode)));
+      // Immersive mode
+      document.getElementById('sky3d-expand').addEventListener('click', () => setSkyImmersive(true));
+      document.getElementById('sky3d-close').addEventListener('click', () => setSkyImmersive(false));
+      document.addEventListener('keydown', e => {
+        const host = document.getElementById('sky3d');
+        if (!host || !host.classList.contains('immersive')) return;
+        if (e.key === 'Escape') setSkyImmersive(false);
+        // Walk the ten bodies with the arrow keys
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+          const cur = (wheelSel && wheelSel.type === 'planet') ? NR_PLANET_ORDER.indexOf(wheelSel.key) : -1;
+          const step = e.key === 'ArrowRight' ? 1 : -1;
+          const next = NR_PLANET_ORDER[(cur + step + NR_PLANET_ORDER.length) % NR_PLANET_ORDER.length];
+          selectWheel('planet', next);
+          e.preventDefault();
+        }
+      });
+      // The rail and the dossier's aspect rows both navigate by planet
+      document.getElementById('sky3d').addEventListener('click', e => {
+        const btn = e.target.closest('[data-sky-planet]');
+        if (!btn) return;
+        const name = btn.dataset.skyPlanet;
+        if (wheelSel && wheelSel.type === 'planet' && wheelSel.key === name) return; // already there
+        selectWheel('planet', name);
+      });
       // Layer toggles inside the 3D view
       document.getElementById('sky3d-layers').addEventListener('click', e => {
         const btn = e.target.closest('.sky3d-layer');
