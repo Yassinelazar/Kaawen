@@ -111,6 +111,26 @@ const PORT = 8917;
     });
     await page.waitForTimeout(1200);
 
+    // 5c. Saturn close — the ring system reads as geometry
+    await page.evaluate(() => selectWheel('planet', 'Saturn'));
+    await page.waitForTimeout(2500);
+    await shot('saturn-close.png');
+
+    // 5d. Saturn from a raised angle — ring plane must respond as
+    // geometry, not as a billboard
+    await page.mouse.move(430, 400);
+    await page.mouse.down();
+    for (let y = 400; y >= 260; y -= 20) await page.mouse.move(430, y);
+    await page.mouse.up();
+    await page.waitForTimeout(1200);
+    await shot('saturn-angle.png');
+    // return the camera for the shots that follow
+    await page.mouse.move(430, 260);
+    await page.mouse.down();
+    for (let y = 260; y <= 400; y += 20) await page.mouse.move(430, y);
+    await page.mouse.up();
+    await page.waitForTimeout(800);
+
     // 6. Sun selected — aspect lines lit/dimmed correctly
     await page.evaluate(() => selectWheel('planet', 'Sun'));
     await page.waitForTimeout(2500);

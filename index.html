@@ -3654,6 +3654,11 @@
        instead of the window. Neutralise those while it is open — and let
        the page surface stop clipping. */
     body.sky-immersive .chapter { will-change: auto; animation: none; }
+    /* The wheel block's fadeUp entrance re-runs on every chart
+       re-render; its animated transform would become the containing
+       block for the fixed sky, shrinking it to panel width mid-rebuild
+       and stranding the GPU's render targets. Same trap, same cure. */
+    body.sky-immersive .wheel-block { will-change: auto; animation: none; transform: none; }
     body.sky-immersive #app { overflow: visible; }
     .sky3d.immersive .sky3d-close { display: block; }
     .sky3d.immersive .sky3d-expand { display: none; }

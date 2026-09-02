@@ -74,7 +74,7 @@ const SKY_SURFACE = {
              // Albedo only; relief stays procedural. Loads progressively —
              // the worker surface shows until the survey arrives.
              mapUrl: 'assets/jupiter-cassini.jpg' },
-  Saturn:  { bands: 7, grain: 0.22, contrast: 0.34 },
+  Saturn:  { bands: 7, grain: 0.22, contrast: 0.34, rings: true },
   Uranus:  { bands: 4, grain: 0.16, contrast: 0.20 },
   Neptune: { bands: 5, grain: 0.20, contrast: 0.26 },
   Pluto:   { bands: 0, grain: 0.60, contrast: 0.50 }
@@ -166,6 +166,89 @@ function loadRealMap(THREE, planet, url, onReady) {
   }, undefined, () => { /* offline — the procedural surface stands */ });
 }
 
+// ── Saturn's rings ────────────────────────────────────────────
+// One radial profile, generated once: the real ring architecture at
+// its true radius ratios (C ring, bright B ring, Cassini Division,
+// A ring with the Encke gap), each edge softened, with deterministic
+// fine ring-let grain so it reads as ice and dust rather than a disc.
+// Radii are in units of Saturn's own radius.
+const SKY_RING_BANDS = [
+  { from: 1.239, to: 1.527, alpha: 0.30, tone: 0.72 },   // C — dusty, translucent
+  { from: 1.527, to: 1.951, alpha: 0.88, tone: 1.00 },   // B — the bright body
+  { from: 1.951, to: 2.027, alpha: 0.10, tone: 0.55 },   // Cassini Division
+  { from: 2.027, to: 2.214, alpha: 0.62, tone: 0.90 },   // A inner
+  { from: 2.214, to: 2.222, alpha: 0.08, tone: 0.55 },   // Encke gap
+  { from: 2.222, to: 2.269, alpha: 0.55, tone: 0.85 }    // A outer
+];
+const SKY_RING_INNER = 1.239, SKY_RING_OUTER = 2.269;
+let SKY_RING_TEX = null;
+function ringTexture(THREE) {
+  if (SKY_RING_TEX) return SKY_RING_TEX;
+  const W = 512;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = 2;
+  const g = cv.getContext('2d');
+  const img = g.createImageData(W, 2);
+  const smoothstep = (e0, e1, x) => {
+    const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+    return t * t * (3 - 2 * t);
+  };
+  const hash = x => { const n = Math.sin(x * 127.1 + 311.7) * 43758.5453; return n - Math.floor(n); };
+  for (let x = 0; x < W; x++) {
+    const r = SKY_RING_INNER + (x / (W - 1)) * (SKY_RING_OUTER - SKY_RING_INNER);
+    let alpha = 0, tone = 0.8;
+    for (const b of SKY_RING_BANDS) {
+      const soft = 0.006;   // edge feather, in Saturn radii
+      const w = smoothstep(b.from - soft, b.from + soft, r)
+              * (1 - smoothstep(b.to - soft, b.to + soft, r));
+      if (w > 0) { alpha = Math.max(alpha, b.alpha * w); tone = b.tone; }
+    }
+    // fine ring-lets: deterministic radial grain, stronger in bright bands
+    const grain = 0.82 + 0.18 * hash(Math.floor(x * 1.7));
+    alpha *= grain;
+    const k = tone * (0.9 + 0.1 * hash(x));
+    // warm parchment ice, in the scene's palette
+    const rr = 236 * k, gg2 = 221 * k, bb2 = 192 * k;
+    for (const row of [0, 1]) {
+      const i = (row * W + x) * 4;
+      img.data[i] = rr; img.data[i + 1] = gg2; img.data[i + 2] = bb2;
+      img.data[i + 3] = Math.round(alpha * 255);
+    }
+  }
+  g.putImageData(img, 0, 0);
+  SKY_RING_TEX = new THREE.CanvasTexture(cv);
+  SKY_RING_TEX.colorSpace = THREE.SRGBColorSpace;
+  SKY_RING_TEX.anisotropy = 16;
+  return SKY_RING_TEX;
+}
+
+// Builds the ring mesh as a child of the planet, so it inherits the
+// axial tilt, the slow spin and the selection swell for free. Its
+// geometry and material die with the scene (the shared profile
+// texture is cached like the glow); the Sun's light falls on it
+// through the same PointLight that lights every surface.
+function buildRings(THREE, planetMesh, radius) {
+  const inner = radius * SKY_RING_INNER, outer = radius * SKY_RING_OUTER;
+  const geo = new THREE.RingGeometry(inner, outer, 180, 1);
+  // RingGeometry maps UVs planarly; the profile wants u = radial fraction
+  const uv = geo.attributes.uv, pos = geo.attributes.position;
+  for (let i = 0; i < uv.count; i++) {
+    const r = Math.hypot(pos.getX(i), pos.getY(i));
+    uv.setXY(i, (r - inner) / (outer - inner), 0.5);
+  }
+  const mat = new THREE.MeshStandardMaterial({
+    map: ringTexture(THREE),
+    transparent: true, side: THREE.DoubleSide, depthWrite: false,
+    roughness: 0.96, metalness: 0,
+    emissive: 0xF4EBD6, emissiveMap: SKY_RING_TEX, emissiveIntensity: 0.22
+  });
+  const ring = new THREE.Mesh(geo, mat);
+  ring.rotation.x = -Math.PI / 2;   // into the planet's equatorial plane
+  planetMesh.add(ring);
+  planetMesh.userData.ringMat = mat;
+  return ring;
+}
+
 // Radial falloff used for the body glows — one texture, tinted per
 // planet, always facing the camera so it never shows an edge.
 let SKY_GLOW_TEX = null;
@@ -210,6 +293,31 @@ function skyLabel(THREE, text, px, color, weight) {
 }
 
 export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPick, track }) {
+  // The page drags the canvas through transient layouts around a chart
+  // re-render — #blueprint hides entirely (0×0), then an entrance
+  // animation briefly makes ancestors a containing block, so the
+  // fixed-position host measures 1100px before settling. Sizing render
+  // targets through those transients strands destroyed attachments in
+  // the WebGPU backend (measured: ~52 validation errors and a black
+  // sky per rebuild). So: nothing is created or sized until the canvas
+  // has reported the same non-zero size for 8 consecutive frames. The
+  // cap only guards against a canvas that never becomes visible — the
+  // build then proceeds and the ResizeObserver applies the real size
+  // when it appears.
+  await new Promise(res => {
+    let w0 = -1, h0 = -1, stable = 0, spent = 0;
+    const tick = () => {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      if (w && h && w === w0 && h === h0) {
+        if (++stable >= 8) return res();
+      } else stable = 0;
+      w0 = w; h0 = h;
+      if (++spent > 900) return res();
+      requestAnimationFrame(tick);
+    };
+    tick();
+  });
+
   const TIER = skyQualityTier();
   const Q = SKY_QUALITY_PROFILES[TIER];
   const baseDPR = Math.min(window.devicePixelRatio || 1, Q.maxDPR);
@@ -357,6 +465,8 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     scene.add(mesh);
     pickable.push(mesh);
     planetMeshes[p] = mesh;
+
+    if (cfg.rings) buildRings(THREE, mesh, SKY_SIZE[p]);
 
     // Bodies with a real survey map upgrade their albedo when it lands;
     // the worker's procedural surface remains the relief and the
@@ -755,6 +865,13 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
       if (!m.userData.baseColor) m.userData.baseColor = mat.color.clone();
       mat.color.copy(m.userData.baseColor).multiplyScalar(f);
       if (mat.emissiveIntensity !== undefined) mat.emissiveIntensity = 0.4 * f;
+      // rings fall into shadow with their planet
+      const rmat = m.userData.ringMat;
+      if (rmat) {
+        if (!m.userData.ringBase) m.userData.ringBase = rmat.color.clone();
+        rmat.color.copy(m.userData.ringBase).multiplyScalar(f);
+        rmat.emissiveIntensity = 0.22 * f;
+      }
       // eased in the render loop rather than snapped
       m.userData.wantScale = (sel && p === sel) ? 1.45 : 1;
     }
@@ -798,7 +915,7 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     // planet surfaces and the shared glow, kept for the next sky
     // (they are the expensive part, and there are only ever ten), and
     // except the RendererManager's chain, which persists by design.
-    const keep = new Set([SKY_GLOW_TEX]);
+    const keep = new Set([SKY_GLOW_TEX, SKY_RING_TEX]);
     Object.values(SKY_TEX_CACHE).forEach(c => keep.add(c.tex));
     Object.values(SKY_MAP_CACHE).forEach(t => keep.add(t));
     scene.traverse(o => {
