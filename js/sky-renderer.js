@@ -97,7 +97,17 @@ export class RendererManager {
     if (this.composer) this.composer.setSize(w, h);
   }
 
-  setBloom(on) { if (this.bloomPass) this.bloomPass.enabled = on; }
+  setBloom(on) {
+    if (!this.bloomPass) return;
+    this.bloomPass.enabled = on;
+    // Up to r160 the bloom chain incidentally rendered an opaque black
+    // backdrop, and that accident is Kaawen's shipped deep-space look.
+    // Newer three keeps the canvas properly transparent through the
+    // whole chain, which would reveal the page behind it — so the
+    // backdrop is now explicit whenever bloom is lit, and the canvas
+    // returns to transparent (the pre-bloom look) whenever it is not.
+    this.renderer.setClearColor(0x000000, on ? 1 : 0);
+  }
 
   getBackend() { return this.backend; }
   getQualityTier() { return this.tier; }

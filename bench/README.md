@@ -38,6 +38,10 @@ only — `compare.js` skips them.
 Chrome discovery order: `$CHROME_BIN`, the Playwright
 Chrome-for-Testing cache, `/Applications/Google Chrome.app`.
 
-`bench/shots/baseline-2a/` is the committed post-Phase-2A reference —
-the picture every later phase (module extraction, three.js upgrade,
-WebGPU backend) must reproduce.
+`bench/shots/baseline-2a/` is the committed post-Phase-2A reference
+(three r160). `bench/shots/baseline-r185/` is the accepted reference
+after the r185 upgrade — its only delta from 2a is a slightly
+different UnrealBloomPass falloff (radially symmetric, imperceptible
+side by side; verified with a diff heat map) plus the now-explicit
+opaque backdrop under bloom. Later phases (WebGPU backend) diff
+against baseline-r185.
