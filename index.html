@@ -4086,7 +4086,7 @@
          centerpiece — chart large in the middle, houses and planets
          indexed underneath at full grid width. */
       #blueprint .chapter { max-width: 760px; margin-left: auto; margin-right: auto; }
-      #ch-shape { max-width: 1100px; }
+      #blueprint #ch-shape { max-width: 1100px; }
       .wheel-visual { max-width: 580px; }
       .wheel-card { max-width: 580px; }
       .wheel-intro { max-width: 420px; }
@@ -4214,10 +4214,79 @@
       #ch-report .report-intro,
       #ch-report .report-back { max-width: 760px; }
       #blueprint .chapter { max-width: 820px; }
-      #ch-shape { max-width: 1100px; }
+      #blueprint #ch-shape { max-width: 1100px; }
       .wheel-visual { max-width: 620px; }
       .wheel-card { max-width: 620px; }
     }
+    /* ============================================================
+       WIDE SCREENS — the reading was sitting in a narrow column with
+       the desk empty on either side. From 1400px up, the chart, the
+       grids and the prose all take the room that is actually there.
+       ============================================================ */
+    @media (min-width: 1400px) {
+      .view { padding: 72px 56px 88px; }
+      #blueprint .chapter { max-width: 1040px; }
+      #blueprint #ch-shape { max-width: 1340px; }
+
+      .wheel-visual { max-width: 780px; }
+      .wheel-card { max-width: 880px; }
+      .wheel-intro { max-width: 560px; }
+      .sky3d { max-width: 1180px; }
+      .sky3d canvas { height: 700px; }
+
+      .wheel-index-grid { max-width: 1300px; gap: 14px; }
+      .wheel-index-houses { grid-template-columns: repeat(6, 1fr); }
+      .wheel-index-planets { grid-template-columns: repeat(5, 1fr); }
+      .wheel-cell { padding: 18px 14px; }
+      .wheel-cell-name { font-size: 21px; }
+      .wheel-cell-meta { font-size: 13px; }
+      .wheel-cell-glyph { font-size: 20px; }
+
+      /* Prose grows with the page rather than staying at phone width */
+      .report-entry-text, .report-aspect-text,
+      .wheel-card-text, .tool-aspect-text { font-size: 18px; line-height: 1.78; }
+      .shape-text, .moon-phase-text { font-size: 19px; max-width: 620px; }
+      .voice-text { font-size: 19px; max-width: 620px; }
+      .voice-precise { font-size: 17.5px; max-width: 620px; }
+      .function-text { font-size: 18px; }
+      .report-intro { font-size: 17px; max-width: 680px; }
+      .tool-place { font-size: 17px; }
+      .tool-reading { max-width: 900px; }
+      .moon-phase-name, .shape-name { font-size: 34px; }
+      .wheel-card-name { font-size: 27px; }
+
+      #ch-report .report-section,
+      #ch-report .report-intro,
+      #ch-report .report-back { max-width: 900px; }
+
+      .sky-dossier { width: 500px; padding: 40px 38px 130px; }
+      .sky-dossier-name { font-size: 36px; }
+      .sky-body { font-size: 17.5px; max-width: 46ch; }
+      .sky3d.immersive.has-dossier .sky-rail { right: 500px; }
+      .sky3d.immersive.has-dossier .sky-back { left: calc(50% - 250px); }
+      .sky-rail-btn { min-width: 64px; padding: 9px 13px 8px; }
+      .sky-rail-glyph { font-size: 20px; }
+      .sky-rail-name { font-size: 9.5px; }
+    }
+
+    @media (min-width: 1900px) {
+      #blueprint .chapter { max-width: 1180px; }
+      #blueprint #ch-shape { max-width: 1560px; }
+      .wheel-visual { max-width: 880px; }
+      .wheel-card { max-width: 1000px; }
+      .sky3d { max-width: 1420px; }
+      .sky3d canvas { height: 780px; }
+      .wheel-index-grid { max-width: 1500px; }
+      .report-entry-text, .report-aspect-text,
+      .wheel-card-text, .tool-aspect-text { font-size: 19px; }
+      .shape-text, .moon-phase-text, .voice-text { font-size: 20px; max-width: 680px; }
+      #ch-report .report-section,
+      #ch-report .report-intro { max-width: 1000px; }
+      .sky-dossier { width: 560px; }
+      .sky3d.immersive.has-dossier .sky-rail { right: 560px; }
+      .sky3d.immersive.has-dossier .sky-back { left: calc(50% - 280px); }
+    }
+
   </style>
 </head>
 <body>
@@ -8197,7 +8266,14 @@
         b.classList.toggle('active', b.dataset.wheelMode === mode));
       document.getElementById('wheel-visual').style.display = is3d ? 'none' : '';
       document.getElementById('sky3d').style.display = is3d ? '' : 'none';
-      if (is3d) buildSky3D();
+      if (is3d) {
+        // Choosing the sky takes you into it. Leaving the immersive view
+        // drops back to the panel here, still in 3D.
+        buildSky3D();
+        setSkyImmersive(true);
+      } else {
+        setSkyImmersive(false);
+      }
     }
 
     // The index beneath the wheel — twelve houses, ten planets, each a
