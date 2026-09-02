@@ -43,5 +43,8 @@ Chrome-for-Testing cache, `/Applications/Google Chrome.app`.
 after the r185 upgrade — its only delta from 2a is a slightly
 different UnrealBloomPass falloff (radially symmetric, imperceptible
 side by side; verified with a diff heat map) plus the now-explicit
-opaque backdrop under bloom. Later phases (WebGPU backend) diff
-against baseline-r185.
+opaque backdrop under bloom. `bench/shots/baseline-webgpu/` is the
+accepted WebGPU-backend reference — its delta from baseline-r185 is
+the TSL bloom's different falloff (same restrained character, tighter
+glow; heat-mapped and reviewed). Diff WebGL-path changes against
+baseline-r185 and WebGPU-path changes against baseline-webgpu.

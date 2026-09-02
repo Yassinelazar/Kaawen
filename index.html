@@ -113,6 +113,8 @@
   {
     "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+      "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.webgpu.js",
+      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.tsl.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
     }
   }
@@ -7569,13 +7571,8 @@
       }
 
       if (!sky3d) return;
-      Object.entries(sky3d.planetMeshes).forEach(([p, mesh]) => {
-        const on = !sel || p === sel;
-        mesh.material.opacity = on ? 1 : 0.25;
-        mesh.material.transparent = !on;
-        // eased in the render loop rather than snapped
-        mesh.userData.wantScale = (sel && p === sel) ? 1.45 : 1;
-      });
+      // The engine owns how a body dims — the details differ by backend
+      sky3d.dimBodies(sel);
       sky3d.groups.aspects.children.forEach(line => {
         const pair = line.userData.pair || [];
         const base = line.userData.baseOpacity === undefined ? 0.5 : line.userData.baseOpacity;

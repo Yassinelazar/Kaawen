@@ -179,12 +179,24 @@ function skyLabel(THREE, text, px, color, weight) {
 }
 
 export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPick, track }) {
-  let THREE;
+  const TIER = skyQualityTier();
+  const Q = SKY_QUALITY_PROFILES[TIER];
+  const baseDPR = Math.min(window.devicePixelRatio || 1, Q.maxDPR);
+
+  // The RendererManager picks the backend — WebGPU when it initializes
+  // cleanly, the classic WebGL2 chain otherwise — and hands back the
+  // matching three namespace. The rest of the engine never knows which
+  // one it got. Density comes from the quality tier, and the frame
+  // governor may pull it down further under measured pressure.
+  let rm;
   try {
-    THREE = await import('three');
+    rm = await rendererManager.initialize(canvas,
+      { baseDPR, bloom: Q.bloom, dev: SKY_DEV, tier: TIER });
   } catch (e) {
     return null;
   }
+  const THREE = rm.THREE;
+  skyTexTHREE = THREE;
 
   const rot = (ctx.hasTime && ctx.rising) ? ctx.rising.longitude : 0;
   // Ascendant to the left, longitudes running counterclockwise —
@@ -194,21 +206,11 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     return new THREE.Vector3(Math.cos(a) * r, y || 0, Math.sin(a) * r);
   };
 
-  skyTexTHREE = THREE;
-  const TIER = skyQualityTier();
-  const Q = SKY_QUALITY_PROFILES[TIER];
-
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(42, 1, 1, 3000);
-  const baseDPR = Math.min(window.devicePixelRatio || 1, Q.maxDPR);
-
-  // Density comes from the quality tier, and the frame governor may
-  // pull it down further under measured pressure.
-  const rm = await rendererManager.initialize(THREE, canvas,
-    { baseDPR, bloom: Q.bloom, dev: SKY_DEV, tier: TIER });
+  await rm.attach(scene, camera);
   rm.setPixelRatio(baseDPR);        // shed any old governor pressure
   rm.setBloom(true);
-  rm.attach(scene, camera);
 
   const groups = {
     orbits:  new THREE.Group(),
@@ -243,10 +245,12 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     label.position.copy(at(lon + 15, SKY_R_ZODIAC + 30, 0));
     groups.zodiac.add(label);
   }
-  // The ecliptic ring itself
+  // The ecliptic ring itself. (A Line strip, not a LineLoop: the point
+  // list already closes on itself, and WebGPU has no loop primitive —
+  // LineLoop simply vanishes on that backend.)
   const ring = [];
   for (let d = 0; d <= 360; d += 2) ring.push(at(d, SKY_R_ZODIAC));
-  groups.zodiac.add(new THREE.LineLoop(
+  groups.zodiac.add(new THREE.Line(
     new THREE.BufferGeometry().setFromPoints(ring),
     new THREE.LineBasicMaterial({ color: 0xD4A655, transparent: true, opacity: 0.35 })));
 
@@ -272,7 +276,8 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     const r = SKY_RADII[p];
     const circle = [];
     for (let d = 0; d <= 360; d += 3) circle.push(at(d, r));
-    groups.orbits.add(new THREE.LineLoop(
+    // Self-closing strip — see the ecliptic ring note on LineLoop.
+    groups.orbits.add(new THREE.Line(
       new THREE.BufferGeometry().setFromPoints(circle),
       new THREE.LineBasicMaterial({ color: 0x8C6F3A, transparent: true, opacity: 0.16 })));
 
@@ -333,12 +338,22 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
   const lineMats = [];
   let L2 = null;
   try {
-    const [a1, a2, a3] = await Promise.all([
-      import('three/addons/lines/Line2.js'),
-      import('three/addons/lines/LineMaterial.js'),
-      import('three/addons/lines/LineGeometry.js')
-    ]);
-    L2 = { Line2: a1.Line2, LineMaterial: a2.LineMaterial, LineGeometry: a3.LineGeometry };
+    if (rm.getBackend() === 'webgpu') {
+      // The WebGPU line addon: same geometry, node-based material that
+      // reads the viewport itself — no resolution uniform to sync.
+      const [{ Line2 }, { LineGeometry }] = await Promise.all([
+        import('three/addons/lines/webgpu/Line2.js'),
+        import('three/addons/lines/LineGeometry.js')
+      ]);
+      L2 = { Line2, LineGeometry, node: true };
+    } else {
+      const [a1, a2, a3] = await Promise.all([
+        import('three/addons/lines/Line2.js'),
+        import('three/addons/lines/LineMaterial.js'),
+        import('three/addons/lines/LineGeometry.js')
+      ]);
+      L2 = { Line2: a1.Line2, LineMaterial: a2.LineMaterial, LineGeometry: a3.LineGeometry };
+    }
   } catch (e) { L2 = null; }
 
   ctx.aspects.forEach(a => {
@@ -350,13 +365,22 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     if (L2) {
       const geo = new L2.LineGeometry();
       geo.setPositions([p1.x, p1.y, p1.z, p2.x, p2.y, p2.z]);
-      const mat = new L2.LineMaterial({
-        color, transparent: true, opacity,
-        linewidth: 1.1 + a.strength * 2.4,   // device pixels
-        dashed: false, alphaToCoverage: true
-      });
-      mat.resolution.set(canvas.clientWidth || 1, canvas.clientHeight || 1);
-      lineMats.push(mat);
+      let mat;
+      if (L2.node) {
+        mat = new THREE.Line2NodeMaterial({
+          color, transparent: true, opacity,
+          linewidth: 1.1 + a.strength * 2.4,   // device pixels
+          alphaToCoverage: true
+        });
+      } else {
+        mat = new L2.LineMaterial({
+          color, transparent: true, opacity,
+          linewidth: 1.1 + a.strength * 2.4,   // device pixels
+          dashed: false, alphaToCoverage: true
+        });
+        mat.resolution.set(canvas.clientWidth || 1, canvas.clientHeight || 1);
+        lineMats.push(mat);
+      }
       line = new L2.Line2(geo, mat);
       line.computeLineDistances();
     } else {
@@ -457,6 +481,9 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     rm.renderer.setPixelRatio(scale);
     rm.setSize(w, h);
     draw();
+    // The readback must happen in the same task as the render — on
+    // both backends the frame is gone once the task yields (WebGL
+    // without preserveDrawingBuffer, WebGPU after presentation).
     const url = rm.renderer.domElement.toDataURL('image/png');
     rm.renderer.setPixelRatio(prevRatio);
     resize();
@@ -521,7 +548,7 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
   canvas.addEventListener('click', onTap);
 
   // ── The loop: one, and alive only while the sky is watched ──
-  let raf = 0, running = false, lastT = 0, ema = 0;
+  let running = false, lastT = 0, ema = 0;
   // Governor state — degrade under sustained pressure, recover only
   // after a long calm, and back off if a recovery didn't hold.
   let pressure = 0, lastShift = 0, calmSince = 0, lastUp = -1, upBackoff = 6000;
@@ -565,16 +592,16 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
       host.appendChild(devEl);
     }
     const i = rm.renderer.info;
+    const calls = (i.render.calls !== undefined) ? i.render.calls : i.render.drawCalls;
     devEl.textContent =
       rm.getBackend() + ' · ' + TIER + ' · step ' + pressure +
       '\nfps ' + (ema ? (1000 / ema).toFixed(0) : '—') + ' · ' + ema.toFixed(1) + 'ms' +
       '\ndpr ' + rm.renderer.getPixelRatio().toFixed(2) + ' / base ' + baseDPR.toFixed(2) +
-      '\ncalls ' + i.render.calls + ' · tris ' + i.render.triangles +
+      '\ncalls ' + calls + ' · tris ' + i.render.triangles +
       '\ngeo ' + i.memory.geometries + ' · tex ' + i.memory.textures;
   }
 
   function loop(now) {
-    raf = running ? requestAnimationFrame(loop) : 0;
     const gap = lastT ? now - lastT : 8;
     lastT = now;
     const dt = Math.min(0.05, Math.max(0.0001, gap / 1000));
@@ -606,22 +633,25 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     }
     if (!drag) { cam.theta += MOTION.drift * dt; }
     placeCamera();
-    if (SKY_DEV) rm.renderer.info.reset();
+    if (SKY_DEV && rm.renderer.info.reset) rm.renderer.info.reset();
     draw();
     govern(now, gap);
     if (SKY_DEV) devPanel(now);
   }
 
+  // Scheduling belongs to the renderer (setAnimationLoop) — the only
+  // way WebGPU's internal pump truly stops — and there is exactly one
+  // loop, ever.
   function startLoop() {
-    if (running) return;                     // exactly one loop, ever
+    if (running) return;
     running = true;
     lastT = 0; ema = 0;
-    raf = requestAnimationFrame(loop);
+    rm.setAnimationLoop(loop);
   }
   function stopLoop() {
+    if (!running) return;
     running = false;
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
+    rm.setAnimationLoop(null);
   }
   // The loop runs only when all three are true: the 3D view is the
   // active mode, the tab is visible, and the canvas is on screen.
@@ -643,6 +673,25 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
   const ro = new ResizeObserver(resize);
   ro.observe(canvas);
 
+  // Selected planet swells; the others fall back into shadow. Dimming
+  // scales color and emissive rather than flipping `transparent`: a
+  // blending-mode flip forces a pipeline rebuild on WebGPU and is not
+  // honored reliably there, while a color scale is a plain uniform
+  // update on both backends — and reads the same against the black
+  // field.
+  function dimBodies(sel) {
+    for (const p in planetMeshes) {
+      const m = planetMeshes[p];
+      const f = (!sel || p === sel) ? 1 : 0.25;
+      const mat = m.material;
+      if (!m.userData.baseColor) m.userData.baseColor = mat.color.clone();
+      mat.color.copy(m.userData.baseColor).multiplyScalar(f);
+      if (mat.emissiveIntensity !== undefined) mat.emissiveIntensity = 0.4 * f;
+      // eased in the render loop rather than snapped
+      m.userData.wantScale = (sel && p === sel) ? 1.45 : 1;
+    }
+  }
+
   // Fresh full-resolution surfaces swap in as the Worker delivers them
   function applyTexture(planet, tex) {
     const m = planetMeshes[planet];
@@ -651,6 +700,10 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     mat.map = tex;
     if (mat.bumpMap) mat.bumpMap = tex;
     if (mat.emissiveMap) mat.emissiveMap = tex;
+    // Node materials (WebGPU) bind textures into their graph at build
+    // time, so a swapped surface must ask for a rebuild; on WebGL this
+    // is a one-time no-op re-evaluation.
+    mat.needsUpdate = true;
   }
 
   function disposeAll() {
@@ -690,7 +743,7 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
 
   current = { THREE, scene, camera, renderer: rm.renderer, groups, planetMeshes,
               sizes: SKY_SIZE, composer: rm.composer,
-              exportSky, focusBody, releaseFocus, applyTexture,
+              exportSky, focusBody, releaseFocus, applyTexture, dimBodies,
               setActive, pause: () => setActive(false), resume: () => setActive(true),
               tier: TIER, backend: rm.getBackend(),
               stop: disposeAll };

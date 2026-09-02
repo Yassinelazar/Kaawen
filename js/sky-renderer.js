@@ -3,23 +3,36 @@
 // ============================================================
 // The single owner of the rendering backend. Everything above it —
 // the sky engine, the page, the astrology — speaks to this interface
-// and never to WebGL or (later) WebGPU directly. The renderer, the
-// post chain and their GPU context are created once and outlive every
-// chart: a fresh renderer on the same canvas would strand the previous
-// context's copies of the cached planet surfaces and upload them all
-// over again. Rebuilding a chart only re-attaches a scene.
+// and never to WebGL or WebGPU directly.
+//
+// Backend choice: WebGPU when the browser offers it and its renderer
+// initializes cleanly; otherwise the classic WebGL2 chain that shipped
+// for years. `?gpu=0` forces the classic chain. Both builds share
+// three.core.js, so scene objects are the same classes either way.
+//
+// The renderer, the post chain and their GPU context are created once
+// and outlive every chart: a fresh renderer on the same canvas would
+// strand the previous context's copies of the cached planet surfaces
+// and upload them all over again. Rebuilding a chart only re-attaches
+// a scene.
 
 export class RendererManager {
   constructor() {
     this.THREE = null;
     this.renderer = null;
+    this.backend = null;
+    this.tier = null;
+    this.wantBloom = false;
+    // classic chain
     this.composer = null;
     this.bloomPass = null;
     this.renderPass = null;
+    // webgpu chain
+    this.post = null;
+    this.sceneNode = null;
+    this.withBloom = null;
     this.scene = null;
     this.camera = null;
-    this.backend = null;
-    this.tier = null;
   }
 
   detectCapabilities() {
@@ -29,33 +42,56 @@ export class RendererManager {
     return { webgpu: !!navigator.gpu, webgl2 };
   }
 
-  // Creates the backend on first call; later calls are no-ops so the
+  // Selects the build, creates the renderer and (on WebGPU) awaits its
+  // init. First call wins; later calls only refresh the tier so the
   // context survives chart rebuilds. `opts`: { baseDPR, bloom, dev, tier }.
-  async initialize(THREE, canvas, opts) {
+  async initialize(canvas, opts) {
     this.tier = opts.tier;
     if (this.renderer) return this;
-    this.THREE = THREE;
-    this.backend = 'webgl2';
-    // The drawing buffer is NOT preserved: the export re-renders its
-    // frame and reads it back in the same task instead, so every
-    // ordinary frame keeps the fast swap path.
-    const renderer = new THREE.WebGLRenderer({
-      canvas, antialias: true, alpha: true,
-      powerPreference: 'high-performance'
-    });
+    const wantGpu = !/[?&]gpu=0/.test(location.search) && !!navigator.gpu;
+    if (wantGpu) {
+      try {
+        const THREE = await import('three/webgpu');
+        const renderer = new THREE.WebGPURenderer({
+          canvas, antialias: true, alpha: true,
+          powerPreference: 'high-performance'
+        });
+        await renderer.init();
+        this.THREE = THREE;
+        this.renderer = renderer;
+        this.backend = 'webgpu';
+      } catch (e) { this.THREE = null; }
+    }
+    if (!this.THREE) {
+      // The proven classic chain — also the landing spot when WebGPU
+      // exists but fails to initialize, so the sky always opens.
+      const THREE = await import('three');
+      this.THREE = THREE;
+      this.backend = 'webgl2';
+      // The drawing buffer is NOT preserved: the export re-renders its
+      // frame and reads it back instead, so every ordinary frame keeps
+      // the fast swap path.
+      this.renderer = new THREE.WebGLRenderer({
+        canvas, antialias: true, alpha: true,
+        powerPreference: 'high-performance'
+      });
+    }
+    const { renderer, THREE } = this;
     renderer.setPixelRatio(opts.baseDPR);
-    if (opts.dev) renderer.info.autoReset = false;
+    if (opts.dev && renderer.info) renderer.info.autoReset = false;
     renderer.setClearColor(0x000000, 0);
     // Film-mapped so highlights roll off instead of clipping to white.
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer = renderer;
+    this.wantBloom = !!opts.bloom;
 
-    // Bloom gives the bodies real light falloff rather than flat discs.
-    // Optional by design: the lower quality tiers skip it, and if the
-    // addon modules can't be fetched the scene simply renders without it.
-    if (opts.bloom) try {
+    // The classic bloom chain is scene-independent and can be built
+    // now; the WebGPU post graph binds scene and camera, so it is
+    // rebuilt in attach(). Bloom is optional by design: the lower
+    // quality tiers skip it, and if the addon modules can't be fetched
+    // the scene simply renders without it.
+    if (this.wantBloom && this.backend === 'webgl2') try {
       const [{ EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
         import('three/addons/postprocessing/EffectComposer.js'),
         import('three/addons/postprocessing/RenderPass.js'),
@@ -76,14 +112,28 @@ export class RendererManager {
   }
 
   // Point the persistent chain at a freshly built chart scene.
-  attach(scene, camera) {
+  async attach(scene, camera) {
     this.scene = scene;
     this.camera = camera;
     if (this.renderPass) { this.renderPass.scene = scene; this.renderPass.camera = camera; }
+    if (this.backend === 'webgpu' && this.wantBloom) try {
+      const [{ pass }, { bloom }] = await Promise.all([
+        import('three/tsl'),
+        import('three/addons/tsl/display/BloomNode.js')
+      ]);
+      if (this.post && this.post.dispose) this.post.dispose();
+      this.post = new this.THREE.PostProcessing(this.renderer);
+      const scenePass = pass(scene, camera);
+      // Same voicing as the classic chain: strength, radius, threshold.
+      this.withBloom = scenePass.add(bloom(scenePass, 0.55, 0.32, 0.62));
+      this.sceneNode = scenePass;
+      this.post.outputNode = this.withBloom;
+    } catch (e) { this.post = null; this.sceneNode = null; this.withBloom = null; }
   }
 
   render() {
-    if (this.composer) this.composer.render();
+    if (this.post) this.post.render();
+    else if (this.composer) this.composer.render();
     else this.renderer.render(this.scene, this.camera);
   }
 
@@ -97,16 +147,35 @@ export class RendererManager {
     if (this.composer) this.composer.setSize(w, h);
   }
 
+  // The render loop is scheduled by the renderer itself on both
+  // backends. The WebGL renderer parks its internal rAF when the loop
+  // is null; the WebGPU renderer's pump keeps spinning regardless, so
+  // it is stopped and restarted explicitly. (_animation is a private
+  // field with a documented stop/start — last verified against r185;
+  // the guard makes a future rename degrade to "keeps idling", not a
+  // crash.)
+  setAnimationLoop(cb) {
+    this.renderer.setAnimationLoop(cb);
+    const anim = this.renderer._animation;
+    if (anim && anim.stop && anim.start) {
+      if (cb === null) anim.stop();
+      else if (anim._requestId === null) anim.start();
+    }
+  }
+
   setBloom(on) {
-    if (!this.bloomPass) return;
-    this.bloomPass.enabled = on;
+    let lit = false;
+    if (this.bloomPass) { this.bloomPass.enabled = on; lit = on; }
+    if (this.post && this.withBloom) {
+      this.post.outputNode = on ? this.withBloom : this.sceneNode;
+      this.post.needsUpdate = true;
+      lit = on;
+    }
     // Up to r160 the bloom chain incidentally rendered an opaque black
     // backdrop, and that accident is Kaawen's shipped deep-space look.
-    // Newer three keeps the canvas properly transparent through the
-    // whole chain, which would reveal the page behind it — so the
-    // backdrop is now explicit whenever bloom is lit, and the canvas
-    // returns to transparent (the pre-bloom look) whenever it is not.
-    this.renderer.setClearColor(0x000000, on ? 1 : 0);
+    // The backdrop is now explicit whenever bloom is lit, on either
+    // backend, and the canvas returns to transparent whenever not.
+    if (this.bloomPass || this.post) this.renderer.setClearColor(0x000000, lit ? 1 : 0);
   }
 
   getBackend() { return this.backend; }
@@ -115,6 +184,7 @@ export class RendererManager {
   // Full teardown — not used in the normal life of the page (the chain
   // persists deliberately), but the owner of last resort must exist.
   dispose() {
+    if (this.post && this.post.dispose) this.post.dispose();
     if (this.composer) {
       this.composer.passes.forEach(p => { if (p.dispose) p.dispose(); });
       if (this.composer.dispose) this.composer.dispose();
@@ -122,6 +192,7 @@ export class RendererManager {
     }
     if (this.renderer) this.renderer.dispose();
     this.renderer = this.composer = this.bloomPass = this.renderPass = null;
+    this.post = this.sceneNode = this.withBloom = null;
     this.scene = this.camera = this.backend = null;
   }
 }

@@ -2,3 +2,4 @@ node_modules/
 shots/*
 !shots/baseline-2a/
 !shots/baseline-r185/
+!shots/baseline-webgpu/
