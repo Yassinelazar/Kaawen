@@ -870,7 +870,14 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     : null;
   if (io) io.observe(canvas);
 
-  const ro = new ResizeObserver(resize);
+  // A drag-resize fires the observer every tick, and each application
+  // recreates the render targets — the churn that strands stale GPU
+  // bindings (r185). One application at settle is enough.
+  let resizeSettle = 0;
+  const ro = new ResizeObserver(() => {
+    clearTimeout(resizeSettle);
+    resizeSettle = setTimeout(resize, 160);
+  });
   ro.observe(canvas);
 
   // Selected planet swells; the others fall back into shadow. Dimming
@@ -920,6 +927,7 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
 
   function disposeAll() {
     stopLoop();
+    clearTimeout(resizeSettle);
     current = null;
     document.removeEventListener('visibilitychange', onVis);
     if (io) io.disconnect();

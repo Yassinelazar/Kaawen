@@ -3109,6 +3109,41 @@
       transition: all 0.3s ease;
     }
     .site-nav-cta:hover { border-color: var(--gold); background: rgba(var(--gold-rgb), 0.08); }
+    .site-nav-demo {
+      background: none; border: none; color: var(--gold);
+      font: inherit; font-size: 12px; letter-spacing: 0.14em;
+      text-transform: uppercase; cursor: pointer; padding: 8px 10px;
+      opacity: 0.85;
+    }
+    .site-nav-demo:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+    /* The door from the sky to the written reading — the immersive view
+       must never feel like a dead end. */
+    .sky3d-reading {
+      display: none; position: absolute; top: 18px; right: 66px; z-index: 60;
+      background: rgba(10, 9, 7, 0.55); color: var(--parchment);
+      border: 1px solid rgba(212, 166, 85, 0.4); border-radius: 999px;
+      font: inherit; font-size: 12px; letter-spacing: 0.1em;
+      padding: 7px 14px; cursor: pointer;
+    }
+    .sky3d.immersive .sky3d-reading { display: block; }
+    .sky3d-reading:hover { border-color: rgba(212, 166, 85, 0.8); }
+    /* Demonstration-sky banner: the invitation, not a tutorial */
+    .sky-demo-banner {
+      display: none; position: absolute; top: 16px; left: 50%;
+      transform: translateX(-50%); z-index: 58; text-align: center;
+      background: rgba(10, 9, 7, 0.6); border: 1px solid rgba(212, 166, 85, 0.35);
+      border-radius: 12px; padding: 10px 18px; max-width: min(480px, 86vw);
+    }
+    .sky3d.immersive.demo .sky-demo-banner { display: block; }
+    .sky3d.immersive.demo.has-dossier .sky-demo-banner { display: none; }
+    .sky-demo-banner p { margin: 0 0 6px; font-size: 12.5px; letter-spacing: 0.04em;
+      color: var(--parchment); opacity: 0.9; }
+    .sky-demo-banner button {
+      background: none; border: 1px solid var(--gold); color: var(--gold);
+      border-radius: 999px; font: inherit; font-size: 12px;
+      letter-spacing: 0.1em; padding: 6px 14px; cursor: pointer;
+    }
+    .sky-demo-banner button:hover { background: rgba(var(--gold-rgb), 0.1); }
     /* Mobile: the text links collapse; brand + CTA carry the header */
     @media (max-width: 959px) {
       .site-nav-link { display: none; }
@@ -4319,6 +4354,7 @@
         <button type="button" class="site-nav-link" data-nav="reading">The Reading</button>
         <button type="button" class="site-nav-link" data-nav="today">Today's Sky</button>
         <a class="site-nav-link" href="privacy.html">Privacy</a>
+        <button type="button" class="site-nav-demo" data-nav="demo">The living sky</button>
         <button type="button" class="site-nav-cta" data-nav="begin">Draw your chart →</button>
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to day">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -4725,6 +4761,11 @@
                 <button type="button" class="sky3d-layer sky3d-save" id="sky3d-save">Save image</button>
               </div>
               <button type="button" class="sky3d-expand" id="sky3d-expand" aria-label="Enter the sky">⤢ Enter the sky</button>
+              <button type="button" class="sky3d-reading" id="sky3d-reading">The written reading ↓</button>
+              <div class="sky-demo-banner" id="sky-demo-banner">
+                <p>A demonstration sky — the first noon of the millennium.<br>Touch a planet to hear it speak.</p>
+                <button type="button" id="demo-reveal">Reveal your own sky</button>
+              </div>
               <button type="button" class="sky3d-close" id="sky3d-close" aria-label="Leave the sky">✕</button>
               <button type="button" class="sky-back" id="sky-back">↺ Back to the whole sky</button>
               <div class="sky3d-hint" id="sky3d-hint">Drag to turn · scroll to zoom · touch a planet</div>
@@ -4823,7 +4864,7 @@
                 <span class="guide-name">The Charts Guide</span>
                 <p class="guide-desc">The complete written readings for the three charts above —
                   every synastry contact, every composite placement, every active transit,
-                  interpreted in full. Once, yours for good.</p>
+                  interpreted in full.</p>
                 <button type="button" class="btn guide-btn" data-guide="charts">Open the Charts Guide — $9</button>
               </div>
               <div class="guide-card guide-card-primary">
@@ -4831,11 +4872,11 @@
                 <span class="guide-name">The Full Guide</span>
                 <p class="guide-desc">The rest of your reading: the three voices in depth, the five
                   quieter planets, the long generational currents, today's sky against yours,
-                  and the complete written report. Once, yours for good.</p>
+                  and the complete written report.</p>
                 <button type="button" class="btn guide-btn" data-guide="birth">Open the Full Guide — $4</button>
               </div>
             </div>
-            <p class="guide-note" id="guide-note">Paid once, open forever on this device. Companion and trial readers already have everything.</p>
+            <p class="guide-note" id="guide-note">Companion and trial readers already have everything.</p>
           </div>
         </div>
 
@@ -7520,10 +7561,11 @@
 
       // A freshly drawn chart invalidates any standing 3D scene; rebuild
       // it if the reader is currently looking at the sky.
+      const hadSky = !!sky3d;
       if (sky3d) { sky3d.stop(); sky3d = null; }
       const skyHost = document.getElementById('sky3d');
       const skyLoad = document.getElementById('sky3d-loading');
-      if (skyLoad) { skyLoad.style.display = ''; skyLoad.textContent = 'Building your sky…'; }
+      if (skyLoad) { skyLoad.style.display = ''; skyLoad.textContent = hadSky ? 'Gathering your sky…' : 'Building your sky…'; }
       if (skyHost && skyHost.style.display !== 'none') buildSky3D();
     }
 
@@ -9461,8 +9503,82 @@
         // reading. Only a chart that actually computed opens the door.
         const prev = window.__wheelCtx;
         await runBlueprint();
-        if (window.__wheelCtx && window.__wheelCtx !== prev) setWheelMode('3d');
+        if (window.__wheelCtx && window.__wheelCtx !== prev) {
+          skyDemoMode = false;
+          document.getElementById('sky3d').classList.remove('demo');
+          const f = birthFields();
+          try {
+            localStorage.setItem('kaawn_last_birth',
+              JSON.stringify({ dob: f.dob.value, tob: f.tob.value, city: f.city.value }));
+          } catch (err) { /* private mode — the sky still opens */ }
+          setWheelMode('3d');
+        }
       });
+
+      // ── The demonstration sky ─────────────────────────────────
+      // The real engine, a fixed sky: the first noon of the millennium
+      // over New York. Deterministic, computed through the exact same
+      // pipeline as a personal chart, and clearly labelled as the
+      // invitation rather than the reading.
+      let skyDemoMode = false;
+      const DEMO_BIRTH = { dob: '2000-01-01', tob: '12:00', cityName: 'New York' };
+      function birthFields() {
+        return { dob: document.getElementById('dob'), tob: document.getElementById('tob'),
+                 city: document.getElementById('city') };
+      }
+      function savedBirth() {
+        try { return JSON.parse(localStorage.getItem('kaawn_last_birth') || 'null'); }
+        catch (e) { return null; }
+      }
+      function fillBirth(v) {
+        const f = birthFields();
+        f.dob.value = v.dob || ''; f.tob.value = v.tob || '';
+        if (v.city !== undefined) f.city.value = v.city;
+        else if (v.cityName) {
+          const opt = [...f.city.options].find(o => o.textContent.includes(v.cityName));
+          if (opt) f.city.value = opt.value;
+        }
+      }
+      async function enterDemoSky() {
+        track('demo_sky_opened');
+        const keep = savedBirth();
+        fillBirth(DEMO_BIRTH);
+        await runBlueprint();
+        // the form returns to the visitor's own state at once — the demo
+        // values must never masquerade as their data
+        if (keep) fillBirth(keep); else fillBirth({ dob: '', tob: '', city: undefined });
+        if (window.__wheelCtx) {
+          skyDemoMode = true;
+          document.getElementById('sky3d').classList.add('demo');
+          setWheelMode('3d');
+        }
+      }
+      document.getElementById('demo-reveal').addEventListener('click', () => {
+        track('demo_reveal_tapped');
+        setWheelMode('2d');
+        show('onboarding');
+      });
+
+      // The door from the sky to the written reading — exit cleanly,
+      // keep the chart, land on the interpretation. Reversible through
+      // the wheel's own 3D toggle.
+      document.getElementById('sky3d-reading').addEventListener('click', () => {
+        track('sky_reading_door');
+        setWheelMode('2d');
+        show('blueprint');
+        goToChapter(0);
+      });
+
+      // Return-visit memory: the instrument remembers your sky — on this
+      // device only; nothing is transmitted.
+      (function restoreBirth() {
+        const keep = savedBirth();
+        if (!keep) return;
+        fillBirth(keep);
+        document.querySelectorAll('[data-nav="begin"]').forEach(b => {
+          b.textContent = b.classList.contains('site-nav-cta') ? 'Return to your sky →' : 'Return to your sky';
+        });
+      })();
 
       // Lenis smooth scrolling — the long reading glides instead of
       // stepping. Skipped for reduced-motion readers, and parked while
@@ -9553,6 +9669,8 @@
           show('welcome');
         } else if (val === 'begin') {
           show('onboarding');
+        } else if (val === 'demo') {
+          enterDemoSky();
         } else if (val === 'reading') {
           if (hasChart) { show('blueprint'); goToChapter(0); } else show('onboarding');
         } else if (val === 'today') {
@@ -10871,7 +10989,7 @@
         <span class="guide-name">The Charts Guide</span>
         <p class="guide-desc">This is the opening of the ${context}. The Charts Guide opens the complete
           readings for all three charts — every contact, every placement, every transit,
-          interpreted in full. Once, yours for good.</p>
+          interpreted in full.</p>
         <button type="button" class="btn guide-btn" data-guide="charts">Open the Charts Guide — $9</button>
       </div>`;
     }
