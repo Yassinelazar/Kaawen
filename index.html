@@ -9560,6 +9560,11 @@
         v.style.opacity = '';
         const host = document.getElementById('sky3d');
         host.style.opacity = ''; host.style.transform = '';
+        ['.sky3d-layers', '.sky-rail', '.sky-demo-banner', '.sky3d-close', '.sky3d-reading']
+          .forEach(sel => {
+            const el = document.querySelector(sel);
+            if (el) { if (window.gsap) gsap.killTweensOf(el); el.style.opacity = ''; }
+          });
       }
       function awaitSkyReady(cap) {
         return new Promise(res => {
@@ -9582,11 +9587,20 @@
         await awaitSkyReady();
         const ok = await gsapReady;
         if (ok && window.gsap) {
+          // the sky establishes itself first; the instruments arrive
+          // afterwards, and the door to the written reading arrives last
+          const chrome = ['.sky3d-layers', '.sky-rail', '.sky-demo-banner',
+                          '.sky3d-close', '.sky3d-reading']
+            .map(sel => document.querySelector(sel))
+            .filter(el => el && getComputedStyle(el).display !== 'none');
+          gsap.set(chrome, { opacity: 0 });
           gsap.fromTo('#sky3d', { opacity: 0.55, scale: 1.028 },
             { opacity: 1, scale: 1, duration: 1.15, ease: 'power2.out',
               clearProps: 'opacity,transform' });
           gsap.to(v, { opacity: 0, duration: 1.0, ease: 'power2.inOut',
             onComplete: () => { v.classList.remove('on'); v.style.opacity = ''; } });
+          gsap.to(chrome, { opacity: 1, duration: 0.7, ease: 'power2.out',
+            delay: 0.6, stagger: 0.16, clearProps: 'opacity' });
         } else {
           v.classList.remove('on');
         }
@@ -9656,10 +9670,22 @@
         const keep = savedBirth();
         if (!keep) return;
         fillBirth(keep);
-        document.querySelectorAll('[data-nav="begin"]').forEach(b => {
-          b.textContent = b.classList.contains('site-nav-cta') ? 'Return to your sky →' : 'Return to your sky';
-        });
+        // The header call becomes a door straight back into the sky;
+        // the footer keeps the form, so editing stays one press away.
+        const cta = document.querySelector('.site-nav-cta[data-nav="begin"]');
+        if (cta) { cta.textContent = 'Return to your sky →'; cta.dataset.nav = 'return'; }
       })();
+      async function returnToSky() {
+        const keep = savedBirth();
+        if (!keep) { show('onboarding'); return; }
+        track('return_to_sky');
+        fillBirth(keep);
+        const prev = window.__wheelCtx;
+        await runBlueprint();
+        if (window.__wheelCtx && window.__wheelCtx !== prev) {
+          await cinematicEnter(() => setWheelMode('3d'));
+        } else show('onboarding');   // stale data — let them correct it
+      }
 
       // Lenis smooth scrolling — the long reading glides instead of
       // stepping. Skipped for reduced-motion readers, and parked while
@@ -9752,6 +9778,8 @@
           show('onboarding');
         } else if (val === 'demo') {
           enterDemoSky();
+        } else if (val === 'return') {
+          returnToSky();
         } else if (val === 'reading') {
           if (hasChart) { show('blueprint'); goToChapter(0); } else show('onboarding');
         } else if (val === 'today') {
