@@ -52,6 +52,16 @@ export class RendererManager {
     const wantGpu = !/[?&]gpu=0/.test(location.search) && !!navigator.gpu;
     if (wantGpu) {
       try {
+        // Some browsers expose navigator.gpu yet stall or crawl when the
+        // device is actually requested. A slow adapter is a fallback, not
+        // a wait: probe it first (touching nothing), and give init itself
+        // a deadline, so the classic chain opens before the visitor
+        // wonders whether the page is broken.
+        const adapter = await Promise.race([
+          navigator.gpu.requestAdapter({ powerPreference: 'high-performance' }),
+          new Promise(res => setTimeout(() => res(null), 3000))
+        ]);
+        if (!adapter) throw new Error('webgpu adapter unavailable or slow');
         const THREE = await import('three/webgpu');
         const renderer = new THREE.WebGPURenderer({
           canvas, antialias: true, alpha: true,
@@ -59,7 +69,10 @@ export class RendererManager {
           // GPU timestamp queries for the ?dev=1 profiler only
           trackTimestamp: !!opts.dev
         });
-        await renderer.init();
+        await Promise.race([
+          renderer.init(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('webgpu init deadline')), 5000))
+        ]);
         this.THREE = THREE;
         this.renderer = renderer;
         this.backend = 'webgpu';

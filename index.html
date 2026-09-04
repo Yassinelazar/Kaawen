@@ -3146,6 +3146,22 @@
     }
     #sky-veil.on { opacity: 1; visibility: visible; pointer-events: auto; }
     #sky-veil.half { opacity: 0.55; visibility: visible; pointer-events: none; }
+    /* A held veil is never a void: after a breath, it says what it is
+       doing. (The full veil only — the half pulse keeps the page visible.) */
+    #sky-veil::after {
+      content: 'Gathering your sky…';
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 15px;
+      letter-spacing: 0.04em;
+      color: #AC9F87;
+      opacity: 0;
+    }
+    #sky-veil.on::after { animation: veilWord 1.1s ease 0.7s forwards; }
+    @keyframes veilWord { to { opacity: 0.9; } }
     /* Demonstration-sky banner: the invitation, not a tutorial */
     .sky-demo-banner {
       display: none; position: absolute; top: 16px; left: 50%;
@@ -9575,7 +9591,8 @@
               JSON.stringify({ dob: f.dob.value, tob: f.tob.value, city: f.city.value }));
           } catch (err) { /* private mode — the sky still opens */ }
           if (wasImmersive) {
-            await awaitSkyReady();
+            // half-veil: the page shows through, so a moderate cap is enough
+            await awaitSkyReady(6000);
             veilPulseEnd();
           } else {
             await cinematicEnter(() => setWheelMode('3d'));
@@ -9621,7 +9638,11 @@
           const t0 = performance.now();
           const tick = () => {
             const ld = document.getElementById('sky3d-loading');
-            if ((sky3d && ld.style.display === 'none') || performance.now() - t0 > (cap || 15000)) return res();
+            const ready = sky3d && ld.style.display === 'none';
+            // a failed build is an answer too — lift the veil onto the
+            // fallback line rather than waiting out the cap
+            const failed = !sky3d && !skyLoading && /needs a connection/.test(ld.textContent);
+            if (ready || failed || performance.now() - t0 > (cap || 15000)) return res();
             requestAnimationFrame(tick);
           };
           tick();
@@ -9634,7 +9655,11 @@
         v.classList.add('on');
         await new Promise(r => setTimeout(r, 300));   // veil settles over the page
         await enterFn();
-        await awaitSkyReady();
+        // The veil masks the transition, never the build: if the engine
+        // needs longer than this, the veil lifts onto the band's own
+        // "Building your sky…" line — visible feedback on a live page —
+        // and the planets resolve in place.
+        await awaitSkyReady(3500);
         const ok = await gsapReady;
         if (ok && window.gsap) {
           // the sky establishes itself first; the instruments arrive
