@@ -45,7 +45,13 @@ const PORT = 8917;
 (async () => {
   const server = spawn('python3', ['-m', 'http.server', String(PORT)], { cwd: ROOT, stdio: 'ignore' });
   await new Promise(r => setTimeout(r, 800));
-  const browser = await chromium.launch({ executablePath: exe, headless: true });
+  // CHROME_ARGS escape hatch: when the default headless launch loses GPU
+  // access (e.g. '--use-angle=metal' restores WebGL2 on macOS), pass flags
+  // without changing default behavior. Shots taken on the WebGL2 fallback
+  // are comparable for layout/structure but not pixel-exact against
+  // WebGPU baselines — note the backend in the run report.
+  const extraArgs = (process.env.CHROME_ARGS || '').split(' ').filter(Boolean);
+  const browser = await chromium.launch({ executablePath: exe, headless: true, args: extraArgs });
   try {
     const ctx = await browser.newContext({
       viewport: { width: 1280, height: 800 },
@@ -180,7 +186,7 @@ const PORT = 8917;
     await p2.fill('#tob', '09:41');
     await p2.selectOption('#city', ny);
     await p2.click('#bp-form button[type="submit"]');
-    await p2.waitForSelector('#wheel-visual svg', { timeout: 15000 });
+    await p2.waitForSelector('#wheel-visual svg', { state: 'attached', timeout: 15000 });
     await p2.evaluate(() => setWheelMode('3d'));
     await p2.waitForFunction(() =>
       document.getElementById('sky3d-loading').style.display === 'none', null, { timeout: 30000 });

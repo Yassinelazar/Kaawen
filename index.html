@@ -848,25 +848,31 @@
       color: var(--gold);
     }
 
-    /* ==== Onboarding ==== */
-    .onboarding-intro {
-      text-align: center;
-      margin-bottom: 56px;
-      animation: fadeIn 1.2s ease;
+    /* ==== Hero form — the birth panel on the first screen ==== */
+    .hero-form {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 30px 28px 26px;
+      background: rgba(var(--gold-rgb), 0.03);
+      border: 1px solid var(--rule-soft);
+      border-radius: 12px;
+      animation: fadeUp 0.9s ease 0.2s backwards;
     }
-    .onboarding-intro .label { margin-bottom: 20px; }
-    .onboarding-intro h1 {
-      font-size: 28px;
+    .hero-form-head { text-align: center; margin-bottom: 30px; }
+    .hero-form-head .label { display: block; margin-bottom: 14px; }
+    .hero-form-title {
+      font-size: 22px;
       font-style: italic;
       color: var(--cream);
-      max-width: 320px;
-      margin: 0 auto 20px;
-    }
-    .onboarding-intro p {
-      font-size: 14px;
-      color: var(--parchment);
-      max-width: 280px;
+      line-height: 1.3;
+      max-width: 300px;
       margin: 0 auto;
+    }
+    /* Routed here from elsewhere on the page — one quiet acknowledgement */
+    .hero-form.attn { animation: formAttn 1.6s ease; }
+    @keyframes formAttn {
+      0%, 100% { border-color: var(--rule-soft); }
+      25% { border-color: var(--gold); box-shadow: 0 0 24px rgba(var(--gold-rgb), 0.18); }
     }
 
     /* Welcome screen — first thing a stranger sees */
@@ -3707,6 +3713,11 @@
        block for the fixed sky, shrinking it to panel width mid-rebuild
        and stranding the GPU's render targets. Same trap, same cure. */
     body.sky-immersive .wheel-block { will-change: auto; animation: none; transform: none; }
+    /* Same protection for the hero form panel and its field groups —
+       their entry animations must never become containing blocks while
+       the immersive sky is up. */
+    body.sky-immersive .hero-form,
+    body.sky-immersive .form-group { will-change: auto; animation: none; transform: none; }
     body.sky-immersive #app { overflow: visible; }
     .sky3d.immersive .sky3d-close { display: block; }
     .sky3d.immersive .sky3d-expand { display: none; }
@@ -3947,6 +3958,9 @@
 
     /* ==== The planets, right now — live interactive strip ==== */
     .sky-now { margin-top: 72px; text-align: center; }
+    /* The live wheel anchors this section — the sky of the present moment */
+    .sky-now .hero-wheel { margin: 30px auto 0; }
+    .sky-now .hero-wheel-caption { margin-bottom: 36px; }
     .sky-now-sub {
       font-family: var(--body);
       font-style: italic;
@@ -4133,9 +4147,9 @@
       .chapter-card { padding: 20px 18px 44px; }
       .chapter-card-arrow { top: auto; bottom: 16px; right: 16px; }
 
-      /* Onboarding: roomier form */
-      .onboarding-intro h1 { font-size: 36px; max-width: 520px; }
-      #bp-form { max-width: 460px; margin-left: auto; margin-right: auto; }
+      /* Hero form panel: roomier on wide screens */
+      .hero-form { max-width: 470px; padding: 34px 34px 28px; }
+      .hero-form-title { font-size: 24px; max-width: 340px; }
 
       /* Reading chapters: centered column. The Wheel chapter is the
          centerpiece — chart large in the middle, houses and planets
@@ -4193,7 +4207,6 @@
     .heaven-text { font-size: 16px; }
     .function-text { font-size: 17px; line-height: 1.72; }
     .welcome-intro p { font-size: 16.5px; }
-    .onboarding-intro p { font-size: 16px; }
 
     /* Intros, captions, and notes */
     .report-intro { font-size: 16px; }
@@ -4208,7 +4221,7 @@
     .field-helper { font-size: 13px; }
 
     /* Headings and titles */
-    .welcome-intro h1, .onboarding-intro h1 { font-size: 32px; }
+    .welcome-intro h1 { font-size: 32px; }
     .tool-title { font-size: 34px; }
     .shape-name, .moon-phase-name { font-size: 30px; }
     .wheel-card-name, .tool-name { font-size: 25px; }
@@ -4263,7 +4276,6 @@
     @media (min-width: 960px) {
       .hero-copy .welcome-intro h1 { font-size: 54px; }
       .hero-copy .welcome-intro p { font-size: 18px; max-width: 480px; }
-      .onboarding-intro h1 { font-size: 44px; }
       .tool-title { font-size: 46px; }
       #ch-report .report-section,
       #ch-report .report-intro,
@@ -4381,11 +4393,10 @@
 
     <!-- =================== ONBOARDING =================== -->
     <!-- =================== WELCOME =================== -->
-    <!-- First screen a stranger sees. Name, positioning, opt-in to start.
-         The birth-data form lives on the next screen (#onboarding) so the
-         user explicitly chooses to begin rather than landing on a form.
-         The product name and one-liner here are placeholders — finalize
-         before launch. -->
+    <!-- First screen a stranger sees. Name, positioning, and the birth
+         form itself: the hero splits copy-left / form-right so a visitor
+         can begin without leaving the first screen. Routes that need a
+         chart land on the panel via goToForm(). -->
     <section id="welcome" class="view active">
       <div class="hero">
         <div class="hero-copy">
@@ -4399,14 +4410,47 @@
             </p>
           </div>
           <div class="welcome-actions">
-            <button type="button" class="btn" id="welcome-begin">Begin the reading →</button>
             <p class="welcome-tagline">No account. Your birth data never leaves your browser.</p>
           </div>
         </div>
         <div class="hero-sky">
-          <div class="hero-wheel" id="hero-wheel"></div>
-          <p class="hero-wheel-caption">The sky as it stands right now, drawn live.
-            Your reading begins from a moment like this — yours.</p>
+          <!-- The birth form lives on the first screen — the reading
+               starts where the visitor is already standing. -->
+          <div class="hero-form" id="hero-form">
+            <div class="hero-form-head">
+              <span class="label">Your sky</span>
+              <h2 class="hero-form-title">Three pieces of information are enough.</h2>
+            </div>
+            <form id="bp-form">
+              <div class="form-group">
+                <label class="label" for="dob">Date of Birth</label>
+                <input type="date" id="dob" required value="1990-06-15">
+              </div>
+
+              <div class="form-group">
+                <label class="label" for="tob">Time of Birth</label>
+                <input type="time" id="tob" value="14:30">
+                <div class="field-helper">If you know it, the chart sees deeper.
+                  <a class="skip-link" id="skip-time">I don't know my time</a>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="label" for="city">Place of Birth</label>
+                <select id="city" required>
+                  <option value="">Select a city…</option>
+                </select>
+                <div class="field-helper">Where you first arrived.</div>
+              </div>
+
+              <button type="submit" class="btn">Draw the Chart</button>
+
+              <p class="privacy-line">
+                Your birth data never leaves your browser. If you turn on sync, we store only encrypted practice data we can't read.
+                <a class="privacy-link" href="privacy.html">Privacy policy</a>
+              </p>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -4430,6 +4474,9 @@
       <div class="sky-now" id="sky-now">
         <span class="label">The planets, right now</span>
         <p class="sky-now-sub">Computed live as you read this. Touch one.</p>
+        <div class="hero-wheel" id="hero-wheel"></div>
+        <p class="hero-wheel-caption">The sky as it stands right now, drawn live.
+          Your reading begins from a moment like this — yours.</p>
         <div class="sky-now-strip" id="sky-now-strip"></div>
         <div class="sky-now-detail" id="sky-now-detail" style="display:none;"></div>
       </div>
@@ -4577,48 +4624,6 @@
         <div class="wheel-visual tool-wheel" id="tr-wheel"></div>
         <div class="tool-reading" id="tr-reading"></div>
       </div>
-    </section>
-
-    <!-- =================== ONBOARDING (birth data form) =================== -->
-    <section id="onboarding" class="view">
-      <svg class="moon-mark" viewBox="0 0 24 24" fill="none">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" style="fill:var(--gold)" opacity="0.85"/>
-      </svg>
-      <div class="onboarding-intro">
-        <span class="label">Your sky</span>
-        <h1>Three pieces of information are enough.</h1>
-        <p>What you do with them is the work of a lifetime.</p>
-      </div>
-
-      <form id="bp-form">
-        <div class="form-group">
-          <label class="label" for="dob">Date of Birth</label>
-          <input type="date" id="dob" required value="1990-06-15">
-        </div>
-
-        <div class="form-group">
-          <label class="label" for="tob">Time of Birth</label>
-          <input type="time" id="tob" value="14:30">
-          <div class="field-helper">If you know it, the chart sees deeper.
-            <a class="skip-link" id="skip-time">I don't know my time</a>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="label" for="city">Place of Birth</label>
-          <select id="city" required>
-            <option value="">Select a city…</option>
-          </select>
-          <div class="field-helper">Where you first arrived.</div>
-        </div>
-
-        <button type="submit" class="btn">Draw the Chart</button>
-
-        <p class="privacy-line">
-          Your birth data never leaves your browser. If you turn on sync, we store only encrypted practice data we can't read.
-          <a class="privacy-link" href="privacy.html">Privacy policy</a>
-        </p>
-      </form>
     </section>
 
     <!-- =================== LOADING =================== -->
@@ -9462,6 +9467,20 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // The birth form lives in the hero now. Every route that used to
+    // open the onboarding screen brings the visitor to the panel instead.
+    function goToForm() {
+      show('welcome');
+      const panel = document.getElementById('hero-form');
+      if (!panel) return;
+      requestAnimationFrame(() => {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        panel.classList.remove('attn');
+        void panel.offsetWidth;
+        panel.classList.add('attn');
+      });
+    }
+
     // ============================================================
     // INITIALIZE
     // ============================================================
@@ -9651,7 +9670,7 @@
       document.getElementById('demo-reveal').addEventListener('click', () => {
         track('demo_reveal_tapped');
         setWheelMode('2d');
-        show('onboarding');
+        goToForm();
       });
 
       // The door from the sky to the written reading — exit cleanly,
@@ -9677,14 +9696,14 @@
       })();
       async function returnToSky() {
         const keep = savedBirth();
-        if (!keep) { show('onboarding'); return; }
+        if (!keep) { goToForm(); return; }
         track('return_to_sky');
         fillBirth(keep);
         const prev = window.__wheelCtx;
         await runBlueprint();
         if (window.__wheelCtx && window.__wheelCtx !== prev) {
           await cinematicEnter(() => setWheelMode('3d'));
-        } else show('onboarding');   // stale data — let them correct it
+        } else goToForm();   // stale data — let them correct it
       }
 
       // Lenis smooth scrolling — the long reading glides instead of
@@ -9708,7 +9727,7 @@
 
       // Restart
       document.getElementById('restart').addEventListener('click', () => {
-        show('onboarding');
+        goToForm();
       });
 
       // Deeper toggle
@@ -9755,14 +9774,6 @@
       // A silent no-op when KAAWN_SYNC is unconfigured (fully offline).
       kaawnSync.init();
 
-      // Welcome → Onboarding flow.
-      // The Begin button is the explicit opt-in that takes the user from
-      // the welcome screen to the birth-data form.
-      const welcomeBegin = document.getElementById('welcome-begin');
-      if (welcomeBegin) {
-        welcomeBegin.addEventListener('click', () => { track('begin_tapped'); show('onboarding'); });
-      }
-
       // Site chrome navigation — header, footer, and chapter cards all
       // carry data-nav. Destinations that need a computed chart fall back
       // to the birth-data form.
@@ -9775,19 +9786,19 @@
         if (val === 'home') {
           show('welcome');
         } else if (val === 'begin') {
-          show('onboarding');
+          goToForm();
         } else if (val === 'demo') {
           enterDemoSky();
         } else if (val === 'return') {
           returnToSky();
         } else if (val === 'reading') {
-          if (hasChart) { show('blueprint'); goToChapter(0); } else show('onboarding');
+          if (hasChart) { show('blueprint'); goToChapter(0); } else goToForm();
         } else if (val === 'today') {
           if (hasChart) { show('blueprint'); goToChapter(CHAPTERS.findIndex(c => c.id === 'ch-today')); }
-          else show('onboarding');
+          else goToForm();
         } else if (val === 'report') {
           if (hasChart && typeof openReport === 'function') { show('blueprint'); openReport(); }
-          else show('onboarding');
+          else goToForm();
         } else if (val === 'tool:syn' || val === 'tool:comp') {
           duoSetMode(val === 'tool:syn' ? 'syn' : 'comp');
           show('tool-duo');
@@ -9801,7 +9812,7 @@
         } else if (val.indexOf('chapter:') === 0) {
           const chId = val.slice(8);
           if (hasChart) { show('blueprint'); goToChapter(CHAPTERS.findIndex(c => c.id === chId)); }
-          else show('onboarding');
+          else goToForm();
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
@@ -9819,7 +9830,7 @@
         '#synastry':  () => { duoSetMode('syn');  show('tool-duo'); },
         '#composite': () => { duoSetMode('comp'); show('tool-duo'); },
         '#transits':  () => { show('tool-transits'); },
-        '#begin':     () => { show('onboarding'); }
+        '#begin':     () => { goToForm(); }
       };
       const applyHashRoute = () => {
         const route = HASH_ROUTES[location.hash];
