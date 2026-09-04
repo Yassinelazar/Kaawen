@@ -34,6 +34,21 @@ effects pinned to old three versions, would run a second WebGL
 context under our WebGPU engine, and reads as the "generic space
 VFX" the Phase 3 brief prohibits. The sky engine IS the background.
 
+## Threlte (REFERENCE ONLY — do not integrate)
+Evaluated 2026-09-03 and rejected: it is a Svelte 5 component wrapper
+around the same three.js we already drive directly — it requires the
+Svelte compiler and a build step (Kaawen has none, by design), adds
+no rendering capability, and its declarative layer would fight
+RendererManager's ownership of the WebGPU/WebGL2 backend. Clone
+lives in `../vendor/threlte` for reading only.
+
+## awesome-design-md (ADOPTED as reference material)
+`../vendor/awesome-design-md` — 73 DESIGN.md files describing the
+design languages of well-known products (SpaceX, Stripe, Superhuman,
+Framer…). Plain markdown, no code, no runtime. Consult when working
+on landing/marketing composition; Kaawen's own tokens and voice
+always win.
+
 ## The sky-first flow contract
 Submitting the birth form (`#bp-form`) awaits `runBlueprint()` and,
 only if `window.__wheelCtx` changed (a chart actually computed),
