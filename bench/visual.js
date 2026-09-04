@@ -111,14 +111,14 @@ const PORT = 8917;
     await page.evaluate(() => {
       const cv = document.getElementById('sky3d-canvas');
       for (let i = 0; i < 6; i++)
-        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: -1, cancelable: true, bubbles: true }));
+        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: -1, ctrlKey: true, cancelable: true, bubbles: true }));
     });
     await page.waitForTimeout(1800);
     await shot('jupiter-detail.png');
     await page.evaluate(() => {
       const cv = document.getElementById('sky3d-canvas');
       for (let i = 0; i < 6; i++)
-        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: 1, cancelable: true, bubbles: true }));
+        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: 1, ctrlKey: true, cancelable: true, bubbles: true }));
     });
     await page.waitForTimeout(1200);
 
@@ -148,14 +148,14 @@ const PORT = 8917;
     await page.evaluate(() => {
       const cv = document.getElementById('sky3d-canvas');
       for (let i = 0; i < 24; i++)
-        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: -1, cancelable: true, bubbles: true }));
+        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: -1, ctrlKey: true, cancelable: true, bubbles: true }));
     });
     await page.waitForTimeout(2200);
     await shot('earth-center.png');
     await page.evaluate(() => {
       const cv = document.getElementById('sky3d-canvas');
       for (let i = 0; i < 24; i++)
-        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: 1, cancelable: true, bubbles: true }));
+        cv.dispatchEvent(new WheelEvent('wheel', { deltaY: 1, ctrlKey: true, cancelable: true, bubbles: true }));
     });
     await page.waitForTimeout(1500);
 

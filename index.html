@@ -7,16 +7,16 @@
   <meta name="theme-color" content="#0E0F1A">
   <script>
     // Theme boot — runs before first paint so there is no flash.
-    // kaawn_theme wins; otherwise the site reads light (white page)
-    // by default — night stays one toggle away.
+    // kaawn_theme wins; otherwise the site reads night by default —
+    // the page shares the sky's ground, and day stays one toggle away.
     (function () {
       try {
         var t = localStorage.getItem('kaawn_theme');
-        if (t !== 'light' && t !== 'dark') t = 'light';
+        if (t !== 'light' && t !== 'dark') t = 'dark';
         document.documentElement.setAttribute('data-theme', t);
         var m = document.querySelector('meta[name="theme-color"]');
         if (m) m.setAttribute('content', t === 'light' ? '#FFFFFF' : '#14151F');
-      } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -3132,6 +3132,10 @@
       padding: 7px 14px; cursor: pointer;
     }
     .sky3d.immersive .sky3d-reading { display: block; }
+    /* step left of the dossier column when it is open */
+    @media (min-width: 820px) {
+      .sky3d.immersive.has-dossier .sky3d-reading { right: 486px; }
+    }
     .sky3d-reading:hover { border-color: rgba(212, 166, 85, 0.8); }
     /* The veil: a breath of black that carries the eye from the page
        into the sky, so the instrument reveals rather than switches. */
@@ -3569,7 +3573,9 @@
       display: block;
       width: 100%;
       height: 460px;
-      touch-action: none; /* we handle drag ourselves */
+      /* Vertical swipes belong to the page (the sky is part of it);
+         horizontal drags turn the sky. */
+      touch-action: pan-y;
       cursor: grab;
     }
     .sky3d canvas:active { cursor: grabbing; }
@@ -3637,8 +3643,8 @@
       .sky3d canvas { height: 560px; }
     }
 
-    /* ==== Immersive sky: the whole window becomes the chart ==== */
-    .sky3d-expand, .sky3d-close {
+    /* ==== The sky band's own chrome ==== */
+    .sky3d-close {
       position: absolute;
       top: 12px;
       right: 12px;
@@ -3657,7 +3663,7 @@
       transition: border-color 0.25s ease;
       z-index: 3;
     }
-    .sky3d-expand:hover, .sky3d-close:hover { border-color: rgba(212, 166, 85, 0.75); }
+    .sky3d-close:hover { border-color: rgba(212, 166, 85, 0.75); }
     .sky3d-close { display: none; font-size: 13px; padding: 4px 11px; }
 
     /* Return from a body to the whole chart — only while one is focused */
@@ -3693,16 +3699,33 @@
       .sky3d.immersive.has-dossier .sky-back { left: calc(50% - 210px); }
     }
 
+    /* The sky is part of the page, not a screen over it: a full-bleed
+       band in the reading's flow. The page scrolls past it; the written
+       reading continues directly beneath. */
     .sky3d.immersive {
-      position: fixed;
-      inset: 0;
-      z-index: 120;
+      position: relative;
+      z-index: 5;
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
       max-width: none;
-      margin: 0;
       border: none;
       border-radius: 0;
+      background: #000;
     }
-    .sky3d.immersive canvas { height: 100vh; height: 100dvh; }
+    .sky3d.immersive canvas { height: 88vh; height: 88dvh; min-height: 520px; }
+    /* Soft grounds at both edges so the sky melts into the page
+       instead of sitting in a box. */
+    .sky3d.immersive::before,
+    .sky3d.immersive::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 64px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .sky3d.immersive::before { top: 0;    background: linear-gradient(180deg, var(--ink) 0%, rgba(20,21,31,0) 100%); }
+    .sky3d.immersive::after  { bottom: 0; background: linear-gradient(0deg,  var(--ink) 0%, rgba(20,21,31,0) 100%); }
     /* An ancestor with will-change/transform becomes the containing block
        for position:fixed, which would pin the immersive sky to the chapter
        instead of the window. Neutralise those while it is open — and let
@@ -3720,9 +3743,10 @@
     body.sky-immersive .form-group { will-change: auto; animation: none; transform: none; }
     body.sky-immersive #app { overflow: visible; }
     .sky3d.immersive .sky3d-close { display: block; }
-    .sky3d.immersive .sky3d-expand { display: none; }
     .sky3d.immersive .sky-rail { display: flex; }
-    body.sky-immersive { overflow: hidden; }
+    /* The page keeps scrolling with the sky in it — only sideways
+       overflow from the full-bleed band is clipped. */
+    body.sky-immersive { overflow-x: hidden; }
 
     /* The rail — every body one press away */
     .sky-rail {
@@ -4330,6 +4354,7 @@
       .sky-dossier-name { font-size: 36px; }
       .sky-body { font-size: 17.5px; max-width: 46ch; }
       .sky3d.immersive.has-dossier .sky-rail { right: 500px; }
+      .sky3d.immersive.has-dossier .sky3d-reading { right: 566px; }
       .sky3d.immersive.has-dossier .sky-back { left: calc(50% - 250px); }
       .sky-rail-btn { min-width: 64px; padding: 9px 13px 8px; }
       .sky-rail-glyph { font-size: 20px; }
@@ -4351,6 +4376,7 @@
       #ch-report .report-intro { max-width: 1000px; }
       .sky-dossier { width: 560px; }
       .sky3d.immersive.has-dossier .sky-rail { right: 560px; }
+      .sky3d.immersive.has-dossier .sky3d-reading { right: 626px; }
       .sky3d.immersive.has-dossier .sky-back { left: calc(50% - 280px); }
     }
 
@@ -4764,7 +4790,7 @@
             <div class="wheel-visual" id="wheel-visual"></div>
 
             <div id="sky-veil" aria-hidden="true"></div>
-            <div class="sky3d" id="sky3d" style="display:none;" data-lenis-prevent>
+            <div class="sky3d" id="sky3d" style="display:none;">
               <canvas id="sky3d-canvas"></canvas>
               <div class="sky3d-loading" id="sky3d-loading">Building your sky…</div>
               <div class="sky3d-layers" id="sky3d-layers">
@@ -4775,7 +4801,6 @@
                 <button type="button" class="sky3d-layer on" data-layer="stars">Stars</button>
                 <button type="button" class="sky3d-layer sky3d-save" id="sky3d-save">Save image</button>
               </div>
-              <button type="button" class="sky3d-expand" id="sky3d-expand" aria-label="Enter the sky">⤢ Enter the sky</button>
               <button type="button" class="sky3d-reading" id="sky3d-reading">The written reading ↓</button>
               <div class="sky-demo-banner" id="sky-demo-banner">
                 <p>A demonstration sky — the first noon of the millennium.<br>Touch a planet to hear it speak.</p>
@@ -7793,8 +7818,6 @@
       if (!host) return;
       host.classList.toggle('immersive', on);
       document.body.classList.toggle('sky-immersive', on);
-      // page scrolling sleeps while the sky is the interface
-      if (window.__lenis) { on ? window.__lenis.stop() : window.__lenis.start(); }
       const hint = document.getElementById('sky3d-hint');
       if (hint) hint.style.display = on ? 'none' : '';
       if (on) {
@@ -7818,11 +7841,20 @@
       document.getElementById('wheel-visual').style.display = is3d ? 'none' : '';
       document.getElementById('sky3d').style.display = is3d ? '' : 'none';
       if (is3d) {
-        // Choosing the sky takes you into it. Leaving the immersive view
-        // drops back to the panel here, still in 3D.
+        // The sky lives in the Wheel chapter of the reading — make sure
+        // that page is under the visitor before the band lights up.
+        if (!document.getElementById('blueprint').classList.contains('active')) show('blueprint');
+        if (currentChapter !== 0) goToChapter(0);
         buildSky3D();
         if (sky3d) sky3d.resume();
         setSkyImmersive(true);
+        // Bring the band to the top of the window — instantly while the
+        // veil covers the move, smoothly when chosen by hand.
+        const veiled = document.getElementById('sky-veil').classList.contains('on');
+        requestAnimationFrame(() => {
+          const host = document.getElementById('sky3d');
+          if (host) host.scrollIntoView({ behavior: veiled ? 'auto' : 'smooth', block: 'start' });
+        });
       } else {
         setSkyImmersive(false);
         // The engine sleeps the moment the sky is out of sight
@@ -8612,12 +8644,11 @@
       document.querySelectorAll('.wheel-mode-btn').forEach(b =>
         b.addEventListener('click', () => setWheelMode(b.dataset.wheelMode)));
       // Immersive mode
-      document.getElementById('sky3d-expand').addEventListener('click', () => setSkyImmersive(true));
-      document.getElementById('sky3d-close').addEventListener('click', () => setSkyImmersive(false));
+      document.getElementById('sky3d-close').addEventListener('click', () => setWheelMode('2d'));
       document.addEventListener('keydown', e => {
         const host = document.getElementById('sky3d');
         if (!host || !host.classList.contains('immersive')) return;
-        if (e.key === 'Escape') setSkyImmersive(false);
+        if (e.key === 'Escape') setWheelMode('2d');
         // Walk the ten bodies with the arrow keys
         if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
           const cur = (wheelSel && wheelSel.type === 'planet') ? NR_PLANET_ORDER.indexOf(wheelSel.key) : -1;
@@ -9678,9 +9709,10 @@
       // the wheel's own 3D toggle.
       document.getElementById('sky3d-reading').addEventListener('click', () => {
         track('sky_reading_door');
-        setWheelMode('2d');
-        show('blueprint');
-        goToChapter(0);
+        // The reading is right below the sky on the same page — the door
+        // is a scroll, not an exit. The sky stays lit above it.
+        const below = document.getElementById('wheel-card');
+        if (below) below.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
 
       // Return-visit memory: the instrument remembers your sky — on this

@@ -716,6 +716,10 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
   // before it was ever drawn.) Proportional steps keep the feel even
   // whether you are beside a planet or out at the zodiac.
   const onWheel = e => {
+    // The sky sits inside the scrolling page now: a plain wheel scrolls
+    // the page past it. Pinch (trackpads report it as ctrl+wheel) or
+    // ctrl/cmd+wheel zooms the sky.
+    if (!e.ctrlKey && !e.metaKey) return;
     const step = cam.wantRadius * (e.deltaY > 0 ? 0.12 : -0.12);
     cam.wantRadius = Math.max(26, Math.min(1400, cam.wantRadius + step));
     cam.rate = Math.max(cam.rate, MOTION.zoom);  // respond promptly to the hand
@@ -727,6 +731,9 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
   canvas.addEventListener('touchstart', onDown, { passive: true });
   canvas.addEventListener('touchmove', onMove, { passive: false });
   canvas.addEventListener('touchend', onUp);
+  // touch-action: pan-y hands vertical swipes to the page scroll — the
+  // browser cancels our touch stream when it takes over
+  canvas.addEventListener('touchcancel', onUp);
   canvas.addEventListener('wheel', onWheel, { passive: false });
 
   // Tap a planet — same selection pipeline as everywhere else
@@ -831,6 +838,9 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     }
     // home turns too, slowly
     if (!REDUCED) earthMesh.rotation.y += 0.02 * dt;
+    // and the firmament itself revolves, a touch slower than the drift,
+    // so the stars visibly wheel behind the planets
+    if (!REDUCED) groups.stars.rotation.y -= 0.009 * dt;
     if (!drag) { cam.theta += MOTION.drift * dt; }
     placeCamera();
     if (SKY_DEV && rm.renderer.info.reset) rm.renderer.info.reset();
@@ -938,6 +948,7 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     canvas.removeEventListener('touchstart', onDown);
     canvas.removeEventListener('touchmove', onMove);
     canvas.removeEventListener('touchend', onUp);
+    canvas.removeEventListener('touchcancel', onUp);
     canvas.removeEventListener('wheel', onWheel);
     canvas.removeEventListener('click', onTap);
     if (devEl) devEl.remove();
