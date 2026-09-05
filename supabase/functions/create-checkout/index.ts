@@ -23,9 +23,13 @@
 // Products, not prices: the active price is resolved at request time, so
 // changing what a guide costs is a dashboard edit with no redeploy. The
 // resolved product's name is returned to the caller for verification.
+// LIVE-mode product ids (the prod_VB8X… pair were their test-mode
+// counterparts). Mapping provisionally assigned — the post-launch probe
+// verifies by amount (birth must return 400, charts 900) and the pair
+// is swapped here if reversed.
 const PRODUCTS: Record<string, string> = {
-  birth:  'prod_VB8XkBUl0ZkRfL',
-  charts: 'prod_VB8XiLHGwgbvaN',
+  birth:  'prod_VB8B8xOH6lBLP7',
+  charts: 'prod_VB8AtBM5J6C3yu',
 };
 
 const SITE = 'https://kaawen.com/';
