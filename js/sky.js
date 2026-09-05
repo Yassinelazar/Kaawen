@@ -395,6 +395,11 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
     Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter'
   };
+  const BELT_GLYPH = {
+    Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
+    Leo: '♌', Virgo: '♍', Libra: '♎', Scorpio: '♏',
+    Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓'
+  };
   for (let i = 0; i < 12; i++) {
     const lon = i * 30;
     const div = [at(lon, SKY_R_ZODIAC - 14), at(lon, SKY_R_ZODIAC + 14)];
@@ -402,7 +407,11 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
       new THREE.BufferGeometry().setFromPoints(div),
       new THREE.LineBasicMaterial({ color: 0x8C6F3A, transparent: true, opacity: 0.5 })));
     const rulerGlyph = glyphs[BELT_RULER[signs[i]]] || '';
-    const label = skyLabel(THREE, signs[i].toUpperCase() + (rulerGlyph ? '  ·  ' + rulerGlyph : ''),
+    // U+FE0E forces text presentation: the zodiac codepoints default to
+    // emoji in Chrome's canvas, which would paint colored squares here.
+    const signGlyph = BELT_GLYPH[signs[i]] ? BELT_GLYPH[signs[i]] + '\uFE0E ' : '';
+    const label = skyLabel(THREE,
+      signGlyph + signs[i].toUpperCase() + (rulerGlyph ? '  ·  ' + rulerGlyph : ''),
       11, 'rgba(212,166,85,0.85)', 500);
     label.position.copy(at(lon + 15, SKY_R_ZODIAC + 30, 0));
     groups.zodiac.add(label);

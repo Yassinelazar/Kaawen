@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://kaawen.com/">
   <meta property="og:title" content="Kaawen — Astrological Charts">
   <meta property="og:description" content="Your birth chart computed exactly and read in plain words. Synastry, composite, and transit charts.">
-  <meta property="og:image" content="og-image.png">
+  <meta property="og:image" content="https://kaawen.com/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
@@ -97,7 +97,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Kaawen — Astrological Charts">
   <meta name="twitter:description" content="Your birth chart computed exactly and read in plain words. Synastry, composite, and transit charts.">
-  <meta name="twitter:image" content="og-image.png">
+  <meta name="twitter:image" content="https://kaawen.com/og-image.png">
 
   <!-- Favicons.
        The small tab/search icon stays the inline SVG crescent — it's a
@@ -4151,7 +4151,7 @@
     }
     .sky-now-detail b { color: var(--gold); font-weight: 500; }
 
-    /* ==== The Guides — the two one-time unlocks ==== */
+    /* ==== The Guides — the two monthly unlocks ==== */
     .guide-offer {
       margin-top: var(--space-section);
       padding-top: 44px;
@@ -4179,6 +4179,12 @@
       color: var(--gold);
       line-height: 1;
       margin-bottom: 4px;
+    }
+    .guide-per {
+      font-family: var(--body);
+      font-style: italic;
+      font-size: 16px;
+      color: var(--parchment);
     }
     .guide-name {
       display: block;
@@ -5013,23 +5019,24 @@
 
             <div class="guide-cards">
               <div class="guide-card">
-                <span class="guide-price">$9</span>
+                <span class="guide-price">$9<span class="guide-per"> / month</span></span>
                 <span class="guide-name">The Charts Guide</span>
                 <p class="guide-desc">The complete written readings for the three charts above —
                   every synastry contact, every composite placement, every active transit,
                   interpreted in full.</p>
-                <button type="button" class="btn guide-btn" data-guide="charts">Open the Charts Guide — $9</button>
+                <button type="button" class="btn guide-btn" data-guide="charts">Open the Charts Guide — $9 a month</button>
               </div>
               <div class="guide-card guide-card-primary">
-                <span class="guide-price">$4</span>
+                <span class="guide-price">$4<span class="guide-per"> / month</span></span>
                 <span class="guide-name">The Full Guide</span>
                 <p class="guide-desc">The rest of your reading: the three voices in depth, the five
                   quieter planets, the long generational currents, today's sky against yours,
                   and the complete written report.</p>
-                <button type="button" class="btn guide-btn" data-guide="birth">Open the Full Guide — $4</button>
+                <button type="button" class="btn guide-btn" data-guide="birth">Open the Full Guide — $4 a month</button>
               </div>
             </div>
             <p class="guide-note" id="guide-note">Companion and trial readers already have everything.</p>
+            <p class="guide-note">Billed monthly through Stripe. To stop, one line to hello@kaawen.com is enough.</p>
           </div>
         </div>
 
@@ -11272,7 +11279,7 @@
     //           service role. The client can only ever read it.
     // The devotion and daily practice are free forever, in every state.
     // ============================================================
-    // ── The Guides — one-time unlocks ─────────────────────────────
+    // ── The Guides — monthly unlocks ──────────────────────────────
     // $4 Full Guide (the deep birth reading: Voices, Anatomy, Currents,
     // Today, Full Report) and $9 Charts Guide (the complete synastry,
     // composite, and transits readings). Stripe Payment Links; their
@@ -11357,12 +11364,12 @@
     }
     function chartsGateHTML(context) {
       return `<div class="guide-card guide-card-inline">
-        <span class="guide-price">$9</span>
+        <span class="guide-price">$9<span class="guide-per"> / month</span></span>
         <span class="guide-name">The Charts Guide</span>
         <p class="guide-desc">This is the opening of the ${context}. The Charts Guide opens the complete
           readings for all three charts — every contact, every placement, every transit,
           interpreted in full.</p>
-        <button type="button" class="btn guide-btn" data-guide="charts">Open the Charts Guide — $9</button>
+        <button type="button" class="btn guide-btn" data-guide="charts">Open the Charts Guide — $9 a month</button>
       </div>`;
     }
 
