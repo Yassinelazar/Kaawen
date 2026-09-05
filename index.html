@@ -3715,33 +3715,81 @@
       .sky3d.immersive.has-dossier .sky-back { left: calc(50% - 210px); }
     }
 
-    /* The sky is part of the page, not a screen over it: a full-bleed
-       band in the reading's flow. The page scrolls past it; the written
-       reading continues directly beneath. */
+    /* The sky IS the website's ground: a fixed, living backdrop behind
+       everything. The page — header, reading, cards — scrolls over it.
+       The first screen of the Wheel chapter is a transparent runway
+       (.sky-space) where only the sky and its instruments show; past
+       it, the chrome bows out and a scrim settles so the written
+       reading stays readable over live stars. */
     .sky3d.immersive {
-      position: relative;
-      z-index: 5;
-      width: 100vw;
-      margin-left: calc(50% - 50vw);
+      position: fixed;
+      inset: 0;
+      z-index: 1;
       max-width: none;
+      margin: 0;
       border: none;
       border-radius: 0;
       background: #000;
     }
-    .sky3d.immersive canvas { height: 88vh; height: 88dvh; min-height: 520px; }
-    /* Soft grounds at both edges so the sky melts into the page
-       instead of sitting in a box. */
-    .sky3d.immersive::before,
+    .sky3d.immersive canvas { height: 100vh; height: 100dvh; }
+    /* the reading scrim — nothing at the top, ink when reading */
     .sky3d.immersive::after {
       content: '';
       position: absolute;
-      left: 0; right: 0;
-      height: 64px;
-      z-index: 2;
+      inset: 0;
+      z-index: 1;
+      background: rgba(20, 21, 31, 0);
+      transition: background 0.45s ease;
       pointer-events: none;
     }
-    .sky3d.immersive::before { top: 0;    background: linear-gradient(180deg, var(--ink) 0%, rgba(20,21,31,0) 100%); }
-    .sky3d.immersive::after  { bottom: 0; background: linear-gradient(0deg,  var(--ink) 0%, rgba(20,21,31,0) 100%); }
+    .sky3d.immersive.passed::after { background: rgba(20, 21, 31, 0.62); }
+    /* instruments belong to the sky moment — they bow out in the reading */
+    .sky3d.immersive .sky3d-layers { z-index: 5; }
+    .sky3d.immersive .sky3d-loading { z-index: 3; }
+    /* the in-flow header rides above the sky at the top of the page —
+       the sky's own instruments start below it */
+    .sky3d.immersive .sky3d-layers,
+    .sky3d.immersive .sky3d-close,
+    .sky3d.immersive .sky3d-reading,
+    .sky3d.immersive .sky-back { top: 84px; }
+    .sky3d.immersive .sky-demo-banner { top: 82px; }
+    @media (min-width: 820px) {
+      .sky3d.immersive .sky-dossier { padding-top: 96px; }
+    }
+    .sky3d .sky3d-layers, .sky3d .sky-rail, .sky3d .sky3d-close,
+    .sky3d .sky3d-reading, .sky3d .sky-demo-banner, .sky3d .sky-back,
+    .sky3d .sky-dossier {
+      transition: opacity 0.35s ease;
+    }
+    .sky3d.immersive.passed .sky3d-layers,
+    .sky3d.immersive.passed .sky-rail,
+    .sky3d.immersive.passed .sky3d-close,
+    .sky3d.immersive.passed .sky3d-reading,
+    .sky3d.immersive.passed .sky-demo-banner,
+    .sky3d.immersive.passed .sky-back,
+    .sky3d.immersive.passed .sky-dossier {
+      opacity: 0;
+      pointer-events: none;
+    }
+    /* the runway: page-flow room for the sky's first screen */
+    .sky-space { display: none; }
+    body.sky-immersive .sky-space {
+      display: block;
+      height: 100vh;
+      height: 100dvh;
+      pointer-events: none;
+    }
+    /* content rides above the sky layer — and lets it show through:
+       the app's own ink ground would otherwise wall off the stars */
+    body.sky-immersive #app { position: relative; z-index: 2; background: transparent; }
+    /* On the sky's first screen the hand belongs to the sky: the
+       content layer goes pointer-quiet (only the header stays live —
+       nothing else is on screen there). The moment the visitor scrolls
+       into the reading (body.sky-passed, set by the runway observer)
+       the page is fully ordinary again and the sky's instruments have
+       bowed out. */
+    body.sky-immersive:not(.sky-passed) #app { pointer-events: none; }
+    body.sky-immersive:not(.sky-passed) #app .site-header { pointer-events: auto; }
     /* An ancestor with will-change/transform becomes the containing block
        for position:fixed, which would pin the immersive sky to the chapter
        instead of the window. Neutralise those while it is open — and let
@@ -4793,6 +4841,10 @@
              Tapping a planet, house, or rim sign drives #wheel-card. -->
         <div class="chapter active" id="ch-shape">
           <div class="wheel-block">
+            <!-- The sky's first screen: a transparent runway the fixed
+                 backdrop shows through. Only present while the 3D sky
+                 is the ground (body.sky-immersive). -->
+            <div class="sky-space" aria-hidden="true"></div>
             <span class="label">The Wheel</span>
             <p class="wheel-intro" id="wheel-intro">Your sky, drawn whole. Touch a planet, a house, or a sign on the rim — the wheel answers.</p>
 
@@ -7864,12 +7916,13 @@
         buildSky3D();
         if (sky3d) sky3d.resume();
         setSkyImmersive(true);
-        // Bring the band to the top of the window — instantly while the
-        // veil covers the move, smoothly when chosen by hand.
+        // Bring the sky's first screen (the runway) to the top of the
+        // window — instantly while the veil covers the move, smoothly
+        // when chosen by hand.
         const veiled = document.getElementById('sky-veil').classList.contains('on');
         requestAnimationFrame(() => {
-          const host = document.getElementById('sky3d');
-          if (host) host.scrollIntoView({ behavior: veiled ? 'auto' : 'smooth', block: 'start' });
+          const runway = document.querySelector('.sky-space');
+          if (runway) runway.scrollIntoView({ behavior: veiled ? 'auto' : 'smooth', block: 'start' });
         });
       } else {
         setSkyImmersive(false);
@@ -9554,6 +9607,22 @@
     }
 
     function init() {
+      // The sky is the page's ground: it renders from body level so no
+      // animated ancestor can ever become its containing block, and the
+      // content stack (#app) rides above it. Markup keeps it beside the
+      // wheel for reading order; the runtime owns the layering.
+      document.body.appendChild(document.getElementById('sky3d'));
+      // Past the sky's first screen, the instruments bow out and the
+      // reading scrim settles — driven by where the runway sits.
+      const skySpace = document.querySelector('.sky-space');
+      if (skySpace && 'IntersectionObserver' in window) {
+        new IntersectionObserver(es => {
+          const past = !(es[0] && es[0].isIntersecting);
+          document.getElementById('sky3d').classList.toggle('passed', past);
+          document.body.classList.toggle('sky-passed', past);
+        }, { threshold: 0.3 }).observe(skySpace);
+      }
+
       const sel = document.getElementById('city');
       populateCitySelect(sel);
       ['duo-a-city', 'duo-b-city', 'tr-city'].forEach(id => {
