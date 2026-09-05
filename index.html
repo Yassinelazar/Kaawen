@@ -2031,6 +2031,28 @@
       line-height: 1.6;
     }
 
+    /* ==== Your Sky Today — personal transits ==== */
+    .personal-today { margin-top: var(--space-section); text-align: center; }
+    .personal-today-sub {
+      font-family: var(--display); font-style: italic; font-size: 15.5px;
+      color: var(--parchment); margin: 6px 0 26px;
+    }
+    .pt-item { max-width: 560px; margin: 0 auto; }
+    .pt-item + .pt-item { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--rule-soft); }
+    .pt-title {
+      font-family: var(--ui); font-size: 13.5px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 5px;
+    }
+    .pt-meta {
+      font-family: var(--ui); font-size: 11.5px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--parchment); opacity: 0.85; margin-bottom: 12px;
+    }
+    .pt-meta .ta-applying { color: var(--gold); }
+    .pt-text {
+      font-family: var(--body); font-size: 16.5px; color: var(--cream-soft);
+      line-height: 1.72; text-align: center;
+    }
+
     /* ==== Inner Functions ==== */
     .functions {
       margin-top: var(--space-section);
@@ -3092,7 +3114,7 @@
       cursor: pointer;
       padding: 4px 0;
       font-family: var(--ui);
-      font-size: 10.5px;
+      font-size: 12.5px;
       letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--parchment);
@@ -3106,7 +3128,7 @@
       border-radius: 100px;
       color: var(--gold);
       font-family: var(--ui);
-      font-size: 10.5px;
+      font-size: 12.5px;
       font-weight: 500;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -3117,7 +3139,7 @@
     .site-nav-cta:hover { border-color: var(--gold); background: rgba(var(--gold-rgb), 0.08); }
     .site-nav-demo {
       background: none; border: none; color: var(--gold);
-      font: inherit; font-size: 12px; letter-spacing: 0.14em;
+      font: inherit; font-size: 13.5px; letter-spacing: 0.14em;
       text-transform: uppercase; cursor: pointer; padding: 8px 10px;
       opacity: 0.85;
     }
@@ -3884,12 +3906,12 @@
       background: rgba(212, 166, 85, 0.14);
       color: #F4EBD6;
     }
-    .sky-rail-glyph { display: block; font-size: 17px; line-height: 1.1; color: #D4A655; }
+    .sky-rail-glyph { display: block; font-size: 20px; line-height: 1.1; color: #D4A655; }
     .sky-rail-btn.on .sky-rail-glyph { color: #F4EBD6; }
     .sky-rail-name {
       display: block;
       font-family: var(--ui);
-      font-size: 8.5px;
+      font-size: 10.5px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       margin-top: 3px;
@@ -4352,8 +4374,8 @@
     .wheel-card-pos { font-size: 13px; }
     .site-footer-link { font-size: 14.5px; }
     .site-footer-tag { font-size: 14px; }
-    .site-nav-link { font-size: 12px; }
-    .site-nav-cta { font-size: 11.5px; }
+    .site-nav-link { font-size: 13.5px; }
+    .site-nav-cta { font-size: 13px; }
     .btn { font-size: 13.5px; }
     .chapter-arrow { font-size: 12px; }
 
@@ -4449,7 +4471,7 @@
       .sky3d.immersive.has-dossier .sky-back { left: calc(50% - 250px); }
       .sky-rail-btn { min-width: 64px; padding: 9px 13px 8px; }
       .sky-rail-glyph { font-size: 20px; }
-      .sky-rail-name { font-size: 9.5px; }
+      .sky-rail-name { font-size: 11px; }
     }
 
     @media (min-width: 1900px) {
@@ -5095,6 +5117,14 @@
                 <div class="sky-cell-value" id="moon-position"></div>
                 <div class="sky-cell-detail" id="moon-phase"></div>
               </div>
+            </div>
+
+            <!-- Your sky today — today's positions read against the
+                 natal chart: tightest contacts first, houses after. -->
+            <div class="personal-today" id="personal-today" style="display:none;">
+              <span class="label">Your Sky Today</span>
+              <p class="personal-today-sub">Today's sky, read against your chart — tightest contacts first.</p>
+              <div id="personal-today-list"></div>
             </div>
 
             <!-- Tonight's mansion — where the Moon stands among the 28 -->
@@ -10496,6 +10526,7 @@
 
       renderBlueprint(sun, moon, rising, hasTime, planets, aspects, outers, natalRetrogrades);
       renderCosmicWeather();
+      renderPersonalToday();
       renderLunarDevotion();
       renderTransitSelector();
       renderDeepReading(moon.sign);
@@ -11550,6 +11581,101 @@
       document.getElementById('mansion-today-name').textContent =
         `${mn.name} — ${mn.meaning} · Station ${idx + 1} of 28`;
       document.getElementById('mansion-today-text').textContent = mn.today;
+    }
+
+    // ── Your sky today — the day read against the natal chart ─────
+    // Written to the benchmark register: direct second person, the
+    // tension and the instruction in the same breath, real orbs.
+    const TRANSIT_ROLE = {
+      Sun: 'light and attention', Moon: 'the mood of the hours',
+      Mercury: 'words, news, and thinking', Venus: 'affection, taste, and ease',
+      Mars: 'drive, heat, and haste', Jupiter: 'growth and confidence',
+      Saturn: 'pressure, structure, and the test', Uranus: 'the sudden and the new',
+      Neptune: 'fog, longing, and imagination', Pluto: 'the deep lever of change'
+    };
+    const NATAL_TARGET = {
+      Sun: 'your identity and vitality', Moon: 'your inner life and needs',
+      Mercury: 'your mind and speech', Venus: 'your love and your values',
+      Mars: 'your will and temper', Jupiter: 'your faith and reach',
+      Saturn: 'your discipline and your fears', Uranus: 'your independence',
+      Neptune: 'your dreams and your escapes', Pluto: 'your depths'
+    };
+    const PT_KIND = {
+      fusion:   { verb: 'stands with',
+                  line: 'The two speak as one voice today; whatever you begin now carries this mark.',
+                  act: 'Begin the thing that needs this energy — deliberately, not by accident.' },
+      flow:     { verb: 'supports',
+                  line: 'The door is open there and nothing resists.',
+                  act: 'Use it on purpose. Ease you do not spend is ease wasted.' },
+      friction: { verb: 'presses on',
+                  line: 'Expect resistance there today — delays, tests, patience running short.',
+                  act: 'Do not force the win. Let the pressure shape the work, not your temper.' },
+      mirror:   { verb: 'faces',
+                  line: 'Something — or someone — stands across from you and will not move first.',
+                  act: 'Meet it squarely. Naming the other side out loud is most of the work.' }
+    };
+    // The rooms of the day: where today's lights fall in YOUR houses.
+    const TODAY_HOUSE = {
+      1: 'the day wears you openly — people read your face before your words.',
+      2: 'the day runs to money and what is yours — count before you promise.',
+      3: 'the day fills with errands, messages, and talk — say the true thing simply.',
+      4: 'the day pulls you home and inward — tend the root, not the branches.',
+      5: 'the day wants play, romance, and making — give it one honest hour.',
+      6: 'the day lives in the small tasks and the body — order one thing well.',
+      7: 'the day runs through other people — what they need will find you.',
+      8: 'the day touches what is shared and what is owed — look at it without flinching.',
+      9: 'the day reaches for the far and the meaningful — study, travel, or teach.',
+      10: 'the day is public — your work is seen, so finish something worth seeing.',
+      11: 'the day belongs to friends and the long hope — ask for the help you need.',
+      12: 'the day asks for quiet — solitude is fuel today, not avoidance.'
+    };
+
+    function renderPersonalToday() {
+      const box = document.getElementById('personal-today');
+      const list = document.getElementById('personal-today-list');
+      const N = window.__natalPositions;
+      const D = window.__natalReportData;
+      if (!box || !list || !N) return;
+      try {
+        const now = new Date();
+        const jd = julianDay(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(),
+                             now.getUTCHours(), now.getUTCMinutes());
+        const sky = { Sun: sunLongitude(jd), Moon: moonLongitude(jd) };
+        ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'].forEach(p => {
+          sky[p] = planetLongitude(p, jd);
+        });
+        sky.Pluto = plutoLongitude(jd);
+        const ANGLE = { conjunction: 0, sextile: 60, square: 90, trine: 120, opposition: 180 };
+        const hits = interAspects(N, sky, TRANSIT_ORBS)
+          .sort((a, b) => a.exactness - b.exactness).slice(0, 4);
+        let html = hits.map(asp => {
+          const phase = transitPhase(N[asp.a], asp.b, jd, ANGLE[asp.aspect]);
+          const k = PT_KIND[asp.kind] || PT_KIND.friction;
+          const phaseLine = phase === 'applying'
+            ? 'This contact is still building — it is strongest in what comes next.'
+            : 'This contact is separating — its point has already been made.';
+          return `<div class="pt-item">
+            <div class="pt-title">${PLANET_GLYPHS[asp.b]} ${asp.b} ${asp.aspect} your natal ${asp.a} ${PLANET_GLYPHS[asp.a]}</div>
+            <div class="pt-meta">${asp.exactness.toFixed(1)}° orb · <span class="${phase === 'applying' ? 'ta-applying' : ''}">${phase}</span></div>
+            <p class="pt-text">Today ${asp.b} — ${TRANSIT_ROLE[asp.b]} — ${k.verb} ${NATAL_TARGET[asp.a]}. ${k.line} ${phaseLine} ${k.act}</p>
+          </div>`;
+        }).join('');
+        if (!html) {
+          html = `<div class="pt-item"><p class="pt-text">No tight contacts against your chart at this hour — the sky is leaving you to your own weather today.</p></div>`;
+        }
+        if (D && D.hasTime && D.rising) {
+          const risingIdx = SIGNS.indexOf(D.rising.sign);
+          const houseOf = lon => ((Math.floor((((lon % 360) + 360) % 360) / 30) - risingIdx + 12) % 12) + 1;
+          const mh = houseOf(sky.Moon), sh = houseOf(sky.Sun);
+          html += `<div class="pt-item">
+            <div class="pt-title">Where the day moves in your chart</div>
+            <p class="pt-text">Today's Moon crosses your ${ordinal(mh)} house — ${HOUSES[mh].name}: ${TODAY_HOUSE[mh]}
+            And the Sun is lighting your ${ordinal(sh)} house — ${HOUSES[sh].name}: ${TODAY_HOUSE[sh]}</p>
+          </div>`;
+        }
+        list.innerHTML = html;
+        box.style.display = '';
+      } catch (e) { box.style.display = 'none'; }
     }
 
     function renderCosmicWeather() {

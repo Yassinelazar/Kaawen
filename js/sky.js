@@ -387,14 +387,23 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     color: 0xF4EBD6, size: 2.2, sizeAttenuation: false, transparent: true, opacity: 0.55
   })));
 
-  // ── Zodiac band: 12 divisions with their names ─────────────
+  // ── Zodiac band: 12 divisions, each stamped with its ruler ──
+  // The Belt carries its chain of command: every sign shows the glyph
+  // of the planet that rules it (traditional assignments).
+  const BELT_RULER = {
+    Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+    Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+    Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter'
+  };
   for (let i = 0; i < 12; i++) {
     const lon = i * 30;
     const div = [at(lon, SKY_R_ZODIAC - 14), at(lon, SKY_R_ZODIAC + 14)];
     groups.zodiac.add(new THREE.Line(
       new THREE.BufferGeometry().setFromPoints(div),
       new THREE.LineBasicMaterial({ color: 0x8C6F3A, transparent: true, opacity: 0.5 })));
-    const label = skyLabel(THREE, signs[i].toUpperCase(), 11, 'rgba(212,166,85,0.85)', 500);
+    const rulerGlyph = glyphs[BELT_RULER[signs[i]]] || '';
+    const label = skyLabel(THREE, signs[i].toUpperCase() + (rulerGlyph ? '  ·  ' + rulerGlyph : ''),
+      11, 'rgba(212,166,85,0.85)', 500);
     label.position.copy(at(lon + 15, SKY_R_ZODIAC + 30, 0));
     groups.zodiac.add(label);
   }
