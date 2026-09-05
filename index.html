@@ -1610,9 +1610,9 @@
     .wheel-card-pos .wc-rx { color: var(--rx); }
     .wheel-card-text {
       font-family: var(--body);
-      font-size: 13.5px;
+      font-size: 16px;
       color: var(--cream-soft);
-      line-height: 1.65;
+      line-height: 1.7;
     }
     .wheel-card-rows { margin-top: 12px; border-top: 1px solid var(--rule-soft); padding-top: 10px; }
     .wheel-card-row {
@@ -1670,10 +1670,10 @@
     }
     .moon-phase-text {
       font-family: var(--body);
-      font-size: 14px;
+      font-size: 16px;
       color: var(--cream-soft);
-      line-height: 1.7;
-      max-width: 320px;
+      line-height: 1.72;
+      max-width: 380px;
       margin: 0 auto 20px;
     }
     .moon-phase-mansion {
@@ -1756,10 +1756,10 @@
     }
     .shape-text {
       font-family: var(--body);
-      font-size: 14.5px;
+      font-size: 16.5px;
       color: var(--cream-soft);
-      line-height: 1.7;
-      max-width: 320px;
+      line-height: 1.72;
+      max-width: 400px;
       margin: 0 auto;
     }
 
@@ -1829,7 +1829,7 @@
       display: block;
       font-family: var(--display);
       font-style: italic;
-      font-size: 16px;
+      font-size: 17.5px;
       color: var(--cream);
       margin-bottom: 3px;
     }
@@ -2554,9 +2554,9 @@
       line-height: 1;
     }
     .report-entry-text {
-      font-size: 13.5px;
+      font-size: 15.5px;
       color: var(--cream-soft);
-      line-height: 1.7;
+      line-height: 1.72;
     }
     .report-entry-text.is-fallback {
       font-style: italic;
@@ -3742,7 +3742,7 @@
       transition: background 0.45s ease;
       pointer-events: none;
     }
-    .sky3d.immersive.passed::after { background: rgba(20, 21, 31, 0.62); }
+    .sky3d.immersive.passed::after { background: rgba(20, 21, 31, 0.76); }
     /* instruments belong to the sky moment — they bow out in the reading */
     .sky3d.immersive .sky3d-layers { z-index: 5; }
     .sky3d.immersive .sky3d-loading { z-index: 3; }
@@ -9313,9 +9313,10 @@
 
       idx = Math.max(0, Math.min(CHAPTERS.length - 1, idx));
 
-      // The free reading is one page. Until the Full Guide opens, the
-      // deeper chapters route to the offer instead.
-      if (idx > 0 && !birthGuideOpen()) {
+      // The free tier is the one-page reading plus the daily sky.
+      // Today ("The Sky Now") is the reason to come back — it stays
+      // open; only the deeper Reading chapters route to the offer.
+      if (idx > 0 && CHAPTERS[idx].part === 'The Reading' && !birthGuideOpen()) {
         track('guide_gate_hit');
         const offer = document.getElementById('guide-offer');
         if (offer) offer.scrollIntoView({ behavior: 'smooth', block: 'center' });
