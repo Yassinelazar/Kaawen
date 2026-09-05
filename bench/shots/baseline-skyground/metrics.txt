@@ -1,5 +1,5 @@
 webgpu · HIGH · step 0
-fps 120 · 8.4ms
+fps 120 · 8.3ms
 dpr 1.00 / base 1.00
 calls 128 · tris 64029
 geo 72 · tex 63

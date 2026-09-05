@@ -828,7 +828,7 @@
     }
     .label {
       font-family: var(--ui);
-      font-size: 10px;
+      font-size: 12.5px;
       font-weight: 500;
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -1568,13 +1568,13 @@
 
     /* Detail card under the wheel */
     .wheel-card {
-      max-width: 440px;
+      max-width: 480px;
       margin: 0 auto;
       text-align: left;
-      padding: 16px 18px 18px;
-      border: 1px solid var(--rule);
-      border-radius: 6px;
-      background: rgba(var(--gold-rgb), 0.04);
+      padding: 20px 22px 22px;
+      border: 1px solid rgba(var(--gold-rgb), 0.3);
+      border-radius: 8px;
+      background: rgba(16, 17, 26, 0.66);
       animation: fadeUp 0.35s ease backwards;
     }
     .wheel-card.swap { animation: fadeUp 0.35s ease; }
@@ -1597,12 +1597,12 @@
     .wheel-card-name {
       font-family: var(--display);
       font-style: italic;
-      font-size: 21px;
+      font-size: 26px;
       color: var(--cream);
     }
     .wheel-card-pos {
       font-family: var(--ui);
-      font-size: 10.5px;
+      font-size: 13px;
       letter-spacing: 0.06em;
       color: var(--parchment);
       margin-bottom: 12px;
@@ -1656,7 +1656,7 @@
     .moon-phase-name {
       font-family: var(--display);
       font-style: italic;
-      font-size: 24px;
+      font-size: 32px;
       color: var(--cream);
       margin-bottom: 4px;
     }
@@ -1787,10 +1787,10 @@
       margin: 0 auto;
     }
     .wheel-cell {
-      background: rgba(var(--gold-rgb), 0.03);
-      border: 1px solid var(--rule-soft);
+      background: rgba(16, 17, 26, 0.6);
+      border: 1px solid rgba(var(--gold-rgb), 0.22);
       border-radius: 8px;
-      padding: 14px 12px;
+      padding: 16px 12px;
       cursor: pointer;
       text-align: center;
       transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
@@ -1829,7 +1829,7 @@
       display: block;
       font-family: var(--display);
       font-style: italic;
-      font-size: 17.5px;
+      font-size: 19px;
       color: var(--cream);
       margin-bottom: 3px;
     }
@@ -3142,11 +3142,12 @@
     /* The invitation to descend — bottom-left, above the rail, so a
        visitor landing in the sky knows the page continues below it. */
     .sky-scroll-cue {
-      display: none; position: absolute; left: 18px; bottom: 108px; z-index: 60;
-      background: rgba(10, 11, 20, 0.72); color: #EAE1CB;
-      border: 1px solid rgba(212, 166, 85, 0.5); border-radius: 999px;
-      font: inherit; font-size: 14.5px; letter-spacing: 0.06em;
-      padding: 11px 20px; cursor: pointer;
+      display: none; position: absolute; left: 20px; bottom: 112px; z-index: 60;
+      background: rgba(212, 166, 85, 0.14); color: #F4EBD6;
+      border: 1px solid rgba(212, 166, 85, 0.8); border-radius: 999px;
+      font: inherit; font-size: 17px; letter-spacing: 0.06em;
+      padding: 15px 28px; cursor: pointer;
+      box-shadow: 0 0 28px rgba(212, 166, 85, 0.2);
       -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
       transition: opacity 0.35s ease, border-color 0.25s ease;
     }
@@ -3162,7 +3163,7 @@
     .sky3d.immersive.passed .sky-scroll-cue { opacity: 0; pointer-events: none; }
     @keyframes cueBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
     @media (prefers-reduced-motion: reduce) { .sky-scroll-cue::after { animation: none; } }
-    @media (max-width: 819px) { .sky-scroll-cue { bottom: 150px; font-size: 13.5px; } }
+    @media (max-width: 819px) { .sky-scroll-cue { bottom: 150px; font-size: 15px; padding: 12px 22px; } }
     /* The veil: a breath of black that carries the eye from the page
        into the sky, so the instrument reveals rather than switches. */
     #sky-veil {
@@ -3768,7 +3769,7 @@
       transition: background 0.45s ease;
       pointer-events: none;
     }
-    .sky3d.immersive.passed::after { background: rgba(20, 21, 31, 0.76); }
+    .sky3d.immersive.passed::after { background: rgba(20, 21, 31, 0.87); }
     /* instruments belong to the sky moment — they bow out in the reading */
     .sky3d.immersive .sky3d-layers { z-index: 5; }
     .sky3d.immersive .sky3d-loading { z-index: 3; }
