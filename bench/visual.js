@@ -76,12 +76,17 @@ const PORT = 8917;
 
     const shot = (file, target) => (target || page).screenshot({ path: path.join(OUT, file) });
 
-    // A fresh chart now opens inside the sky; step out to shoot the wheel
-    await page.evaluate(() => setWheelMode('2d'));
+    // A fresh chart now opens inside the sky; the flat wheel renders
+    // hidden (the sky is the chart) — unhide it just for its shot.
+    await page.evaluate(() => {
+      setWheelMode('2d');
+      document.getElementById('wheel-visual').style.display = '';
+    });
     await page.waitForTimeout(800);
 
     // 1. The flat wheel — untouched by any renderer work, must never drift
     await shot('wheel-2d.png', page.locator('#wheel-visual'));
+    await page.evaluate(() => { document.getElementById('wheel-visual').style.display = 'none'; });
 
     // Into the sky
     await page.evaluate(() => setWheelMode('3d'));

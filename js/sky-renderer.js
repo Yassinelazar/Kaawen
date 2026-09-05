@@ -49,7 +49,13 @@ export class RendererManager {
   async initialize(canvas, opts) {
     this.tier = opts.tier;
     if (this.renderer) return this;
-    const wantGpu = !/[?&]gpu=0/.test(location.search) && !!navigator.gpu;
+    // Safari has never been through our WebGPU benchmark suite, while
+    // the classic chain has shipped there since Phase 2 — Safari gets
+    // the proven backend until its WebGPU is measured (?gpu=1 opts in).
+    const ua = navigator.userAgent;
+    const isSafari = /Safari\//.test(ua) && !/Chrom|Edg|OPR|Android/.test(ua);
+    const wantGpu = !/[?&]gpu=0/.test(location.search) && !!navigator.gpu &&
+      (!isSafari || /[?&]gpu=1/.test(location.search));
     if (wantGpu) {
       try {
         // Some browsers expose navigator.gpu yet stall or crawl when the
@@ -165,7 +171,13 @@ export class RendererManager {
     else this.renderer.render(this.scene, this.camera);
   }
 
+  // r185 WARNING: changing the pixel ratio while the WebGPU RenderPipeline
+  // is attached strands its cached bindings on destroyed textures — and no
+  // needsUpdate schedule was found that heals it. On the webgpu backend
+  // this must only be called around a same-task export (render + restore);
+  // live quality changes go through bloom/stars/frame-skip instead.
   setPixelRatio(v) {
+    if (this.renderer.getPixelRatio() === v) return;
     this.renderer.setPixelRatio(v);
     if (this.composer) this.composer.setPixelRatio(v);
   }

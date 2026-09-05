@@ -4848,14 +4848,10 @@
             <span class="label">The Wheel</span>
             <p class="wheel-intro" id="wheel-intro">Your sky, drawn whole. Touch a planet, a house, or a sign on the rim — the wheel answers.</p>
 
-            <!-- Two readings of one chart: the flat instrument, and the
-                 sky as it actually stood. Both drive the same card. -->
-            <div class="wheel-modes" role="tablist" aria-label="Chart view">
-              <button type="button" class="wheel-mode-btn active" data-wheel-mode="2d">The Wheel</button>
-              <button type="button" class="wheel-mode-btn" data-wheel-mode="3d">The Sky · 3D</button>
-            </div>
-
-            <div class="wheel-visual" id="wheel-visual"></div>
+            <!-- The sky IS the chart. The flat wheel still renders in
+                 here, hidden — it feeds the export and the benchmark's
+                 renderer-independent reference frame, never the eye. -->
+            <div class="wheel-visual" id="wheel-visual" style="display:none;"></div>
 
             <div id="sky-veil" aria-hidden="true"></div>
             <div class="sky3d" id="sky3d" style="display:none;">
@@ -4874,7 +4870,6 @@
                 <p>A demonstration sky — the first noon of the millennium.<br>Touch a planet to hear it speak.</p>
                 <button type="button" id="demo-reveal">Reveal your own sky</button>
               </div>
-              <button type="button" class="sky3d-close" id="sky3d-close" aria-label="Leave the sky">✕</button>
               <button type="button" class="sky-back" id="sky-back">↺ Back to the whole sky</button>
               <div class="sky3d-hint" id="sky3d-hint">Drag to turn · scroll to zoom · touch a planet</div>
 
@@ -7712,6 +7707,8 @@
       }
       document.getElementById('sky3d-loading').style.display = 'none';
       syncSky3DSelection();
+      // a rebuild lands in whatever scroll state the reader is in
+      if (sky3d.setEco) sky3d.setEco(document.body.classList.contains('sky-passed'));
       track('sky3d_opened');
     }
 
@@ -7904,9 +7901,9 @@
 
     function setWheelMode(mode) {
       const is3d = mode === '3d';
-      document.querySelectorAll('.wheel-mode-btn').forEach(b =>
-        b.classList.toggle('active', b.dataset.wheelMode === mode));
-      document.getElementById('wheel-visual').style.display = is3d ? 'none' : '';
+      // the flat wheel never shows — it renders hidden for export and
+      // the benchmark reference only; the sky is the chart
+      document.getElementById('wheel-visual').style.display = 'none';
       document.getElementById('sky3d').style.display = is3d ? '' : 'none';
       if (is3d) {
         // The sky lives in the Wheel chapter of the reading — make sure
@@ -8709,15 +8706,17 @@
         const item = e.target.closest('.moon-strip-item');
         if (item) renderMoonPanel(parseInt(item.dataset.phase, 10));
       });
-      // Flat wheel ↔ 3D sky
-      document.querySelectorAll('.wheel-mode-btn').forEach(b =>
-        b.addEventListener('click', () => setWheelMode(b.dataset.wheelMode)));
-      // Immersive mode
-      document.getElementById('sky3d-close').addEventListener('click', () => setWheelMode('2d'));
+      // The sky is the chart — there is no flat-wheel mode and no exit
+      // button; the header and the scroll are the ways around the site.
       document.addEventListener('keydown', e => {
         const host = document.getElementById('sky3d');
         if (!host || !host.classList.contains('immersive')) return;
-        if (e.key === 'Escape') setWheelMode('2d');
+        if (e.key === 'Escape' && wheelSel) {
+          // Escape releases the focused body back to the whole sky
+          selectWheel(wheelSel.type, wheelSel.key);  // toggles off
+          e.preventDefault();
+          return;
+        }
         // Walk the ten bodies with the arrow keys
         if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
           const cur = (wheelSel && wheelSel.type === 'planet') ? NR_PLANET_ORDER.indexOf(wheelSel.key) : -1;
@@ -9620,6 +9619,8 @@
           const past = !(es[0] && es[0].isIntersecting);
           document.getElementById('sky3d').classList.toggle('passed', past);
           document.body.classList.toggle('sky-passed', past);
+          // reading mode halves the sky's pixel work under the scrim
+          if (sky3d && sky3d.setEco) sky3d.setEco(past);
         }, { threshold: 0.3 }).observe(skySpace);
       }
 
@@ -9696,7 +9697,7 @@
         v.style.opacity = '';
         const host = document.getElementById('sky3d');
         host.style.opacity = ''; host.style.transform = '';
-        ['.sky3d-layers', '.sky-rail', '.sky-demo-banner', '.sky3d-close', '.sky3d-reading']
+        ['.sky3d-layers', '.sky-rail', '.sky-demo-banner', '.sky3d-reading']
           .forEach(sel => {
             const el = document.querySelector(sel);
             if (el) { if (window.gsap) gsap.killTweensOf(el); el.style.opacity = ''; }
@@ -9734,7 +9735,7 @@
           // the sky establishes itself first; the instruments arrive
           // afterwards, and the door to the written reading arrives last
           const chrome = ['.sky3d-layers', '.sky-rail', '.sky-demo-banner',
-                          '.sky3d-close', '.sky3d-reading']
+                          '.sky3d-reading']
             .map(sel => document.querySelector(sel))
             .filter(el => el && getComputedStyle(el).display !== 'none');
           gsap.set(chrome, { opacity: 0 });

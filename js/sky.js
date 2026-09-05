@@ -756,9 +756,26 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
   // after a long calm, and back off if a recovery didn't hold.
   let pressure = 0, lastShift = 0, calmSince = 0, lastUp = -1, upBackoff = 6000;
 
+  // Reading mode presses the ladder down without fighting the governor:
+  // while the written chapters ride over the scrimmed sky, half the
+  // pixels and no bloom is indistinguishable — and a weak machine gets
+  // its frame budget back exactly where it needs it.
+  // Reading mode (eco): the written chapters ride over the scrimmed
+  // sky, so it renders every OTHER frame — half the GPU and CPU work
+  // on any backend, with zero pipeline surgery. (r185: live pixel-ratio
+  // changes strand the WebGPU RenderPipeline on destroyed textures, so
+  // resolution is not a lever the running sky may pull.)
+  let ecoOn = false, ecoTick = false;
+  function setEco(on) {
+    ecoOn = !!on;
+    host.classList.toggle('sky-eco', ecoOn);   // observable state for tests/CSS
+  }
   function applyPressure() {
     const st = SKY_PRESSURE[pressure];
-    rm.setPixelRatio(baseDPR * st.scale);
+    // The webgpu pipeline cannot rescale live (see above) — its ladder
+    // degrades through bloom and stars only; the classic chain keeps
+    // the full ladder including resolution.
+    if (rm.getBackend() !== 'webgpu') rm.setPixelRatio(baseDPR * st.scale);
     rm.setBloom(st.bloom);
     starGeo.setDrawRange(0, Math.floor(starCount * st.stars));
   }
@@ -807,6 +824,10 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
   }
 
   function loop(now) {
+    // eco: while the reading rides over the scrimmed sky, every other
+    // frame rests — the following frame's dt covers the gap, so motion
+    // stays true, just at half cadence
+    if (ecoOn) { ecoTick = !ecoTick; if (ecoTick) return; }
     const gap = lastT ? now - lastT : 8;
     lastT = now;
     const dt = Math.min(0.05, Math.max(0.0001, gap / 1000));
@@ -845,7 +866,9 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
     placeCamera();
     if (SKY_DEV && rm.renderer.info.reset) rm.renderer.info.reset();
     draw();
-    govern(now, gap);
+    // eco's doubled gaps would read as strain — the governor only
+    // listens at full cadence
+    if (!ecoOn) govern(now, gap);
     if (SKY_DEV) devPanel(now);
   }
 
@@ -987,7 +1010,7 @@ export async function buildSky3D({ ctx, host, canvas, signs, order, glyphs, onPi
 
   current = { THREE, scene, camera, renderer: rm.renderer, groups, planetMeshes,
               sizes: SKY_SIZE, composer: rm.composer,
-              exportSky, focusBody, releaseFocus, applyTexture, dimBodies,
+              exportSky, focusBody, releaseFocus, applyTexture, dimBodies, setEco,
               setActive, pause: () => setActive(false), resume: () => setActive(true),
               tier: TIER, backend: rm.getBackend(),
               stop: disposeAll };
