@@ -3928,20 +3928,20 @@
     }
     .sky-dossier-pos {
       font-family: var(--ui);
-      font-size: 12px;
+      font-size: 13.5px;
       letter-spacing: 0.06em;
-      color: #AC9F87;
+      color: #C9BB9F;
       margin-bottom: 4px;
     }
     .sky-dossier-pos .rx { color: #D89580; }
     .sky-dossier-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 20px; }
     .sky-tag {
       font-family: var(--ui);
-      font-size: 9.5px;
+      font-size: 10.5px;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: #AC9F87;
-      border: 1px solid rgba(212, 166, 85, 0.28);
+      color: #C9BB9F;
+      border: 1px solid rgba(212, 166, 85, 0.34);
       border-radius: 100px;
       padding: 4px 10px;
     }
@@ -3949,22 +3949,22 @@
     .sky-tag.weak { color: #D89580; border-color: rgba(216, 149, 128, 0.5); }
     .sky-sec {
       font-family: var(--ui);
-      font-size: 9.5px;
+      font-size: 11.5px;
       font-weight: 500;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #8C6F3A;
+      color: #D4A655;
       margin: 26px 0 10px;
       padding-top: 16px;
-      border-top: 1px solid rgba(212, 166, 85, 0.16);
+      border-top: 1px solid rgba(212, 166, 85, 0.22);
     }
     .sky-sec:first-of-type { border-top: none; padding-top: 0; }
     .sky-body {
       font-family: var(--body);
-      font-size: 16px;
+      font-size: 16.5px;
       line-height: 1.78;
-      color: #DCD2BC;
-      max-width: 40ch;          /* a comfortable measure, even on wide screens */
+      color: #EAE1CB;
+      max-width: 42ch;          /* a comfortable measure, even on wide screens */
       text-align: left;
       hyphens: none;
     }
@@ -7757,6 +7757,57 @@
       detriment: 'In detriment — the sign opposes what this planet is for, so it must work against its own grain.',
       fall:      'In fall — the sign gives this planet little support, and what it does here it does the hard way.'
     };
+
+    // ── The chain of command — traditional sign rulers ────────────
+    // Every sign answers to a planet; every planet in a sign answers
+    // to that sign's ruler. Following the chain is how a chart is read
+    // as one system rather than ten separate statements.
+    const SIGN_RULER = {
+      Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+      Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+      Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter'
+    };
+
+    // The cross-referenced reading of one body: who it answers to
+    // (dispositor), whether that bond runs both ways (reception), and
+    // which rooms of the chart hold its key (house rulership). All of
+    // it is computed from the actual chart — method, not boilerplate.
+    function skyChain(planet, c) {
+      const pl = c.wheelPlacements[planet];
+      if (!pl) return [];
+      const out = [];
+      const ruler = SIGN_RULER[pl.sign];
+      const rp = ruler && ruler !== planet ? c.wheelPlacements[ruler] : null;
+      if (ruler === planet) {
+        out.push(`${planet} stands in its own sign and answers to no other body — what it does here, it does on its own authority.`);
+      } else if (rp) {
+        const rHouse = rp.house ? `, in your ${ordinal(rp.house)} house` : '';
+        const mutual = SIGN_RULER[rp.sign] === planet;
+        const rDig = skyDignity(ruler, rp.sign);
+        const dignityNote = rDig ? {
+          domicile:  ` And ${ruler} stands there in its own sign — a firm hand at the other end of the chain.`,
+          exalt:     ` And ${ruler} is exalted there — the strongest hand this chain could ask for.`,
+          detriment: ` And ${ruler} is itself in detriment there — this chain asks for patience at both ends.`,
+          fall:      ` And ${ruler} is itself in fall there — this chain asks for patience at both ends.`
+        }[rDig.key] : '';
+        out.push(`${planet} stands in ${pl.sign}, so it answers to ${ruler} — and your ${ruler} is in ${rp.sign}${rHouse}. Read them together: how your ${ruler} is doing is the weather your ${planet} works under.` +
+          (mutual ? ` And the bond runs both ways — ${ruler} stands in a sign ${planet} rules. A mutual reception: each holds the other's key, and strengthening either one steadies both.` : dignityNote));
+      }
+      // Which houses hold this planet's key (whole-sign from the rising)
+      if (c.hasTime && c.rising) {
+        const risingIdx = SIGNS.indexOf(c.rising.sign);
+        const ruled = [];
+        for (let n = 1; n <= 12; n++) {
+          if (SIGN_RULER[SIGNS[(risingIdx + n - 1) % 12]] === planet) {
+            ruled.push(`${ordinal(n)} — ${HOUSES[n].name}`);
+          }
+        }
+        if (ruled.length) {
+          out.push(`${planet} holds the key to your ${ruled.join(' and your ')}: whatever unfolds ${ruled.length > 1 ? 'in those rooms' : 'in that room'} answers to the condition of this body.`);
+        }
+      }
+      return out;
+    }
     function skyDignity(planet, sign) {
       const d = DIGNITY[planet];
       if (!d) return null;
@@ -7840,8 +7891,10 @@
       if (dig) html += `<p class="sky-body">${dig.note}</p>`;
 
       if (signEntry) {
+        // The full delineation for everyone — the sky's first reading
+        // should feel like the real thing, not a preview of it.
         html += `<div class="sky-sec">In ${pl.sign}</div>
-                 <p class="sky-body">${deep ? signEntry.full : signEntry.light}</p>`;
+                 <p class="sky-body">${signEntry.full || signEntry.light}</p>`;
       }
       if (houseEntry) {
         html += `<div class="sky-sec">In the ${ordinal(pl.house)} house — ${HOUSES[pl.house].name}</div>
@@ -7849,6 +7902,13 @@
       } else if (!pl.house) {
         html += `<div class="sky-sec">Houses</div>
                  <p class="sky-body">Add a birth time and this body takes its place in one of the twelve rooms.</p>`;
+      }
+      // The chain — dispositor, reception, and the rooms this body
+      // holds the key to. Computed from this chart, not recited.
+      const chain = skyChain(planet, c);
+      if (chain.length) {
+        html += `<div class="sky-sec">The chain</div>` +
+          chain.map(s => `<p class="sky-body">${s}</p>`).join('');
       }
       if (heaven) {
         html += `<div class="sky-sec">${heaven.heaven} · ${heaven.divine}</div>
@@ -7858,8 +7918,8 @@
         html += `<div class="sky-sec">What it speaks to</div>${aspects}`;
       }
       if (!deep) {
-        html += `<div class="sky-locked">This is the short reading. <b>The Full Guide</b> opens the long
-                 delineation for every body, its houses in depth, and the complete written report.</div>`;
+        html += `<div class="sky-locked"><b>The Full Guide</b> opens the deep house readings,
+                 every aspect written out, and the complete report of the whole chart.</div>`;
       }
 
       el.innerHTML = html;
@@ -8628,7 +8688,7 @@
           <div class="wheel-card-kicker">Planet</div>
           <div class="wheel-card-title"><span class="wheel-card-glyph">${PLANET_GLYPHS[key]}</span><span class="wheel-card-name">${key}</span></div>
           <div class="wheel-card-pos">in ${pl.sign} · ${pl.degree.toFixed(1)}°${housePart}${retroPart}</div>
-          <p class="wheel-card-text">${entry ? entry.light : ''}</p>
+          <p class="wheel-card-text">${entry ? (entry.full || entry.light) : ''}</p>
           ${rows ? `<div class="wheel-card-rows">${rows}</div>` : ''}`;
       } else if (type === 'house') {
         const n = parseInt(key, 10);
